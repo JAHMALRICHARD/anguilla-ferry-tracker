@@ -1,5 +1,5 @@
 import React from 'react';
-import { ClockIcon, AnchorIcon, DollarSignIcon, UsersIcon } from 'lucide-react';
+import { DollarSignIcon } from 'lucide-react';
 interface FerryCardProps {
   id: number;
   operator: string;

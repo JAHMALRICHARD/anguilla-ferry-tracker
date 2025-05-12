@@ -10,6 +10,7 @@ import { ferryData } from '../data/from-anguilla-ferry-data'
 import { convertTo24Hour } from '../helpers/convertTo24Hour'
 import { FerryProgress } from './FerryProgress'
 import { CustomDatePicker } from './CustomDatePicker' // adjust path if needed
+import { FerryDetailsCard } from './FerryDetailsCard'
 
 interface FerryItem {
   id: number
@@ -289,6 +290,8 @@ const eta = currentFerry ? getArrivalTime(currentFerry.departureTime, currentFer
   return '#3B82F6'                              // blue
 })()
 
+const [selectedFerry, setSelectedFerry] = useState<FerryItem | null>(null)
+
   
   return (
     <div className="bg-[#151923] rounded-xl p-6 mb-16">
@@ -505,8 +508,11 @@ const eta = currentFerry ? getArrivalTime(currentFerry.departureTime, currentFer
                     </span>
                     </td>
                     <td className="py-4">
-                      <button className="bg-blue-500 hover:bg-blue-600 px-4 py-1 rounded text-sm transition-colors">
-                        Details
+                      <button
+                        onClick={() => setSelectedFerry(ferry)}
+                        className="bg-blue-500 hover:bg-blue-600 px-4 py-1 rounded text-sm transition-colors"
+                      >
+                        View Details
                       </button>
                     </td>
                   </tr>
@@ -597,6 +603,25 @@ const eta = currentFerry ? getArrivalTime(currentFerry.departureTime, currentFer
           })}
         </tbody>
       </table>
+    </div>
+  </div>
+)}
+{selectedFerry && (
+  <div
+    className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center"
+    onClick={() => setSelectedFerry(null)} // Close on backdrop click
+  >
+    <div
+      className="bg-[#1E2A3B] rounded-xl p-6 w-full max-w-3xl relative shadow-lg border border-gray-700"
+      onClick={(e) => e.stopPropagation()} // Prevent close when clicking inside modal
+    >
+      <button
+        onClick={() => setSelectedFerry(null)}
+        className="absolute top-4 right-4 text-white hover:text-gray-300 text-xl"
+      >
+        ×
+      </button>
+      <FerryDetailsCard ferry={selectedFerry} />
     </div>
   </div>
 )}
