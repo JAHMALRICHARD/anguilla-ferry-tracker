@@ -145,29 +145,103 @@ export function LiveScheduleTable({
       const arrivalTime = departure.getTime() + durationMs
       return now >= departure.getTime() && now < arrivalTime + 180000
     })
-    setSailingFerry(live || null)
+    if (live) {
+  console.log('🛳️ Sailing Ferry Found:', {
+    id: live.id,
+    operator: live.operator,
+    departureTime: live.departureTime,
+    duration: live.duration,
+    date: live.date
+  });
+} else {
+  console.log('🚫 No Sailing Ferry Found');
+}
+setSailingFerry(live || null);
   }, [pastFerries])
 
   const showFerryProgress = !!sailingFerry || (!!nextDeparture && timeLeft <= 1800)
 
-  let ferryStatus: 'BOARDING' | 'SAILING' | 'NOW ARRIVING' | 'ARRIVED' = 'BOARDING'
-  if (sailingFerry) {
-    const secondsUntilArrival = getSecondsUntilArrival(
-      sailingFerry.departureTime,
-      sailingFerry.duration,
-      sailingFerry.date
-    )
-    if (secondsUntilArrival <= 0) ferryStatus = 'ARRIVED'
-    else if (secondsUntilArrival <= 300) ferryStatus = 'NOW ARRIVING'
-    else ferryStatus = 'SAILING'
-  } else if (nextDeparture) {
-    if (timeLeft <= 0) ferryStatus = 'ARRIVED'
-    else if (timeLeft <= 300) ferryStatus = 'BOARDING'
+let ferryStatus: 'DOCKED' | 'BOARDING' | 'SAILING' | 'NOW ARRIVING' | 'ARRIVED' = 'DOCKED';
+
+const now = new Date();
+const localNow = new Date(now.toLocaleString('en-US', { timeZone: 'America/Puerto_Rico' }));
+console.log('🕒 Local Now:', localNow.toISOString());
+
+if (sailingFerry) {
+  const [hours, minutes] = convertTo24Hour(sailingFerry.departureTime).split(':').map(Number);
+  const ferryDeparture = new Date(localNow);
+  ferryDeparture.setHours(hours);
+  ferryDeparture.setMinutes(minutes);
+  ferryDeparture.setSeconds(0);
+
+  const arrival = new Date(ferryDeparture.getTime() + parseInt(sailingFerry.duration) * 60000);
+  const fiveMinutesAfterArrival = new Date(arrival.getTime() + 5 * 60000);
+
+  console.log('🛳️ Sailed Ferry Departure:', ferryDeparture.toISOString());
+  console.log('⛴️ Estimated Arrival:', arrival.toISOString());
+
+  if (localNow < arrival && localNow >= new Date(ferryDeparture.getTime() + 5 * 60000)) {
+    ferryStatus = 'SAILING';
+    console.log('🔵 Status = SAILING');
+  } else if (localNow >= arrival && localNow <= fiveMinutesAfterArrival) {
+    ferryStatus = 'ARRIVED';
+    console.log('✅ Status = ARRIVED');
+  } else if (localNow >= new Date(arrival.getTime() - 5 * 60000) && localNow < arrival) {
+    ferryStatus = 'NOW ARRIVING';
+    console.log('🟢 Status = NOW ARRIVING');
+  } else {
+    ferryStatus = 'DOCKED';
+    console.log('🟤 Status = DOCKED (fallback for edge)');
   }
+} else if (nextDeparture) {
+  const [hours, minutes] = convertTo24Hour(nextDeparture.departureTime).split(':').map(Number);
+  const nextDep = new Date(localNow);
+  nextDep.setHours(hours);
+  nextDep.setMinutes(minutes);
+  nextDep.setSeconds(0);
 
-  const currentFerry = sailingFerry ?? nextDeparture
-  const eta = currentFerry ? getArrivalTime(currentFerry.departureTime, currentFerry.duration) : ''
+  const timeDiff = localNow.getTime() - nextDep.getTime();
+  const minutesDiff = timeDiff / 60000;
 
+  console.log('🚢 Next Departure:', nextDep.toISOString());
+  console.log('⏱️ Time Diff in minutes:', minutesDiff.toFixed(2));
+
+  if (timeDiff < 0) {
+    ferryStatus = 'DOCKED';
+    console.log('🟤 Status = DOCKED');
+  } else if (minutesDiff >= 0 && minutesDiff <= 5) {
+    ferryStatus = 'BOARDING';
+    console.log('🟡 Status = BOARDING');
+  }
+}
+
+  let currentFerry: FerryItem | null = null;
+
+if (sailingFerry) {
+  // Ferry that recently departed and hasn't arrived yet
+  currentFerry = sailingFerry;
+} else if (pastFerries.length > 0) {
+  const candidate = pastFerries[0]; // most recent one
+  const [hours, minutes] = convertTo24Hour(candidate.departureTime).split(':').map(Number);
+  const departure = new Date(localNow);
+  departure.setHours(hours);
+  departure.setMinutes(minutes);
+  departure.setSeconds(0);
+
+  const durationMins = parseInt(candidate.duration);
+  const arrival = new Date(departure.getTime() + durationMins * 60000);
+
+  const stillInProgress = localNow >= departure && localNow < new Date(arrival.getTime() + 5 * 60000);
+
+  if (stillInProgress) {
+    currentFerry = candidate;
+  }
+}
+
+if (!currentFerry) {
+  currentFerry = nextDeparture ?? null;
+}
+const eta = currentFerry ? getArrivalTime(currentFerry.departureTime, currentFerry.duration) : ''
   const sailingProgress = sailingFerry
     ? ((parseInt(sailingFerry.duration) * 60 - getSecondsUntilArrival(sailingFerry.departureTime, sailingFerry.duration, sailingFerry.date)) / (parseInt(sailingFerry.duration) * 60)) * 100
     : 0
@@ -192,18 +266,16 @@ export function LiveScheduleTable({
 
   const radius = 30
   const circumference = 2 * Math.PI * radius
-  const offset = circumference * (1 - progress / 100)
+  const offset = circumference * (1 - departureProgress / 100)
 
-  const ringColor = (() => {
-    const secondsLeft = sailingFerry
-      ? getSecondsUntilArrival(sailingFerry.departureTime, sailingFerry.duration, sailingFerry.date)
-      : timeLeft
+ const ringColor = (() => {
+  const secondsLeft = timeLeft // Always based on next departure, not arrival
 
-    if (secondsLeft <= 300) return '#22c55e'
-    if (secondsLeft <= 600) return '#f97316'
-    if (secondsLeft <= 1200) return '#facc15'
-    return '#3B82F6'
-  })()
+  if (secondsLeft <= 300) return '#22c55e'     // green
+  if (secondsLeft <= 600) return '#f97316'     // orange
+  if (secondsLeft <= 1200) return '#facc15'    // yellow
+  return '#3B82F6'                              // blue
+})()
 
   
   return (
