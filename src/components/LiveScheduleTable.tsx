@@ -416,8 +416,8 @@ const [selectedFerry, setSelectedFerry] = useState<FerryItem | null>(null)
             : timeLeft <= 120
             ? 'NOW BOARDING'
             : timeLeft <= 300
-            ? 'PREPARING FOR BOARDING'
-            : 'CUT OFF TIME APPROACHING'}
+            ? 'UNTIL BOARDING BEGINS'
+            : 'UNTIL CUT OFF TIME ENDS'}
         </text>
       </svg>
     </div>
