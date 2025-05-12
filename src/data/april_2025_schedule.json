@@ -1,0 +1,149 @@
+[
+  {
+    "date": "2025-04-01",
+    "shifts": {
+      "morning": [
+        {
+          "time": "7:30",
+          "ferry": "Tee Zech"
+        },
+        {
+          "time": "8:30",
+          "ferry": "Deluxe"
+        },
+        {
+          "time": "9:30",
+          "ferry": "Diamond"
+        },
+        {
+          "time": "10:30",
+          "ferry": "Diamond"
+        },
+        {
+          "time": "11:30",
+          "ferry": "Diamond"
+        },
+        {
+          "time": "12:30",
+          "ferry": "Tee Zech"
+        }
+      ],
+      "afternoon": [
+        {
+          "time": "14:00",
+          "ferry": "Samantha"
+        },
+        {
+          "time": "15:00",
+          "ferry": "Lady Maria"
+        },
+        {
+          "time": "16:15",
+          "ferry": "Lady Maria"
+        },
+        {
+          "time": "17:15",
+          "ferry": "Lady Maria"
+        }
+      ]
+    }
+  },
+  {
+    "date": "2025-04-02",
+    "shifts": {
+      "morning": [
+        {
+          "time": "7:30",
+          "ferry": "Deluxe"
+        },
+        {
+          "time": "8:30",
+          "ferry": "Nil\u00fc-V"
+        },
+        {
+          "time": "9:30",
+          "ferry": "Diamond"
+        },
+        {
+          "time": "10:30",
+          "ferry": "Diamond"
+        },
+        {
+          "time": "11:30",
+          "ferry": "Diamond"
+        },
+        {
+          "time": "12:30",
+          "ferry": "Deluxe"
+        }
+      ],
+      "afternoon": [
+        {
+          "time": "14:00",
+          "ferry": "Excellence II"
+        },
+        {
+          "time": "15:00",
+          "ferry": "Cheers II"
+        },
+        {
+          "time": "16:15",
+          "ferry": "Cheers II"
+        },
+        {
+          "time": "17:15",
+          "ferry": "Cheers II"
+        }
+      ]
+    }
+  },
+  {
+    "date": "2025-04-03",
+    "shifts": {
+      "morning": [
+        {
+          "time": "7:30",
+          "ferry": "Samantha"
+        },
+        {
+          "time": "8:30",
+          "ferry": "Lady Maria"
+        },
+        {
+          "time": "9:30",
+          "ferry": "Nil\u00fc-V"
+        },
+        {
+          "time": "10:30",
+          "ferry": "Lady Maria"
+        },
+        {
+          "time": "11:30",
+          "ferry": "Lady Maria"
+        },
+        {
+          "time": "12:30",
+          "ferry": "Samantha"
+        }
+      ],
+      "afternoon": [
+        {
+          "time": "14:00",
+          "ferry": "Tee Zech"
+        },
+        {
+          "time": "15:00",
+          "ferry": "Tee Zech"
+        },
+        {
+          "time": "16:15",
+          "ferry": "Tee Zech"
+        },
+        {
+          "time": "17:15",
+          "ferry": "Tee Zech"
+        }
+      ]
+    }
+  }
+]
