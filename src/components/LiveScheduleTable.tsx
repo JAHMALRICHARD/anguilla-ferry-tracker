@@ -180,19 +180,31 @@ if (sailingFerry) {
   console.log('🛳️ Sailed Ferry Departure:', ferryDeparture.toISOString());
   console.log('⛴️ Estimated Arrival:', arrival.toISOString());
 
-  if (localNow < arrival && localNow >= new Date(ferryDeparture.getTime() + 5 * 60000)) {
-    ferryStatus = 'SAILING';
-    console.log('🔵 Status = SAILING');
-  } else if (localNow >= arrival && localNow <= fiveMinutesAfterArrival) {
-    ferryStatus = 'ARRIVED';
-    console.log('✅ Status = ARRIVED');
-  } else if (localNow >= new Date(arrival.getTime() - 5 * 60000) && localNow < arrival) {
-    ferryStatus = 'NOW ARRIVING';
-    console.log('🟢 Status = NOW ARRIVING');
-  } else {
-    ferryStatus = 'DOCKED';
-    console.log('🟤 Status = DOCKED (fallback for edge)');
-  }
+  if (
+  localNow >= ferryDeparture &&
+  localNow < new Date(ferryDeparture.getTime() + 5 * 60000)
+) {
+  ferryStatus = 'BOARDING'
+  console.log('🟡 Status = BOARDING')
+} else if (
+  localNow >= new Date(ferryDeparture.getTime() + 5 * 60000) &&
+  localNow < arrival
+) {
+  ferryStatus = 'SAILING'
+  console.log('🔵 Status = SAILING')
+} else if (
+  localNow >= new Date(arrival.getTime() - 5 * 60000) &&
+  localNow < arrival
+) {
+  ferryStatus = 'NOW ARRIVING'
+  console.log('🟢 Status = NOW ARRIVING')
+} else if (localNow >= arrival && localNow <= fiveMinutesAfterArrival) {
+  ferryStatus = 'ARRIVED'
+  console.log('✅ Status = ARRIVED')
+} else {
+  ferryStatus = 'DOCKED'
+  console.log('🟤 Status = DOCKED (fallback for edge)')
+}
 } else if (nextDeparture) {
   const [hours, minutes] = convertTo24Hour(nextDeparture.departureTime).split(':').map(Number);
   const nextDep = new Date(localNow);
