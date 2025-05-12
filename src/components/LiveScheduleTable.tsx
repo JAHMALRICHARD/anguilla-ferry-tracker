@@ -406,7 +406,7 @@ const eta = currentFerry ? getArrivalTime(currentFerry.departureTime, currentFer
           fontWeight="bold"
         >
           {timeLeft > 1200
-            ? 'TICKET COUNTER OPEN'
+            ? 'UNTIL NEXT DEPARTURE'
             : timeLeft <= 120
             ? 'NOW BOARDING'
             : timeLeft <= 300
