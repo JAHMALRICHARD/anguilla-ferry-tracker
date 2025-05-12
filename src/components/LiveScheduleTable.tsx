@@ -260,20 +260,23 @@ const eta = currentFerry ? getArrivalTime(currentFerry.departureTime, currentFer
     : 0
 
   const departureProgress = nextDeparture
-    ? (() => {
-        const [hours, minutes] = convertTo24Hour(nextDeparture.departureTime).split(':').map(Number)
-        const departureTime = new Date()
-        departureTime.setHours(hours)
-        departureTime.setMinutes(minutes)
-        departureTime.setSeconds(0)
+  ? (() => {
+      const [hours, minutes] = convertTo24Hour(nextDeparture.departureTime).split(':').map(Number);
+      const departureTime = new Date();
+      departureTime.setHours(hours);
+      departureTime.setMinutes(minutes);
+      departureTime.setSeconds(0);
 
-        const now = new Date()
-        const total = Math.floor((departureTime.getTime() - now.getTime()) / 1000)
-        const maxCountdown = 1800
-        const elapsed = maxCountdown - total
-        return Math.min((elapsed / maxCountdown) * 100, 100)
-      })()
-    : 0
+      const now = new Date();
+      const totalTime = departureTime.getTime() - now.getTime();
+      const totalTimeInSeconds = totalTime / 1000;
+
+      const maxProgressTime = 60 * 60; // let's track for 1 hour window (3600 seconds)
+
+      const progress = 1 - totalTimeInSeconds / maxProgressTime;
+      return Math.min(Math.max(progress * 100, 0), 100);
+    })()
+  : 0;
 
   const progress = sailingFerry ? sailingProgress : departureProgress
 
@@ -471,6 +474,7 @@ const [selectedFerry, setSelectedFerry] = useState<FerryItem | null>(null)
                   <th className="text-left pb-4">OPERATOR</th>
                   <th className="text-left pb-4">DURATION</th>
                   <th className="text-left pb-4">ARRIVES</th>
+                  <th className="text-left pb-4">ARRIVAL PORT</th>
                   <th className="text-left pb-4">STATUS</th>
                   <th className="text-left pb-4">DETAILS</th>
                 </tr>
@@ -496,6 +500,7 @@ const [selectedFerry, setSelectedFerry] = useState<FerryItem | null>(null)
                     <td className="py-4">
                       {getArrivalTime(ferry.departureTime, ferry.duration)}
                     </td>
+                    <td className="py-4">{ferry.arrivalPort.split(',')[0]}</td>
                     <td className="py-4">
                      <span className={`text-xs py-1 px-2 rounded-sm leading-none font-semibold uppercase ${
                       ferry.status === 'on-time'
@@ -523,89 +528,89 @@ const [selectedFerry, setSelectedFerry] = useState<FerryItem | null>(null)
             <p className="text-gray-400 text-sm mt-4">No ferries scheduled for this day.</p>
           )}
         </div>
-        {/* ✅ Previously Sailed Ferries Table Goes Here */}
-{pastFerries.length > 0 && (
-  <div className="mt-12">
-    <h3 className="text-xl font-semibold text-gray-200 mb-4">Previously Sailed Ferries</h3>
-    <div className="overflow-x-hidden">
-      <table className="w-full">
-        <thead className="border-b border-gray-800">
-          <tr className="text-gray-400 text-sm">
-            <th className="text-left pb-4">DEPARTED</th>
-            <th className="text-left pb-4">PORT</th>
-            <th className="text-left pb-4">OPERATOR</th>
-            <th className="text-left pb-4">DURATION</th>
-            <th className="text-left pb-4">ARRIVED</th>
-            <th className="text-left pb-4">STATUS</th>
-            <th className="text-left pb-4">PROGRESS</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-gray-800">
-          {pastFerries.map((ferry) => {
-            const [hours, minutes] = convertTo24Hour(ferry.departureTime).split(':').map(Number)
-            const departure = new Date(localNow)
-            departure.setHours(hours)
-            departure.setMinutes(minutes)
-            departure.setSeconds(0)
-            const durationMins = parseInt(ferry.duration)
-            const arrival = new Date(departure.getTime() + durationMins * 60000)
-            const fiveAfter = new Date(arrival.getTime() + 5 * 60000)
-            const isSailing = localNow >= new Date(departure.getTime() + 5 * 60000) && localNow < arrival
-            const isArrived = localNow >= arrival && localNow < fiveAfter
-            const status = isSailing
-              ? 'SAILING'
-              : isArrived
-              ? 'ARRIVED'
-              : 'SAILED'
-            const progressPercent = isSailing
-              ? Math.min(100, ((localNow.getTime() - departure.getTime()) / (arrival.getTime() - departure.getTime())) * 100)
-              : 100
+        {/* Previously Sailed Ferries Table */}
+          {pastFerries.length > 0 && (
+            <div className="mt-12">
+              <h3 className="text-xl font-semibold text-gray-200 mb-4">Previously Sailed Ferries</h3>
+              <div className="overflow-x-hidden">
+                <table className="w-full">
+                  <thead className="border-b border-gray-800">
+                    <tr className="text-gray-400 text-sm">
+                      <th className="text-left pb-4">DEPARTED</th>
+                      <th className="text-left pb-4">PORT</th>
+                      <th className="text-left pb-4">OPERATOR</th>
+                      <th className="text-left pb-4">DURATION</th>
+                      <th className="text-left pb-4">ARRIVED</th>
+                      <th className="text-left pb-4">STATUS</th>
+                      <th className="text-left pb-4">PROGRESS</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-800">
+                    {pastFerries.map((ferry) => {
+                      const [hours, minutes] = convertTo24Hour(ferry.departureTime).split(':').map(Number)
+                      const departure = new Date(localNow)
+                      departure.setHours(hours)
+                      departure.setMinutes(minutes)
+                      departure.setSeconds(0)
+                      const durationMins = parseInt(ferry.duration)
+                      const arrival = new Date(departure.getTime() + durationMins * 60000)
+                      const fiveAfter = new Date(arrival.getTime() + 5 * 60000)
+                      const isSailing = localNow >= new Date(departure.getTime() + 5 * 60000) && localNow < arrival
+                      const isArrived = localNow >= arrival && localNow < fiveAfter
+                      const status = isSailing
+                        ? 'SAILING'
+                        : isArrived
+                        ? 'ARRIVED'
+                        : 'SAILED'
+                      const progressPercent = isSailing
+                        ? Math.min(100, ((localNow.getTime() - departure.getTime()) / (arrival.getTime() - departure.getTime())) * 100)
+                        : 100
 
-            return (
-              <tr key={`past-${ferry.id}`} className="bg-[#1E2A3B]/30 text-gray-500">
-                <td className="py-4">{ferry.departureTime}</td>
-                <td className="py-4">{ferry.departurePort.split(',')[0]}</td>
-                <td className="py-4 flex items-center gap-3">
-                  <Image
-                    src={ferry.logoUrl}
-                    alt={`${ferry.operator} logo`}
-                    width={28}
-                    height={28}
-                    className="rounded-full object-cover"
-                  />
-                  <span>{ferry.operator}</span>
-                </td>
-                <td className="py-4">{ferry.duration}</td>
-                <td className="py-4">{getArrivalTime(ferry.departureTime, ferry.duration)}</td>
-                <td className="py-4">
-                  <span className={`text-xs py-1 px-2 rounded-sm leading-none font-semibold uppercase ${
-                    status === 'SAILING'
-                      ? 'bg-blue-500/10 text-blue-400'
-                      : status === 'ARRIVED'
-                      ? 'bg-green-500/10 text-green-400'
-                      : 'bg-gray-300 text-gray-800'
-                  }`}>
-                    {status}
-                  </span>
-                </td>
-                <td className="py-4">
-                  {status === 'SAILING' && (
-                    <div className="w-full bg-gray-700 h-2 rounded-full overflow-hidden">
-                      <div
-                        className="bg-blue-500 h-2 rounded-full transition-all"
-                        style={{ width: `${progressPercent.toFixed(0)}%` }}
-                      />
-                    </div>
-                  )}
-                </td>
-              </tr>
-            )
-          })}
-        </tbody>
-      </table>
-    </div>
-  </div>
-)}
+                      return (
+                        <tr key={`past-${ferry.id}`} className="bg-[#1E2A3B]/30 text-gray-500">
+                          <td className="py-4">{ferry.departureTime}</td>
+                          <td className="py-4">{ferry.departurePort.split(',')[0]}</td>
+                          <td className="py-4 flex items-center gap-3">
+                            <Image
+                              src={ferry.logoUrl}
+                              alt={`${ferry.operator} logo`}
+                              width={28}
+                              height={28}
+                              className="rounded-full object-cover"
+                            />
+                            <span>{ferry.operator}</span>
+                          </td>
+                          <td className="py-4">{ferry.duration}</td>
+                          <td className="py-4">{getArrivalTime(ferry.departureTime, ferry.duration)}</td>
+                          <td className="py-4">
+                            <span className={`text-xs py-1 px-2 rounded-sm leading-none font-semibold uppercase ${
+                              status === 'SAILING'
+                                ? 'bg-blue-500/10 text-blue-400'
+                                : status === 'ARRIVED'
+                                ? 'bg-green-500/10 text-green-400'
+                                : 'bg-gray-300 text-gray-800'
+                            }`}>
+                              {status}
+                            </span>
+                          </td>
+                          <td className="py-4">
+                            {status === 'SAILING' && (
+                              <div className="w-full bg-gray-700 h-2 rounded-full overflow-hidden">
+                                <div
+                                  className="bg-blue-500 h-2 rounded-full transition-all"
+                                  style={{ width: `${progressPercent.toFixed(0)}%` }}
+                                />
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
 {selectedFerry && (
   <div
     className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center"
