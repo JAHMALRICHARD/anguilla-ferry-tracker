@@ -1,15 +1,15 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import { CalendarIcon, ArrowRightIcon } from 'lucide-react'
+import { ArrowRightIcon } from 'lucide-react'
 import Image from 'next/image'
-import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
 import { getSecondsUntilArrival } from '../helpers/getSecondsUntilArrival'
 
 import { ferryData } from '../data/from-anguilla-ferry-data'
 import { convertTo24Hour } from '../helpers/convertTo24Hour'
 import { FerryProgress } from './FerryProgress'
+import { CustomDatePicker } from './CustomDatePicker' // adjust path if needed
 
 interface FerryItem {
   id: number
@@ -448,18 +448,7 @@ const eta = currentFerry ? getArrivalTime(currentFerry.departureTime, currentFer
 
           {/* Date Picker + Route */}
        <div className="flex flex-wrap items-center gap-4">
-           <div className="flex items-center bg-[#151923] px-4 py-2 rounded-lg">
-           <CalendarIcon className="h-5 w-5 text-gray-400 mr-2" />
-             <DatePicker
-              selected={selectedDate}
-              onChange={(date: Date | null) => {
-                if (date) onDateChange(date)
-              }}
-              dateFormat="MMMM d, yyyy"
-              className="bg-transparent text-white outline-none"
-              calendarClassName="bg-white text-black"
-            />
-          </div>
+        <CustomDatePicker selectedDate={selectedDate} onDateChange={onDateChange} />
 
           <div className="flex items-center space-x-2">
             <span className="text-gray-300">{route.from}</span>
