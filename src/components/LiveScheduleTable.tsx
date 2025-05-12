@@ -295,7 +295,7 @@ const eta = currentFerry ? getArrivalTime(currentFerry.departureTime, currentFer
       <div className="flex flex-col space-y-6">
         <div className="flex justify-center gap-4">
           <button
-            onClick={() => onRouteChange({ from: 'St. Maarten', to: 'Anguilla' })}
+            onClick={() => onRouteChange({ from: 'St. Martin', to: 'Anguilla' })}
             className={`px-6 py-2 rounded-lg font-medium text-sm transition-colors ${
               route.to === 'Anguilla' ? 'bg-blue-500 text-white' : 'bg-[#1E2A3B] text-gray-300 hover:bg-[#252F3F]'
             }`}
@@ -303,12 +303,12 @@ const eta = currentFerry ? getArrivalTime(currentFerry.departureTime, currentFer
             🇦🇮 To Anguilla
           </button>
           <button
-            onClick={() => onRouteChange({ from: 'Anguilla', to: 'St. Maarten' })}
+            onClick={() => onRouteChange({ from: 'Anguilla', to: 'St. Martin' })}
             className={`px-6 py-2 rounded-lg font-medium text-sm transition-colors ${
-              route.to === 'St. Maarten' ? 'bg-blue-500 text-white' : 'bg-[#1E2A3B] text-gray-300 hover:bg-[#252F3F]'
+              route.to === 'St. Martin' ? 'bg-blue-500 text-white' : 'bg-[#1E2A3B] text-gray-300 hover:bg-[#252F3F]'
             }`}
           >
-            🇸🇽 To St. Maarten
+            🇸🇽 To St. Martin
           </button>
         </div>
 

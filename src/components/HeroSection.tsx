@@ -13,7 +13,7 @@ export function HeroSection() {
         <h1 className="text-4xl md:text-6xl font-bold mb-4">
           Your Gateway Between
           <br />
-          Anguilla & St. Maarten
+          Anguilla & St. Martin
         </h1>
         <p className="text-gray-200 text-xl mb-8">
           Check ferry times, prices, travel docs & more

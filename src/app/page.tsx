@@ -13,7 +13,7 @@ export default function HomePage() {
   const [selectedDate, setSelectedDate] = useState(new Date())
   const [route, setRoute] = useState({
     from: 'Anguilla',
-    to: 'St. Maarten'
+    to: 'St. Martin'
   })
 
   return (
