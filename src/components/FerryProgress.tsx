@@ -56,7 +56,7 @@ export function FerryProgress({
       </div>
 
       <div className="text-sm text-gray-400 text-center">
-        {operatorName} &bull; ETA {eta}
+       {operatorName} &bull; ETA {eta}
       </div>
     </div>
   )

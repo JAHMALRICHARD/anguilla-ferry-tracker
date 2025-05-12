@@ -320,7 +320,7 @@ const eta = currentFerry ? getArrivalTime(currentFerry.departureTime, currentFer
     <div className="flex justify-center sm:justify-end w-full sm:w-auto">
       <FerryProgress
         operatorName={currentFerry?.operator || ''}
-        progressPercent={progress}
+        progressPercent={ferryStatus === 'DOCKED' ? 0 : progress}
         eta={eta}
         status={ferryStatus}
       />
