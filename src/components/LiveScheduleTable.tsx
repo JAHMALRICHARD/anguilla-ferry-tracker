@@ -6,7 +6,9 @@ import Image from "next/image";
 import "react-datepicker/dist/react-datepicker.css";
 import { getSecondsUntilArrival } from "../helpers/getSecondsUntilArrival";
 
-import { ferryData } from "../data/from-anguilla-ferry-data";
+import { fromAnguillaData } from "../data/from-anguilla-ferry-data";
+import { toAnguillaData } from "../data/to-anguilla-ferry-data";
+
 import { convertTo24Hour } from "../helpers/convertTo24Hour";
 import { FerryProgress } from "./FerryProgress";
 import { CustomDatePicker } from "./CustomDatePicker"; // adjust path if needed
@@ -89,6 +91,7 @@ export function LiveScheduleTable({
   route,
   onRouteChange,
 }: LiveScheduleTableProps) {
+  const ferryData = route.to === "Anguilla" ? toAnguillaData : fromAnguillaData;
   const [upcomingFerries, setUpcomingFerries] = useState<FerryItem[]>([]);
   const [pastFerries, setPastFerries] = useState<FerryItem[]>([]);
   const [sailingFerry, setSailingFerry] = useState<FerryItem | null>(null);
@@ -422,10 +425,8 @@ export function LiveScheduleTable({
 
     if (timeDiff < 0) {
       ferryStatus = "DOCKED";
-      console.log("🟤 Status = DOCKED");
     } else if (minutesDiff >= 0 && minutesDiff <= 5) {
       ferryStatus = "BOARDING";
-      console.log("🟡 Status = BOARDING");
     }
   }
 
@@ -501,9 +502,7 @@ export function LiveScheduleTable({
         {/* Live Ferry Schedule + Progress */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 w-full">
-            <h2 className="text-2xl font-bold text-white">
-              Live Ferry Schedule
-            </h2>
+            <h2 className="text-2xl font-bold text-white"> Ferry Schedule</h2>
 
             {showFerryProgress && (
               <div className="flex justify-center sm:justify-end w-full sm:w-auto">
@@ -568,7 +567,7 @@ export function LiveScheduleTable({
                 <span className="text-xs text-gray-400 tracking-widest uppercase font-bold -mt-2">
                   Operator
                 </span>
-                <span className="text-[1.2rem] font-bold text-blue-400 leading-tight mt-2 uppercase">
+                <span className="text-[1.2rem] font-bold text-blue-400 leading-tight mt-4 uppercase">
                   {nextDeparture.operator}
                 </span>
               </div>
