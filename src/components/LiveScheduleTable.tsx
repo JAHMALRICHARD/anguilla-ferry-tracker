@@ -163,11 +163,8 @@ export function LiveScheduleTable({
     setSailingFerry(sailing || null);
   }, [pastFerries]);
 
-  ///^^^^^^NEW
-
   const nextDeparture = upcomingFerries[0];
   const timeLeft = useCountdown(nextDeparture?.departureTime || null);
-  ///////
 
   let currentFerry: FerryItem | null = null;
 
@@ -654,81 +651,101 @@ export function LiveScheduleTable({
           </div>
         </div>
 
-        {/* Ferry Table */}
-        <div className="overflow-x-auto">
-          {upcomingFerries.length > 0 ? (
-            <table className="w-full">
-              <thead className="border-b border-gray-800">
-                <tr className="text-gray-400">
-                  <th className="text-left pb-4">DEPARTS</th>
-                  <th className="text-left pb-4">PORT</th>
-                  <th className="text-left pb-4">OPERATOR</th>
-                  <th className="text-left pb-4">DURATION</th>
-                  <th className="text-left pb-4">ARRIVES</th>
-                  <th className="text-left pb-4">ARRIVAL PORT</th>
-                  <th className="text-left pb-4">STATUS</th>
-                  <th className="text-left pb-4">DETAILS</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-800">
-                {upcomingFerries.map((ferry) => (
-                  <tr
-                    key={ferry.id}
-                    className="hover:bg-[#1E2A3B] transition-colors"
-                  >
-                    <td className="py-4">{ferry.departureTime}</td>
-                    <td className="py-4">
-                      {ferry.departurePort.split(",")[0]}
-                    </td>
-                    <td className="py-4">
-                      <div className="flex items-center gap-3">
-                        <Image
-                          src={ferry.logoUrl}
-                          alt={`${ferry.operator} logo`}
-                          width={32}
-                          height={32}
-                          className="rounded-full object-cover"
-                        />
-                        <p className="font-medium">{ferry.operator}</p>
-                      </div>
-                    </td>
-                    <td className="py-4">{ferry.duration}</td>
-                    <td className="py-4">
-                      {getArrivalTime(ferry.departureTime, ferry.duration)}
-                    </td>
-                    <td className="py-4">{ferry.arrivalPort.split(",")[0]}</td>
-                    <td className="py-4">
-                      <span
-                        className={`text-xs py-1 px-2 rounded-sm leading-none font-semibold uppercase ${
-                          ferry.status === "on-time"
-                            ? "bg-green-500/10 text-green-400"
-                            : ferry.status === "delayed"
-                            ? "bg-yellow-500/10 text-yellow-400"
-                            : "bg-red-500/10 text-red-400"
-                        }`}
-                      >
-                        {ferry.status.replace("-", " ")}
-                      </span>
-                    </td>
-                    <td className="py-4">
-                      <button
-                        onClick={() => setSelectedFerry(ferry)}
-                        className="bg-blue-500 hover:bg-blue-600 px-4 py-1 rounded text-sm transition-colors"
-                      >
-                        View Details
-                      </button>
-                    </td>
+        {/* Live Ferry Table */}
+        <div className="bg-[#1E2A3B] border border-gray-700 rounded-xl p-6 shadow-md">
+          <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+            <svg
+              className="w-5 h-5 text-yellow-400"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M8 17l4 4 4-4m0-5l-4-4-4 4"
+              />
+            </svg>
+            Schdeule Ferries
+          </h3>
+          <div className="overflow-x-auto">
+            {upcomingFerries.length > 0 ? (
+              <table className="w-full">
+                <thead className="border-b border-gray-800">
+                  <tr className="text-gray-400">
+                    <th className="text-left pb-4">DEPARTS</th>
+                    <th className="text-left pb-4">PORT</th>
+                    <th className="text-left pb-4">OPERATOR</th>
+                    <th className="text-left pb-4">DURATION</th>
+                    <th className="text-left pb-4">ARRIVES</th>
+                    <th className="text-left pb-4">ARRIVAL PORT</th>
+                    <th className="text-left pb-4">STATUS</th>
+                    <th className="text-left pb-4">DETAILS</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          ) : (
-            <p className="text-gray-400 text-sm mt-4">
-              No ferries scheduled for this day.
-            </p>
-          )}
+                </thead>
+                <tbody className="divide-y divide-gray-800">
+                  {upcomingFerries.map((ferry) => (
+                    <tr
+                      key={ferry.id}
+                      className="hover:bg-[#1E2A3B] transition-colors"
+                    >
+                      <td className="py-4">{ferry.departureTime}</td>
+                      <td className="py-4">
+                        {ferry.departurePort.split(",")[0]}
+                      </td>
+                      <td className="py-4">
+                        <div className="flex items-center gap-3">
+                          <Image
+                            src={ferry.logoUrl}
+                            alt={`${ferry.operator} logo`}
+                            width={32}
+                            height={32}
+                            className="rounded-full object-cover"
+                          />
+                          <p className="font-medium">{ferry.operator}</p>
+                        </div>
+                      </td>
+                      <td className="py-4">{ferry.duration}</td>
+                      <td className="py-4">
+                        {getArrivalTime(ferry.departureTime, ferry.duration)}
+                      </td>
+                      <td className="py-4">
+                        {ferry.arrivalPort.split(",")[0]}
+                      </td>
+                      <td className="py-4">
+                        <span
+                          className={`text-xs py-1 px-2 rounded-sm leading-none font-semibold uppercase ${
+                            ferry.status === "on-time"
+                              ? "bg-green-500/10 text-green-400"
+                              : ferry.status === "delayed"
+                              ? "bg-yellow-500/10 text-yellow-400"
+                              : "bg-red-500/10 text-red-400"
+                          }`}
+                        >
+                          {ferry.status.replace("-", " ")}
+                        </span>
+                      </td>
+                      <td className="py-4">
+                        <button
+                          onClick={() => setSelectedFerry(ferry)}
+                          className="bg-blue-500 hover:bg-blue-600 px-4 py-1 rounded text-sm transition-colors"
+                        >
+                          View Details
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <p className="text-gray-400 text-sm mt-4">
+                No ferries scheduled for this day.
+              </p>
+            )}
+          </div>
         </div>
-
+        {/* Previously Sailed Ferry Table */}
         {pastFerries.length > 0 && (
           <div className="bg-[#1E2A3B] border border-gray-700 rounded-xl p-6 mt-8 shadow-md">
             <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
@@ -750,12 +767,13 @@ export function LiveScheduleTable({
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="border-b border-gray-800">
-                  <tr className="text-gray-400 text-sm">
-                    <th className="text-left pb-4">DEPARTED</th>
+                  <tr className="text-gray-400">
+                    <th className="text-left pb-4">DEPARTS</th>
                     <th className="text-left pb-4">PORT</th>
                     <th className="text-left pb-4">OPERATOR</th>
                     <th className="text-left pb-4">DURATION</th>
-                    <th className="text-left pb-4">ARRIVED</th>
+                    <th className="text-left pb-4">ARRIVES</th>
+                    <th className="text-left pb-4">ARRIVAL PORT</th>
                     <th className="text-left pb-4">STATUS</th>
                     <th className="text-left pb-4">PROGRESS</th>
                   </tr>
@@ -768,24 +786,25 @@ export function LiveScheduleTable({
                       .split(":")
                       .map(Number);
                     const departure = new Date(localNow);
-                    departure.setHours(hours);
-                    departure.setMinutes(minutes);
-                    departure.setSeconds(0);
+                    departure.setHours(hours, minutes, 0, 0);
                     const durationMins = parseInt(ferry.duration);
                     const arrival = new Date(
                       departure.getTime() + durationMins * 60000
                     );
                     const fiveAfter = new Date(arrival.getTime() + 5 * 60000);
+
                     const isSailing =
                       localNow >= new Date(departure.getTime() + 5 * 60000) &&
                       localNow < arrival;
                     const isArrived =
                       localNow >= arrival && localNow < fiveAfter;
+
                     const status = isSailing
                       ? "SAILING"
                       : isArrived
                       ? "ARRIVED"
                       : "SAILED";
+
                     const progressPercent = isSailing
                       ? Math.min(
                           100,
@@ -798,25 +817,30 @@ export function LiveScheduleTable({
                     return (
                       <tr
                         key={`past-${ferry.id}`}
-                        className="bg-[#1E2A3B]/30 text-gray-500"
+                        className="hover:bg-[#1E2A3B] transition-colors"
                       >
                         <td className="py-4">{ferry.departureTime}</td>
                         <td className="py-4">
                           {ferry.departurePort.split(",")[0]}
                         </td>
-                        <td className="py-4 flex items-center gap-3">
-                          <Image
-                            src={ferry.logoUrl}
-                            alt={`${ferry.operator} logo`}
-                            width={28}
-                            height={28}
-                            className="rounded-full object-cover"
-                          />
-                          <span>{ferry.operator}</span>
+                        <td className="py-4">
+                          <div className="flex items-center gap-3">
+                            <Image
+                              src={ferry.logoUrl}
+                              alt={`${ferry.operator} logo`}
+                              width={32}
+                              height={32}
+                              className="rounded-full object-cover"
+                            />
+                            <p className="font-medium">{ferry.operator}</p>
+                          </div>
                         </td>
                         <td className="py-4">{ferry.duration}</td>
                         <td className="py-4">
                           {getArrivalTime(ferry.departureTime, ferry.duration)}
+                        </td>
+                        <td className="py-4">
+                          {ferry.arrivalPort.split(",")[0]}
                         </td>
                         <td className="py-4">
                           <span
@@ -825,31 +849,27 @@ export function LiveScheduleTable({
                                 ? "bg-blue-500/10 text-blue-400"
                                 : status === "ARRIVED"
                                 ? "bg-green-500/10 text-green-400"
-                                : "bg-gray-300 text-gray-800"
+                                : "bg-gray-500/10 text-gray-400"
                             }`}
                           >
                             {status}
                           </span>
                         </td>
                         <td className="py-4">
-                          {(status === "SAILING" ||
-                            status === "ARRIVED" ||
-                            status === "SAILED") && (
-                            <div className="w-full bg-gray-700 h-2 rounded-full overflow-hidden">
-                              <div
-                                className={`h-2 rounded-full transition-all ${
-                                  status === "SAILING"
-                                    ? "bg-blue-500"
-                                    : status === "ARRIVED"
-                                    ? "bg-green-500"
-                                    : "bg-gray-400"
-                                }`}
-                                style={{
-                                  width: `${progressPercent.toFixed(0)}%`,
-                                }}
-                              />
-                            </div>
-                          )}
+                          <div className="w-full bg-gray-700 h-2 rounded-full overflow-hidden">
+                            <div
+                              className={`h-2 rounded-full transition-all ${
+                                status === "SAILING"
+                                  ? "bg-blue-500"
+                                  : status === "ARRIVED"
+                                  ? "bg-green-500"
+                                  : "bg-gray-400"
+                              }`}
+                              style={{
+                                width: `${progressPercent.toFixed(0)}%`,
+                              }}
+                            />
+                          </div>
                         </td>
                       </tr>
                     );
