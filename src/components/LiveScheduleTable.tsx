@@ -11,6 +11,7 @@ import { convertTo24Hour } from '../helpers/convertTo24Hour'
 import { FerryProgress } from './FerryProgress'
 import { CustomDatePicker } from './CustomDatePicker' // adjust path if needed
 import { FerryDetailsCard } from './FerryDetailsCard'
+import { addDays } from 'date-fns'
 
 interface FerryItem {
   id: number
@@ -166,7 +167,6 @@ let ferryStatus: 'DOCKED' | 'BOARDING' | 'SAILING' | 'NOW ARRIVING' | 'ARRIVED' 
 
 const now = new Date();
 const localNow = new Date(now.toLocaleString('en-US', { timeZone: 'America/Puerto_Rico' }));
-console.log('🕒 Local Now:', localNow.toISOString());
 
 if (sailingFerry) {
   const [hours, minutes] = convertTo24Hour(sailingFerry.departureTime).split(':').map(Number);
@@ -178,33 +178,25 @@ if (sailingFerry) {
   const arrival = new Date(ferryDeparture.getTime() + parseInt(sailingFerry.duration) * 60000);
   const fiveMinutesAfterArrival = new Date(arrival.getTime() + 5 * 60000);
 
-  console.log('🛳️ Sailed Ferry Departure:', ferryDeparture.toISOString());
-  console.log('⛴️ Estimated Arrival:', arrival.toISOString());
-
   if (
   localNow >= ferryDeparture &&
   localNow < new Date(ferryDeparture.getTime() + 5 * 60000)
 ) {
   ferryStatus = 'BOARDING'
-  console.log('🟡 Status = BOARDING')
 } else if (
   localNow >= new Date(ferryDeparture.getTime() + 5 * 60000) &&
   localNow < arrival
 ) {
   ferryStatus = 'SAILING'
-  console.log('🔵 Status = SAILING')
 } else if (
   localNow >= new Date(arrival.getTime() - 5 * 60000) &&
   localNow < arrival
 ) {
   ferryStatus = 'NOW ARRIVING'
-  console.log('🟢 Status = NOW ARRIVING')
 } else if (localNow >= arrival && localNow <= fiveMinutesAfterArrival) {
   ferryStatus = 'ARRIVED'
-  console.log('✅ Status = ARRIVED')
 } else {
   ferryStatus = 'DOCKED'
-  console.log('🟤 Status = DOCKED (fallback for edge)')
 }
 } else if (nextDeparture) {
   const [hours, minutes] = convertTo24Hour(nextDeparture.departureTime).split(':').map(Number);
@@ -216,8 +208,6 @@ if (sailingFerry) {
   const timeDiff = localNow.getTime() - nextDep.getTime();
   const minutesDiff = timeDiff / 60000;
 
-  console.log('🚢 Next Departure:', nextDep.toISOString());
-  console.log('⏱️ Time Diff in minutes:', minutesDiff.toFixed(2));
 
   if (timeDiff < 0) {
     ferryStatus = 'DOCKED';
@@ -444,15 +434,42 @@ return (
         )}
       </div>
 
-      {/* Date Picker + Route Info */}
-      <div className="flex flex-wrap items-center gap-4">
-        <CustomDatePicker selectedDate={selectedDate} onDateChange={onDateChange} />
-        <div className="flex items-center space-x-2">
-          <span className="text-gray-300">{route.from}</span>
-          <ArrowRightIcon className="h-4 w-4 text-gray-400" />
-          <span className="text-gray-300">{route.to}</span>
+     {/* Date Tabs + Date Picker + Route Info */}
+        <div className="flex flex-col gap-2">
+          {/* Tabs Above Date Picker */}
+          <div className="flex space-x-2 mb-1">
+            <button
+              onClick={() => onDateChange(new Date())}
+              className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+                selectedDate.toDateString() === new Date().toDateString()
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-[#1E2A3B] text-gray-300 hover:bg-[#252F3F]'
+              }`}
+            >
+              Today
+            </button>
+            <button
+              onClick={() => onDateChange(addDays(new Date(), 1))}
+              className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+                selectedDate.toDateString() === addDays(new Date(), 1).toDateString()
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-[#1E2A3B] text-gray-300 hover:bg-[#252F3F]'
+              }`}
+            >
+              Tomorrow
+            </button>
+          </div>
+
+          {/* Calendar Picker + Route */}
+          <div className="flex flex-wrap items-center gap-4">
+            <CustomDatePicker selectedDate={selectedDate} onDateChange={onDateChange} />
+            <div className="flex items-center space-x-2">
+              <span className="text-gray-300">{route.from}</span>
+              <ArrowRightIcon className="h-4 w-4 text-gray-400" />
+              <span className="text-gray-300">{route.to}</span>
+            </div>
+          </div>
         </div>
-      </div>
 
       {/* Ferry Table */}
       <div className="overflow-x-auto">
@@ -589,11 +606,17 @@ return (
                     {status}
                   </span>
                 </td>
-                <td className="py-4">
-                  {status === 'SAILING' && (
+               <td className="py-4">
+                  {(status === 'SAILING' || status === 'ARRIVED' || status === 'SAILED') && (
                     <div className="w-full bg-gray-700 h-2 rounded-full overflow-hidden">
                       <div
-                        className="bg-blue-500 h-2 rounded-full transition-all"
+                        className={`h-2 rounded-full transition-all ${
+                          status === 'SAILING'
+                            ? 'bg-blue-500'
+                            : status === 'ARRIVED'
+                            ? 'bg-green-500'
+                            : 'bg-gray-400'
+                        }`}
                         style={{ width: `${progressPercent.toFixed(0)}%` }}
                       />
                     </div>

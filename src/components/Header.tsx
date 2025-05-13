@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import MobileSidebarToggle from '@/components/MobileSidebarToggle'
+import LanguageDropdown from './LanguageDropdown'
 import {
   SearchIcon,
   BellIcon,
@@ -38,6 +39,11 @@ export function Header() {
         </div>
 
         {/* Right section - Notifications, Theme, Profile */}
+
+         <div className="flex items-center gap-4">
+              <LanguageDropdown />
+         </div>
+              
         <div className="flex items-center gap-2">
           {/* Notification Button */}
           <button className="p-2 hover:bg-[#1E2A3B] rounded-lg relative transition-colors group">
