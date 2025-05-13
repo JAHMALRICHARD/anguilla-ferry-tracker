@@ -1,4 +1,5 @@
 import React from "react";
+import Image from "next/image"; // ✅ Ensure you are using Next.js
 
 export function FerryProgress({
   operatorName,
@@ -31,7 +32,7 @@ export function FerryProgress({
   const ferryColor = ferryColorMap[status];
 
   return (
-    <div className="relative w-[340px] bg-[#1D283A] text-gray-100 px-4 py-3 rounded-xl shadow-sm border border-gray-700">
+    <div className="relative w-[340px] bg-[#1D283A] text-gray-100 px-4 py-4 rounded-xl shadow-sm border border-gray-700">
       {/* Labels and Status */}
       <div className="flex justify-between items-center mb-2 text-sm font-medium text-gray-300">
         <span>ANGUILLA</span>
@@ -45,20 +46,32 @@ export function FerryProgress({
         <span>ST. MARTIN</span>
       </div>
 
+      {/* Ferry Icon Positioned Above Progress */}
+      <div className="relative h-8 mb-1">
+        <div
+          className="absolute z-10"
+          style={{
+            left: `${displayProgress}%`,
+            transform: "translateX(-50%)",
+            top: 16,
+          }}
+        >
+          <Image
+            src="/ferry-icon.png"
+            alt="Ferry Icon"
+            width={36}
+            height={36}
+            className="drop-shadow"
+          />
+        </div>
+      </div>
+
       {/* Progress Bar */}
       <div className="relative w-full h-2 bg-gray-700 rounded-full overflow-hidden mb-2">
         <div
           className="absolute top-0 left-0 h-2 rounded-full transition-all duration-700 ease-out"
           style={{ width: `${displayProgress}%`, backgroundColor: ferryColor }}
         />
-        <div
-          className="absolute -top-2 -translate-x-1/2 transition-all duration-700 ease-out"
-          style={{ left: `${displayProgress}%` }}
-        >
-          <svg width="16" height="16" fill={ferryColor} viewBox="0 0 24 24">
-            <path d="M10 17l5-5-5-5v10z" />
-          </svg>
-        </div>
       </div>
 
       {/* Operator & ETA */}

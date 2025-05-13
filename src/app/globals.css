@@ -108,3 +108,17 @@ body {
 .animate-marquee {
   animation: marquee linear infinite;
 }
+
+@keyframes boatRock {
+  0%,
+  100% {
+    transform: translateX(-50%) rotate(-2deg);
+  }
+  50% {
+    transform: translateX(-50%) rotate(2deg);
+  }
+}
+
+.animate-boat {
+  animation: boatRock 1.2s ease-in-out infinite;
+}

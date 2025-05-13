@@ -477,25 +477,39 @@ export function LiveScheduleTable({
             onClick={() =>
               onRouteChange({ from: "St. Martin", to: "Anguilla" })
             }
-            className={`px-6 py-2 rounded-lg font-medium text-sm transition-colors ${
+            className={`px-6 py-2 rounded-lg font-medium text-sm transition-colors flex items-center gap-2 ${
               route.to === "Anguilla"
                 ? "bg-blue-500 text-white"
                 : "bg-[#1E2A3B] text-gray-300 hover:bg-[#252F3F]"
             }`}
           >
-            🇦🇮 To Anguilla
+            <Image
+              src="/flags/ai.png"
+              alt="Anguilla Flag"
+              width={20}
+              height={20}
+              className="rounded-sm"
+            />
+            To Anguilla
           </button>
           <button
             onClick={() =>
               onRouteChange({ from: "Anguilla", to: "St. Martin" })
             }
-            className={`px-6 py-2 rounded-lg font-medium text-sm transition-colors ${
+            className={`px-6 py-2 rounded-lg font-medium text-sm transition-colors flex items-center gap-2 ${
               route.to === "St. Martin"
                 ? "bg-blue-500 text-white"
                 : "bg-[#1E2A3B] text-gray-300 hover:bg-[#252F3F]"
             }`}
           >
-            🇸🇽 To St. Martin
+            <Image
+              src="/flags/sx.png"
+              alt="St. Martin Flag"
+              width={20}
+              height={20}
+              className="rounded-sm"
+            />
+            To St. Martin
           </button>
         </div>
 
