@@ -525,6 +525,9 @@ export function LiveScheduleTable({
                   progressPercent={ferryStatus === "DOCKED" ? 0 : progress}
                   eta={eta}
                   status={ferryStatus}
+                  direction={
+                    route.to === "Anguilla" ? "to-anguilla" : "to-st-martin"
+                  }
                 />
               </div>
             )}
