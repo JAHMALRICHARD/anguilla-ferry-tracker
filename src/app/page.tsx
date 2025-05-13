@@ -1,20 +1,27 @@
-'use client'
+"use client";
 
-import React, { useState } from 'react'
-import { Header } from '@/components/Header'
-import { HeroSection } from '@/components/HeroSection'
-import { TravelAlertBanner } from '@/components/TravelAlertBanner'
-import { LiveScheduleTable } from '@/components/LiveScheduleTable'
-import { InfoCards } from '@/components/InfoCards'
-import { OperatorsSection } from '@/components/OperatorsSection'
-import { TestimonialsSection } from '@/components/TestimonialsSection'
+import React, { useState } from "react";
+import { Header } from "@/components/Header";
+import { HeroSection } from "@/components/HeroSection";
+import { TravelAlertBanner } from "@/components/TravelAlertBanner";
+import { LiveScheduleTable } from "@/components/LiveScheduleTable";
+import { InfoCards } from "@/components/InfoCards";
+import { OperatorsSection } from "@/components/OperatorsSection";
+import { TestimonialsSection } from "@/components/TestimonialsSection";
+import { SeaConditionBanner } from "@/components/SeaConditionBanner";
+import useSWR from "swr";
 
 export default function HomePage() {
-  const [selectedDate, setSelectedDate] = useState(new Date())
+  const [selectedDate, setSelectedDate] = useState(new Date());
   const [route, setRoute] = useState({
-    from: 'Anguilla',
-    to: 'St. Martin'
-  })
+    from: "Anguilla",
+    to: "St. Martin",
+  });
+
+  const { data: weatherData } = useSWR(
+    "/api/weather?q=Blowing Point, Anguilla",
+    (url: string) => fetch(url).then((res) => res.json())
+  );
 
   return (
     <div className="min-h-screen bg-[#0B0F19] text-white">
@@ -28,6 +35,12 @@ export default function HomePage() {
           type="info"
         />
 
+        {/* 🌊 Sea Condition Banner */}
+        {weatherData?.current?.wind_kph && (
+          <div className="mt-4">
+            <SeaConditionBanner windSpeedKmh={weatherData.current.wind_kph} />
+          </div>
+        )}
 
         <LiveScheduleTable
           selectedDate={selectedDate}
@@ -40,5 +53,5 @@ export default function HomePage() {
         <TestimonialsSection />
       </div>
     </div>
-  )
+  );
 }

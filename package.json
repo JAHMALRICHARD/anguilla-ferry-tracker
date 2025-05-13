@@ -23,7 +23,8 @@
     "react-datepicker": "^8.3.0",
     "react-dom": "^19.1.0",
     "react-map-gl": "^8.0.4",
-    "react-world-flags": "^1.6.0"
+    "react-world-flags": "^1.6.0",
+    "swr": "^2.3.3"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

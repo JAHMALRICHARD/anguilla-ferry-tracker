@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { ThermometerIcon, WindIcon, DropletsIcon } from "lucide-react";
+//import { SeaConditionBanner } from "./SeaConditionBanner"; // ✅ import banner component
 
 interface WeatherAPIResponse {
   location: {
@@ -51,13 +52,12 @@ const fallbackWeather: WeatherAPIResponse = {
 export function CurrentWeatherWidget() {
   const [weather, setWeather] = useState<WeatherAPIResponse | null>(null);
   const [loading, setLoading] = useState(true);
-
   const [isFahrenheit, setIsFahrenheit] = useState<boolean>(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("weather_temp_unit");
       return saved === "fahrenheit";
     }
-    return true; // default to Fahrenheit
+    return true;
   });
 
   const toggleUnit = () => {
@@ -72,7 +72,7 @@ export function CurrentWeatherWidget() {
   };
 
   const CACHE_KEY = "weather_cache";
-  const CACHE_DURATION_MS = 60 * 60 * 1000; // 1 hour
+  const CACHE_DURATION_MS = 60 * 60 * 1000;
 
   useEffect(() => {
     const loadWeather = async () => {
@@ -103,7 +103,7 @@ export function CurrentWeatherWidget() {
         }
       } catch (e) {
         console.warn("⚠️ Weather fetch failed. Using fallback.");
-        console.error(e); // 👈 use 'e' here to avoid the ESLint warning
+        console.error(e);
         setWeather(fallbackWeather);
       } finally {
         setLoading(false);
@@ -129,9 +129,7 @@ export function CurrentWeatherWidget() {
             </div>
             <div className="h-12 w-12 bg-gray-700 rounded-full" />
           </div>
-
           <div className="h-10 bg-gray-700 rounded w-1/2 mx-auto" />
-
           <div className="grid grid-cols-3 gap-4 mt-4">
             <div className="h-4 bg-gray-700 rounded" />
             <div className="h-4 bg-gray-700 rounded" />
@@ -163,7 +161,6 @@ export function CurrentWeatherWidget() {
       transition={{ duration: 0.6 }}
       className="bg-[#1E2A3B] text-white rounded-xl p-6 shadow-md w-full max-w-sm border border-gray-700"
     >
-      {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div>
           <h3 className="text-lg font-semibold">
@@ -178,7 +175,6 @@ export function CurrentWeatherWidget() {
         />
       </div>
 
-      {/* Temperature */}
       <div className="flex items-center justify-between mb-4">
         <div className="text-4xl font-bold">
           {isFahrenheit ? `${Math.round(temp_f)}°F` : `${Math.round(temp_c)}°C`}
@@ -188,7 +184,6 @@ export function CurrentWeatherWidget() {
         </div>
       </div>
 
-      {/* Toggle Button */}
       <div className="mb-4">
         <button
           onClick={toggleUnit}
@@ -198,7 +193,6 @@ export function CurrentWeatherWidget() {
         </button>
       </div>
 
-      {/* Details */}
       <div className="grid grid-cols-3 gap-4 text-sm text-gray-300 mb-4">
         <div className="flex items-center gap-2">
           <WindIcon className="h-4 w-4 text-blue-400" />
@@ -214,8 +208,7 @@ export function CurrentWeatherWidget() {
         </div>
       </div>
 
-      {/* Footer */}
-      <div className="text-xs text-gray-400 text-right">
+      <div className="text-xs text-gray-400 text-right mt-2">
         Updated: {new Date(last_updated).toLocaleTimeString()}
       </div>
     </motion.div>
