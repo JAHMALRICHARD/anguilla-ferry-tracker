@@ -95,3 +95,16 @@ body {
 .animate-pulse-status {
   animation: pulse-status 1.5s infinite ease-in-out;
 }
+
+@keyframes marquee {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee linear infinite;
+}

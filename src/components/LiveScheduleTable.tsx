@@ -67,6 +67,22 @@ function useCountdown(targetTime: string | null) {
   return timeLeft;
 }
 
+function getCutOffTime(departureTime: string): string {
+  const [hours, minutes] = convertTo24Hour(departureTime)
+    .split(":")
+    .map(Number);
+  const cutoff = new Date();
+  cutoff.setHours(hours);
+  cutoff.setMinutes(minutes - 5); // 5 minutes before departure
+  cutoff.setSeconds(0);
+
+  return cutoff.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+}
+
 export function LiveScheduleTable({
   selectedDate,
   onDateChange,
@@ -164,6 +180,17 @@ export function LiveScheduleTable({
   }, [pastFerries]);
 
   const nextDeparture = upcomingFerries[0];
+
+  const cutoffDate = new Date();
+  if (nextDeparture) {
+    const [hours, minutes] = convertTo24Hour(nextDeparture.departureTime)
+      .split(":")
+      .map(Number);
+    cutoffDate.setHours(hours);
+    cutoffDate.setMinutes(minutes - 5); // 5 minutes before departure
+    cutoffDate.setSeconds(0);
+  }
+
   const timeLeft = useCountdown(nextDeparture?.departureTime || null);
 
   let currentFerry: FerryItem | null = null;
@@ -431,10 +458,6 @@ export function LiveScheduleTable({
     currentFerry = nextDeparture ?? null;
   }
 
-  const radius = 30;
-  const circumference = 2 * Math.PI * radius;
-  const offset = circumference * (1 - departureProgress / 100);
-
   const ringColor = (() => {
     const secondsLeft = timeLeft; // Always based on next departure, not arrival
 
@@ -495,115 +518,58 @@ export function LiveScheduleTable({
           </div>
 
           {nextDeparture && (
-            <div className="flex flex-row items-center justify-between gap-6">
-              <div className="flex items-center justify-center min-w-[200px]">
-                <svg width="200" height="100" viewBox="0 0 200 100">
-                  <defs>
-                    <filter
-                      id="glow"
-                      x="-50%"
-                      y="-50%"
-                      width="200%"
-                      height="200%"
-                    >
-                      <feGaussianBlur
-                        in="SourceGraphic"
-                        stdDeviation={(() => {
-                          if (timeLeft <= 300) return 4.5;
-                          if (timeLeft <= 600) return 3.5;
-                          if (timeLeft <= 1200) return 2.5;
-                          return 1.5;
-                        })()}
-                        result="coloredBlur"
-                      />
-                      <feMerge>
-                        <feMergeNode in="coloredBlur" />
-                        <feMergeNode in="SourceGraphic" />
-                      </feMerge>
-                    </filter>
-                  </defs>
-
-                  <circle
-                    stroke="rgb(37, 47, 63)"
-                    strokeOpacity={0.3}
-                    fill="transparent"
-                    r={radius}
-                    cx="100"
-                    cy="40"
-                    strokeWidth="6"
-                  />
-                  <circle
-                    stroke={ringColor}
-                    filter="url(#glow)"
-                    fill="transparent"
-                    r={radius}
-                    cx="100"
-                    cy="40"
-                    strokeWidth="6"
-                    strokeDasharray={circumference}
-                    strokeDashoffset={offset}
-                    transform="rotate(-90 100 40)"
-                    style={{
-                      transition: "stroke-dashoffset 1s linear",
-                      animation: (() => {
-                        if (timeLeft <= 300) return "pulse-calm 2s infinite";
-                        if (timeLeft <= 600) return "pulse-fast 0.6s infinite";
-                        return undefined;
-                      })(),
-                    }}
-                  />
-                  <text
-                    x="100"
-                    y="47"
-                    textAnchor="middle"
-                    fill="white"
-                    fontSize="24"
-                    fontWeight="bold"
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 w-full">
+              {/* Redesigned Countdown Timer Widget */}
+              <div className="relative flex flex-col items-center justify-center text-center min-w-[140px]">
+                <div
+                  className="absolute inset-0 rounded-full blur-xl animate-ping"
+                  style={{ backgroundColor: ringColor, opacity: 0.3 }}
+                />
+                <div className="z-10">
+                  <span
+                    className="text-xs tracking-widest uppercase font-bold"
+                    style={{ color: ringColor }}
                   >
-                    {Math.floor(timeLeft / 60)}m
-                  </text>
-                  <text
-                    x="100"
-                    y="90"
-                    textAnchor="middle"
-                    fontSize="12"
-                    fill="white"
-                    fontWeight="bold"
-                  >
-                    {timeLeft > 1200
-                      ? "UNTIL NEXT DEPARTURE"
-                      : timeLeft <= 120
-                      ? "NOW BOARDING"
-                      : timeLeft <= 300
-                      ? "UNTIL BOARDING BEGINS"
-                      : "UNTIL CUT OFF TIME ENDS"}
-                  </text>
-                </svg>
+                    UNTIL BOARDING
+                  </span>
+                  <div className="text-3xl font-extrabold text-white leading-tight mt-1">
+                    {String(Math.floor(timeLeft / 60)).padStart(2, "0")}:
+                    {String(timeLeft % 60).padStart(2, "0")}
+                  </div>
+                </div>
               </div>
 
-              <div className="flex flex-col items-center justify-center space-y-1 text-center min-h-[58px]">
-                <span className="text-xs text-gray-400 tracking-wide uppercase">
-                  Next Departure
-                </span>
-                <span className="text-3xl font-bold text-white leading-tight">
-                  {nextDeparture.departureTime}
-                </span>
+              {/* CUT OFF TIME WIDGET */}
+              <div className="relative flex flex-col items-center justify-center text-center min-w-[140px]">
+                <div className="z-10">
+                  <span className="text-xs text-red-400 tracking-widest uppercase font-bold">
+                    Cut Off Time
+                  </span>
+                  <div className="text-3xl font-extrabold text-white leading-tight mt-1">
+                    {getCutOffTime(nextDeparture.departureTime)}
+                  </div>
+                </div>
               </div>
 
-              <div className="flex flex-col items-center justify-center space-y-1 text-center">
-                <span className="text-xs text-blue-400 tracking-wide uppercase">
+              {/* Next Departure Info */}
+              <div className="relative flex flex-col items-center justify-center text-center min-w-[140px]">
+                <div className="z-10">
+                  <span className="text-xs text-green-400 tracking-widest uppercase font-bold">
+                    Next Departure
+                  </span>
+                  <div className="text-3xl font-extrabold text-white leading-tight mt-1">
+                    {nextDeparture.departureTime}
+                  </div>
+                </div>
+              </div>
+
+              {/* Operator Info */}
+              <div className="flex flex-col items-center justify-center text-center min-w-[140px]">
+                <span className="text-xs text-gray-400 tracking-widest uppercase font-bold -mt-2">
+                  Operator
+                </span>
+                <span className="text-[1.2rem] font-bold text-blue-400 leading-tight mt-2 uppercase">
                   {nextDeparture.operator}
-                </span>
-                <span
-                  className={`text-xs py-1 px-2 rounded-sm leading-none font-semibold uppercase ${
-                    nextDeparture.status === "on-time"
-                      ? "bg-green-500/10 text-green-400"
-                      : nextDeparture.status === "delayed"
-                      ? "bg-yellow-500/10 text-yellow-400"
-                      : "bg-red-500/10 text-red-400"
-                  }`}
-                >
-                  {nextDeparture.status.replace("-", " ")}
                 </span>
               </div>
             </div>
