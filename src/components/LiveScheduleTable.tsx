@@ -706,7 +706,7 @@ export function LiveScheduleTable({
               </table>
             ) : (
               <p className="text-gray-400 text-sm mt-4">
-                No ferries scheduled for this day.
+                No more ferries scheduled for this day.
               </p>
             )}
           </div>

@@ -1,3 +1,5 @@
+import React from "react";
+
 export function FerryProgress({
   operatorName,
   progressPercent,
@@ -29,36 +31,39 @@ export function FerryProgress({
   const ferryColor = ferryColorMap[status];
 
   return (
-    <div className="relative w-full max-w-xl bg-[#1D283A] text-gray-100 px-6 py-4 rounded-2xl shadow-md border border-gray-700">
-      <div className="flex justify-between items-center mb-4">
-        <span className="text-lg font-semibold text-gray-400">ANGUILLA</span>
+    <div className="relative w-[340px] bg-[#1D283A] text-gray-100 px-4 py-3 rounded-xl shadow-sm border border-gray-700">
+      {/* Labels and Status */}
+      <div className="flex justify-between items-center mb-2 text-sm font-medium text-gray-300">
+        <span>ANGUILLA</span>
         <span
-          className={`text-xs font-semibold uppercase py-1 px-4 rounded-full tracking-wide shadow-sm transition-colors duration-300 ${
+          className={`text-[10px] uppercase py-1 px-2 rounded-full tracking-wider ${
             statusClassMap[status]
           } ${status === "BOARDING" ? "animate-pulse-status" : ""}`}
         >
           {status}
         </span>
-        <span className="text-lg font-semibold text-gray-400">ST. MARTIN</span>
+        <span>ST. MARTIN</span>
       </div>
 
-      <div className="relative w-full h-3 bg-gray-700 rounded-full overflow-hidden mb-4">
+      {/* Progress Bar */}
+      <div className="relative w-full h-2 bg-gray-700 rounded-full overflow-hidden mb-2">
         <div
-          className="absolute top-0 left-0 h-3 rounded-full transition-all duration-700 ease-out"
+          className="absolute top-0 left-0 h-2 rounded-full transition-all duration-700 ease-out"
           style={{ width: `${displayProgress}%`, backgroundColor: ferryColor }}
         />
         <div
-          className="absolute -top-3 -translate-x-1/2 transition-all duration-700 ease-out"
+          className="absolute -top-2 -translate-x-1/2 transition-all duration-700 ease-out"
           style={{ left: `${displayProgress}%` }}
         >
-          <svg width="24" height="24" fill={ferryColor} viewBox="0 0 24 24">
+          <svg width="16" height="16" fill={ferryColor} viewBox="0 0 24 24">
             <path d="M10 17l5-5-5-5v10z" />
           </svg>
         </div>
       </div>
 
-      <div className="text-sm text-gray-400 text-center">
-        {operatorName} &bull; ETA {eta}
+      {/* Operator & ETA */}
+      <div className="text-xs text-gray-400 text-center">
+        {operatorName} • ETA {eta}
       </div>
     </div>
   );
