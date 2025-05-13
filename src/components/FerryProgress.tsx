@@ -37,8 +37,8 @@ export function FerryProgress({
   const positionStyle = {
     left:
       direction === "to-st-martin"
-        ? `calc(${displayProgress}% + 10px)` // ✅ Push forward 8px
-        : `calc(${100 - displayProgress}% - 10px)`, // ✅ Pull backward for reverse direction
+        ? `calc(${displayProgress}% + 10px)`
+        : `calc(${100 - displayProgress}% - 10px)`,
     transform: "translateX(-50%)",
     top: -5,
   };
