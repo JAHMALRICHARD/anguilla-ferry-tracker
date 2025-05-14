@@ -1,12 +1,12 @@
 import React from "react";
 import Image from "next/image";
-import { ArrowBigRightDash, ArrowBigLeftDash } from "lucide-react";
+import { ArrowBigRightDash, ArrowBigLeftDash, UsersRound } from "lucide-react";
 
 export function FerryProgress({
   operatorName,
   progressPercent,
   eta,
-  status,
+  status: originalStatus,
   direction,
 }: {
   operatorName: string;
@@ -15,20 +15,26 @@ export function FerryProgress({
   status: "DOCKED" | "BOARDING" | "SAILING" | "NOW ARRIVING" | "ARRIVED";
   direction: "to-anguilla" | "to-st-martin";
 }) {
-  const ferryColorMap: Record<typeof status, string> = {
+  const isBeforeReturnTrip =
+    direction === "to-anguilla" && originalStatus === "DOCKED";
+  const status = isBeforeReturnTrip ? "ON THE WAY" : originalStatus;
+
+  const ferryColorMap: Record<string, string> = {
     DOCKED: "#9CA3AF",
     BOARDING: "#FACC15",
     SAILING: "#3B82F6",
     "NOW ARRIVING": "#22C55E",
     ARRIVED: "#10B981",
+    "ON THE WAY": "#6B7280",
   };
 
-  const statusClassMap: Record<typeof status, string> = {
+  const statusClassMap: Record<string, string> = {
     DOCKED: "bg-gray-500/10 text-gray-300",
     BOARDING: "bg-yellow-500/10 text-yellow-400",
     SAILING: "bg-blue-500/10 text-blue-400",
     "NOW ARRIVING": "bg-emerald-500/10 text-emerald-400",
     ARRIVED: "bg-green-500/10 text-green-400",
+    "ON THE WAY": "bg-gray-600/10 text-gray-400 italic animate-pulse-status",
   };
 
   const displayProgress = status === "ARRIVED" ? 100 : progressPercent;
@@ -45,6 +51,11 @@ export function FerryProgress({
 
   const isFlipped = direction === "to-anguilla";
 
+  const shouldShowIcon = !(
+    status === "ON THE WAY" ||
+    (status === "DOCKED" && direction === "to-anguilla")
+  );
+
   return (
     <div className="relative w-[340px] bg-[#1D283A] text-gray-100 px-4 py-2 rounded-xl shadow-sm border border-gray-700">
       {/* Labels and Status with Lucide Directional Arrow */}
@@ -55,6 +66,11 @@ export function FerryProgress({
             className={`text-[10px] uppercase py-1 px-2 rounded-full tracking-wider ${
               statusClassMap[status]
             } ${status === "BOARDING" ? "animate-pulse-status" : ""}`}
+            title={
+              status === "ON THE WAY"
+                ? "The ferry is currently heading to St. Martin to begin boarding for Anguilla."
+                : undefined
+            }
           >
             {status}
           </span>
@@ -71,17 +87,27 @@ export function FerryProgress({
 
       {/* Ferry Icon Positioned Above Progress */}
       <div className="relative h-4">
-        <div className="absolute z-10" style={positionStyle}>
-          <Image
-            src="/ferry-icon.png"
-            alt="Ferry Icon"
-            width={32}
-            height={32}
-            className={`drop-shadow animate-boat ${
-              isFlipped ? "scale-x-[-1]" : ""
-            }`}
-          />
-        </div>
+        {shouldShowIcon && (
+          <div className="absolute z-10" style={positionStyle}>
+            {status === "BOARDING" || status === "ARRIVED" ? (
+              <UsersRound
+                size={16}
+                className={`drop-shadow animate-pulse-status`}
+                color={ferryColor}
+              />
+            ) : (
+              <Image
+                src="/ferry-icon.png"
+                alt="Ferry Icon"
+                width={32}
+                height={32}
+                className={`drop-shadow animate-boat ${
+                  isFlipped ? "scale-x-[-1]" : ""
+                }`}
+              />
+            )}
+          </div>
+        )}
       </div>
 
       {/* Progress Bar */}
