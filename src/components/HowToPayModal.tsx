@@ -1,14 +1,30 @@
-import React from 'react'
-import { XIcon, CreditCardIcon, WalletIcon, EuroIcon } from 'lucide-react'
+import React, { useEffect } from "react";
+import {
+  XIcon,
+  CreditCardIcon,
+  WalletIcon,
+  EuroIcon,
+  BanknoteIcon,
+  BadgeDollarSignIcon,
+  TerminalIcon,
+  HandCoinsIcon,
+} from "lucide-react";
 
 interface HowToPayModalProps {
-  onClose: () => void
+  onClose: () => void;
 }
 
 export const HowToPayModal: React.FC<HowToPayModalProps> = ({ onClose }) => {
+  useEffect(() => {
+    document.body.classList.add("overflow-hidden");
+    return () => {
+      document.body.classList.remove("overflow-hidden");
+    };
+  }, []);
+
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center px-4">
-      <div className="bg-[#151923] max-w-3xl w-full rounded-2xl shadow-2xl p-8 relative border border-gray-700 text-white font-sans">
+      <div className="bg-[#151923] max-w-5xl w-full rounded-2xl shadow-2xl p-8 relative border border-gray-700 text-white font-sans overflow-y-auto max-h-[90vh]">
         {/* Close Button */}
         <button
           onClick={onClose}
@@ -24,76 +40,144 @@ export const HowToPayModal: React.FC<HowToPayModalProps> = ({ onClose }) => {
           How to Pay
         </h2>
 
-        <div className="space-y-10 text-sm sm:text-base text-gray-300 leading-relaxed">
-
+        {/* Side-by-Side Content */}
+        <div className="flex flex-col md:flex-row gap-10 text-sm sm:text-base text-gray-300 leading-relaxed">
           {/* Blowing Point Section */}
-          <div>
-            <h3 className="text-xl font-semibold text-white mb-3 flex items-center gap-2">
-              <WalletIcon className="h-5 w-5 text-green-400" />
-              Blowing Point Ferry Terminal (Anguilla)
-            </h3>
-
-            <div className="mb-4">
-              <p className="text-white font-medium mb-1">Payment Methods for Public Ferry:</p>
-              <ul className="list-disc list-inside space-y-1">
-                <li>💵 <span className="font-medium text-white">Cash (USD or XCD)</span> is accepted.</li>
-                <li>❌ <span className="text-red-400 font-medium">Credit/debit cards are not accepted</span> for public ferry tickets</li>
-                 <li>🎫 <span className="text-green-400 font-medium"> Cash & Credit/debit cards are accepted</span> to pay departure tax.</li>
-                <li>🛥️ Private charters (Calypso, Funtime, GB Express) <span className="text-white">may support cards or online booking</span>.</li>
-              </ul>
-            </div>
-
-            <div className="mb-4">
-              <p className="text-white font-medium mb-1">What You’ll Pay:</p>
-              <ul className="list-disc list-inside space-y-1">
-                <li>🎫 Ferry Fare: $30 USD (adults), $15 USD (children) — one-way</li>
-                <li>🧾 Departure Tax: $28 USD (visitors), $11 USD (residents/day trippers)</li>
-              </ul>
-            </div>
-
+          <div className="w-full md:w-1/2 space-y-6">
             <div>
-              <p className="text-white font-medium mb-1">Where to Pay:</p>
-              <p>
-                All payments are made <span className="font-medium text-white">in person</span> at the terminal counter using <span className="font-medium text-white">cash only</span>.
-              </p>
+              <h3 className="text-xl font-semibold text-white mb-3 flex items-center gap-2">
+                <WalletIcon className="h-5 w-5 text-green-400" />
+                Blowing Point Ferry Terminal (Anguilla)
+              </h3>
+
+              <div className="mb-4">
+                <p className="text-white font-medium mb-2">Payment Methods:</p>
+                <ul className="space-y-2">
+                  <li className="flex items-start gap-2">
+                    <BanknoteIcon className="h-4 w-4 text-green-400 mt-1" />{" "}
+                    <span>Cash (USD or XCD) accepted.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CreditCardIcon className="h-4 w-4 text-red-400 mt-1" />{" "}
+                    <span>
+                      Cards <strong>not accepted</strong> for public ferry
+                      tickets.
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <BadgeDollarSignIcon className="h-4 w-4 text-green-400 mt-1" />{" "}
+                    <span>
+                      Cards accepted for <strong>departure tax</strong> payment.
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <HandCoinsIcon className="h-4 w-4 text-blue-400 mt-1" />{" "}
+                    <span>
+                      Private charters <strong>may support cards</strong> or
+                      online payment.
+                    </span>
+                  </li>
+                </ul>
+              </div>
+
+              <div className="mb-4">
+                <p className="text-white font-medium mb-2">What You’ll Pay:</p>
+                <ul className="space-y-2">
+                  <li className="flex items-start gap-2">
+                    <BadgeDollarSignIcon className="h-4 w-4 text-white mt-1" />{" "}
+                    <span>
+                      Ferry Fare: $30 USD (adults), $15 USD (children)
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <TerminalIcon className="h-4 w-4 text-white mt-1" />{" "}
+                    <span>
+                      Departure Tax: $28 USD (visitors), $11 USD (residents)
+                    </span>
+                  </li>
+                </ul>
+              </div>
+
+              <div>
+                <p className="text-white font-medium mb-2">Where to Pay:</p>
+                <p>
+                  <strong>In person</strong> at the terminal counter using{" "}
+                  <strong>cash only</strong>.
+                </p>
+              </div>
             </div>
           </div>
 
-          <hr className="border-gray-700" />
+          {/* Divider */}
+          <div className="hidden md:flex w-px bg-gray-700 mx-2" />
 
           {/* Marigot Section */}
-          <div>
-            <h3 className="text-xl font-semibold text-white mb-3 flex items-center gap-2">
-              <EuroIcon className="h-5 w-5 text-yellow-300" />
-              Marigot Ferry Terminal (St. Martin – French Side)
-            </h3>
-
-            <div className="mb-4">
-              <p className="text-white font-medium mb-1">Payment Methods:</p>
-              <ul className="list-disc list-inside space-y-1">
-                <li>🛳️ Ferry Fare: Paid <span className="text-white font-medium">on board</span> — <span className="text-white font-medium">USD cash only</span>.</li>
-                <li>🏷️ Head Tax (€7): Paid at the terminal — <span className="font-medium text-white">Card (Visa/MasterCard) or Euros only</span>. <span className="text-red-400 font-medium">USD not accepted.</span></li>
-              </ul>
-            </div>
-
-            <div className="mb-4">
-              <p className="text-white font-medium mb-1">What You’ll Pay:</p>
-              <ul className="list-disc list-inside space-y-1">
-                <li>🎫 Ferry Fare: $30 USD (adults), $15 USD (children) — USD cash only</li>
-                <li>🧾 Head Tax: €7 per person — paid before boarding</li>
-              </ul>
-            </div>
-
+          <div className="w-full md:w-1/2 space-y-6">
             <div>
-              <p className="text-white font-medium mb-1">Where to Pay:</p>
-              <ul className="list-disc list-inside space-y-1">
-                <li>🏷️ Head Tax: At the terminal counter <span className="font-medium text-white">before departure</span>.</li>
-                <li>🛳️ Ferry Fare: <span className="font-medium text-white">Paid on board</span> directly to the operator.</li>
-              </ul>
+              <h3 className="text-xl font-semibold text-white mb-3 flex items-center gap-2">
+                <EuroIcon className="h-5 w-5 text-yellow-300" />
+                Marigot Ferry Terminal (St. Martin)
+              </h3>
+
+              <div className="mb-4">
+                <p className="text-white font-medium mb-2">Payment Methods:</p>
+                <ul className="space-y-2">
+                  <li className="flex items-start gap-2">
+                    <BanknoteIcon className="h-4 w-4 text-green-400 mt-1" />{" "}
+                    <span>
+                      Ferry Fare paid <strong>on board</strong> —{" "}
+                      <strong>USD cash only</strong>.
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CreditCardIcon className="h-4 w-4 text-yellow-300 mt-1" />{" "}
+                    <span>
+                      Head Tax (€7) paid at the terminal —{" "}
+                      <strong>Card (Visa/MasterCard) or Euros only</strong>. USD
+                      not accepted.
+                    </span>
+                  </li>
+                </ul>
+              </div>
+
+              <div className="mb-4">
+                <p className="text-white font-medium mb-2">What You’ll Pay:</p>
+                <ul className="space-y-2">
+                  <li className="flex items-start gap-2">
+                    <BadgeDollarSignIcon className="h-4 w-4 text-white mt-1" />{" "}
+                    <span>
+                      Ferry Fare: $30 USD (adults), $15 USD (children)
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <TerminalIcon className="h-4 w-4 text-white mt-1" />{" "}
+                    <span>Head Tax: €7 per person — paid before boarding</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div>
+                <p className="text-white font-medium mb-2">Where to Pay:</p>
+                <ul className="space-y-2">
+                  <li className="flex items-start gap-2">
+                    <TerminalIcon className="h-4 w-4 text-white mt-1" />{" "}
+                    <span>
+                      Head Tax at the terminal counter{" "}
+                      <strong>before departure</strong>.
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <BanknoteIcon className="h-4 w-4 text-white mt-1" />{" "}
+                    <span>
+                      Ferry Fare <strong>paid on board</strong> to the operator.
+                    </span>
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
