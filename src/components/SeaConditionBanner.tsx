@@ -20,7 +20,7 @@ const getSeaCondition = (windSpeedKmh: number) => {
       color: "bg-green-500",
       icon: <CheckCircleIcon className="h-5 w-5" />,
       description:
-        "Smooth sailing expected. Enjoy a very pleasant ride with minimal motion.",
+        "Tranquil seas ahead. Perfect for a smooth and relaxing ferry ride.",
     };
   }
   if (windSpeedKmh <= 30) {
@@ -29,24 +29,24 @@ const getSeaCondition = (windSpeedKmh: number) => {
       color: "bg-yellow-500",
       icon: <WavesIcon className="h-5 w-5" />,
       description:
-        "Slight waves and wind. Ride may feel breezy with some movement on the sea.",
+        "Gentle sea breeze with light waves. A touch of adventure adds to the charm.",
     };
   }
   if (windSpeedKmh <= 50) {
     return {
-      state: "Rough",
+      state: "Choppy",
       color: "bg-orange-500",
       icon: <AlertTriangleIcon className="h-5 w-5" />,
       description:
-        "Expect significant waves and occasional bumps. Recommended for experienced travelers.",
+        "Waves may be more noticeable today. Hold on and enjoy the ocean's rhythm.",
     };
   }
   return {
-    state: "Dangerous",
+    state: "Strong Winds",
     color: "bg-red-500",
     icon: <AlertTriangleIcon className="h-5 w-5" />,
     description:
-      "High risk of strong waves and turbulence. Travel not recommended.",
+      "Conditions may be challenging today. Please check with your operator for updates.",
   };
 };
 

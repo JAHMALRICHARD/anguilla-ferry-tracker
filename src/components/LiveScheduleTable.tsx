@@ -194,6 +194,35 @@ export function LiveScheduleTable({
     cutoffDate.setSeconds(0);
   }
 
+  const isToday = selectedDate.toDateString() === new Date().toDateString();
+  const noMoreFerriesToday =
+    isToday && upcomingFerries.length === 0 && pastFerries.length > 0;
+
+  let fallbackNextFerry: FerryItem | null = null;
+
+  if (noMoreFerriesToday) {
+    const tomorrow = addDays(selectedDate, 1);
+    fallbackNextFerry =
+      ferryData
+        .filter((ferry) => {
+          const [month, day, year] = ferry.date.split("-");
+          const ferryDate = new Date(`20${year}-${month}-${day}`);
+          return (
+            ferry.direction ===
+              (route.to === "Anguilla" ? "to-anguilla" : "from-anguilla") &&
+            ferryDate.toDateString() === tomorrow.toDateString()
+          );
+        })
+        .sort((a, b) => {
+          const timeA = convertTo24Hour(a.departureTime);
+          const timeB = convertTo24Hour(b.departureTime);
+          return (
+            new Date(`1970-01-01T${timeA}`).getTime() -
+            new Date(`1970-01-01T${timeB}`).getTime()
+          );
+        })[0] || null;
+  }
+
   const timeLeft = useCountdown(nextDeparture?.departureTime || null);
 
   let currentFerry: FerryItem | null = null;
@@ -533,9 +562,9 @@ export function LiveScheduleTable({
             )}
           </div>
 
-          {nextDeparture && (
+          {(nextDeparture || (noMoreFerriesToday && fallbackNextFerry)) && (
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 w-full">
-              {/* Redesigned Countdown Timer Widget */}
+              {/* Countdown Timer Widget */}
               <div className="relative flex flex-col items-center justify-center text-center min-w-[140px]">
                 <div
                   className="absolute inset-0 rounded-full blur-xl animate-ping"
@@ -546,23 +575,29 @@ export function LiveScheduleTable({
                     className="text-xs tracking-widest uppercase font-bold"
                     style={{ color: ringColor }}
                   >
-                    UNTIL BOARDING
+                    {noMoreFerriesToday ? "NEXT DAY" : "UNTIL BOARDING"}
                   </span>
-                  <div className="text-3xl font-extrabold text-white leading-tight mt-1">
-                    {String(Math.floor(timeLeft / 60)).padStart(2, "0")}:
-                    {String(timeLeft % 60).padStart(2, "0")}
+                  <div className="text-3xl font-extrabold text-white leading-tight mt-1 whitespace-nowrap">
+                    {noMoreFerriesToday
+                      ? "--:--"
+                      : `${String(Math.floor(timeLeft / 60)).padStart(
+                          2,
+                          "0"
+                        )}:${String(timeLeft % 60).padStart(2, "0")}`}
                   </div>
                 </div>
               </div>
 
-              {/* CUT OFF TIME WIDGET */}
+              {/* Cut Off Time Widget */}
               <div className="relative flex flex-col items-center justify-center text-center min-w-[140px]">
                 <div className="z-10">
                   <span className="text-xs text-red-400 tracking-widest uppercase font-bold">
                     Cut Off Time
                   </span>
-                  <div className="text-3xl font-extrabold text-white leading-tight mt-1">
-                    {getCutOffTime(nextDeparture.departureTime)}
+                  <div className="text-3xl font-extrabold text-white leading-tight mt-1 whitespace-nowrap">
+                    {noMoreFerriesToday
+                      ? "CLOSED"
+                      : getCutOffTime(nextDeparture?.departureTime || "00:00")}
                   </div>
                 </div>
               </div>
@@ -573,8 +608,9 @@ export function LiveScheduleTable({
                   <span className="text-xs text-green-400 tracking-widest uppercase font-bold">
                     Next Departure
                   </span>
-                  <div className="text-3xl font-extrabold text-white leading-tight mt-1">
-                    {nextDeparture.departureTime}
+                  <div className="text-3xl font-extrabold text-white leading-tight mt-1 whitespace-nowrap">
+                    {(noMoreFerriesToday ? fallbackNextFerry : nextDeparture)
+                      ?.departureTime || "--:--"}
                   </div>
                 </div>
               </div>
@@ -585,7 +621,8 @@ export function LiveScheduleTable({
                   Operator
                 </span>
                 <span className="text-[1.2rem] font-bold text-blue-400 leading-tight mt-4 uppercase">
-                  {nextDeparture.operator}
+                  {(noMoreFerriesToday ? fallbackNextFerry : nextDeparture)
+                    ?.operator || "--"}
                 </span>
               </div>
             </div>
