@@ -56,15 +56,24 @@ export const DepartureTaxesModal: React.FC<DepartureTaxesModalProps> = ({
               <ul className="space-y-2 ml-2">
                 <li className="flex items-center gap-2">
                   <BadgeDollarSignIcon className="h-4 w-4 text-yellow-300" />
-                  <span>Adults (12+): $28 USD</span>
+                  <span>
+                    Adults (12+):{" "}
+                    <span className="text-green-400">$28 USD</span>
+                  </span>
                 </li>
                 <li className="flex items-center gap-2">
                   <BadgeDollarSignIcon className="h-4 w-4 text-gray-300" />
-                  <span>Children (5–11): $15 USD</span>
+                  <span>
+                    Children (5–11):{" "}
+                    <span className="text-green-400">$15 USD</span>
+                  </span>
                 </li>
                 <li className="flex items-center gap-2">
                   <BadgeDollarSignIcon className="h-4 w-4 text-gray-300" />
-                  <span>Children (2–4): $3 USD</span>
+                  <span>
+                    Children (2–4):{" "}
+                    <span className="text-green-400">$3 USD</span>
+                  </span>
                 </li>
               </ul>
             </div>
@@ -76,11 +85,17 @@ export const DepartureTaxesModal: React.FC<DepartureTaxesModalProps> = ({
               <ul className="space-y-2 ml-2">
                 <li className="flex items-center gap-2">
                   <BadgeDollarSignIcon className="h-4 w-4 text-green-300" />
-                  <span>Adults (12+): $11 USD</span>
+                  <span>
+                    Adults (12+):{" "}
+                    <span className="text-green-400">$11 USD</span>
+                  </span>
                 </li>
                 <li className="flex items-center gap-2">
                   <BadgeDollarSignIcon className="h-4 w-4 text-gray-300" />
-                  <span>Children (2–11): $3 USD</span>
+                  <span>
+                    Children (2–11):{" "}
+                    <span className="text-green-400">$3 USD</span>
+                  </span>
                 </li>
               </ul>
             </div>
@@ -102,7 +117,7 @@ export const DepartureTaxesModal: React.FC<DepartureTaxesModalProps> = ({
                 <span className="text-white font-medium">
                   Passenger Head Fee (Ages 4+):
                 </span>
-                <span className="text-green-300 font-semibold ml-auto">€7</span>
+                <span className="text-green-400 font-semibold ml-auto">€7</span>
               </div>
 
               <p className="text-sm text-gray-400 leading-snug">
