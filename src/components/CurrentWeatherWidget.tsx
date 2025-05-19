@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { ThermometerIcon, WindIcon, DropletsIcon } from "lucide-react";
+import Image from "next/image";
 
 interface WeatherAPIResponse {
   location: {
@@ -169,10 +170,12 @@ export function CurrentWeatherWidget() {
             {condition.text}
           </p>
         </div>
-        <img
+        <Image
           src={`https:${condition.icon}`}
           alt={condition.text}
-          className="h-12 w-12"
+          width={48}
+          height={48}
+          className="h-12 w-12 object-contain"
         />
       </div>
 
