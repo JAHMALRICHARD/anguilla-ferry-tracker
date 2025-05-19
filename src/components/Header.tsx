@@ -1,30 +1,34 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import Image from 'next/image'
-import MobileSidebarToggle from '@/components/MobileSidebarToggle'
-import LanguageDropdown from './LanguageDropdown'
+import { useState } from "react";
+import Image from "next/image";
+import MobileSidebarToggle from "@/components/MobileSidebarToggle";
+import LanguageDropdown from "./LanguageDropdown";
+import { useThemeContext } from "@/components/ThemeProvider";
 import {
   SearchIcon,
   BellIcon,
   SunIcon,
   MoonIcon,
-  ChevronDownIcon
-} from 'lucide-react'
+  ChevronDownIcon,
+} from "lucide-react";
 
 export function Header() {
-  const [isSearchFocused, setIsSearchFocused] = useState(false)
-  const [isDarkMode, setIsDarkMode] = useState(true)
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const { theme, toggleTheme } = useThemeContext();
 
   return (
     <header className="bg-[#151923] border-b border-gray-800">
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
-        
         {/* Left section - Menu and Search */}
         <div className="flex items-center gap-4 flex-1">
           <MobileSidebarToggle />
 
-          <div className={`relative flex-1 max-w-md ${isSearchFocused ? 'flex-grow' : ''}`}>
+          <div
+            className={`relative flex-1 max-w-md ${
+              isSearchFocused ? "flex-grow" : ""
+            }`}
+          >
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <SearchIcon className="h-4 w-4 text-gray-500" />
             </div>
@@ -40,10 +44,10 @@ export function Header() {
 
         {/* Right section - Notifications, Theme, Profile */}
 
-         <div className="flex items-center gap-4">
-              <LanguageDropdown />
-         </div>
-              
+        <div className="flex items-center gap-4">
+          <LanguageDropdown />
+        </div>
+
         <div className="flex items-center gap-2">
           {/* Notification Button */}
           <button className="p-2 hover:bg-[#1E2A3B] rounded-lg relative transition-colors group">
@@ -55,9 +59,9 @@ export function Header() {
           {/* Dark Mode Toggle */}
           <button
             className="p-2 hover:bg-[#1E2A3B] rounded-lg transition-colors"
-            onClick={() => setIsDarkMode(!isDarkMode)}
+            onClick={toggleTheme}
           >
-            {isDarkMode ? (
+            {theme === "dark" ? (
               <SunIcon className="h-5 w-5 text-gray-400" />
             ) : (
               <MoonIcon className="h-5 w-5 text-gray-400" />
@@ -87,5 +91,5 @@ export function Header() {
         </div>
       </div>
     </header>
-  )
+  );
 }

@@ -2,41 +2,51 @@
 
 /* Default Light Theme */
 :root {
-  --background: #ffffff;
+  /* --background: #ffffff;
   --foreground: #171717;
   --color-success: 34 197 94;
   --color-warning: 234 179 8;
-  --color-danger: 239 68 68;
+  --color-danger: 239 68 68; */
+  --background: 245 245 240; /* #F5F5F0 */
+  --foreground: 0 43 91; /* #002B5B */
+  --primary: 0 180 216; /* #00B4D8 */
+  --accent: 255 107 53; /* #FF6B35 */
 }
 
 /* Dark Theme (class-based toggle via Tailwind) */
 .dark {
-  --background: #0a0a0a;
+  /* --background: #0a0a0a;
   --foreground: #ededed;
   --color-success: 34 197 94;
   --color-warning: 234 179 8;
-  --color-danger: 239 68 68;
+  --color-danger: 239 68 68; */
+
+  --background: 0 43 91; /* deep navy */
+  --foreground: 245 245 240; /* sand white */
+  --primary: 0 180 216; /* turquoise */
+  --accent: 255 107 53; /*  sunset */
 }
 
-/* Optional: Auto dark mode via system preference */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-    --color-success: 34 197 94;
-    --color-warning: 234 179 8;
-    --color-danger: 239 68 68;
-  }
-}
-
-/* Base Styles */
+/* ================
+   Base Typography
+   ================ */
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: rgb(var(--background));
+  color: rgb(var(--foreground));
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* Animations */
+/* Smooth Theme Transitions */
+html,
+body {
+  transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease,
+    fill 0.3s ease;
+}
+
+/* ===============
+   Custom Animations
+   =============== */
+
 @keyframes pulse-fast {
   0%,
   100% {

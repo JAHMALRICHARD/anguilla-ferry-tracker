@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { ThermometerIcon, WindIcon, DropletsIcon } from "lucide-react";
-//import { SeaConditionBanner } from "./SeaConditionBanner"; // ✅ import banner component
 
 interface WeatherAPIResponse {
   location: {
@@ -60,17 +59,6 @@ export function CurrentWeatherWidget() {
     return true;
   });
 
-  const toggleUnit = () => {
-    setIsFahrenheit((prev) => {
-      const next = !prev;
-      localStorage.setItem(
-        "weather_temp_unit",
-        next ? "fahrenheit" : "celsius"
-      );
-      return next;
-    });
-  };
-
   const CACHE_KEY = "weather_cache";
   const CACHE_DURATION_MS = 60 * 60 * 1000;
 
@@ -119,21 +107,21 @@ export function CurrentWeatherWidget() {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="bg-[#1E2A3B] text-white rounded-xl p-6 w-full max-w-sm border border-gray-700"
+        className="bg-[rgb(var(--background))] text-[rgb(var(--foreground))] rounded-xl p-6 w-full max-w-sm border border-[rgb(var(--foreground))]/20"
       >
         <div className="animate-pulse space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <div className="h-4 bg-gray-700 rounded w-2/3 mb-2" />
-              <div className="h-3 bg-gray-700 rounded w-1/3" />
+              <div className="h-4 bg-[rgb(var(--foreground))]/20 rounded w-2/3 mb-2" />
+              <div className="h-3 bg-[rgb(var(--foreground))]/10 rounded w-1/3" />
             </div>
-            <div className="h-12 w-12 bg-gray-700 rounded-full" />
+            <div className="h-12 w-12 bg-[rgb(var(--foreground))]/10 rounded-full" />
           </div>
-          <div className="h-10 bg-gray-700 rounded w-1/2 mx-auto" />
+          <div className="h-10 bg-[rgb(var(--foreground))]/10 rounded w-1/2 mx-auto" />
           <div className="grid grid-cols-3 gap-4 mt-4">
-            <div className="h-4 bg-gray-700 rounded" />
-            <div className="h-4 bg-gray-700 rounded" />
-            <div className="h-4 bg-gray-700 rounded" />
+            <div className="h-4 bg-[rgb(var(--foreground))]/10 rounded" />
+            <div className="h-4 bg-[rgb(var(--foreground))]/10 rounded" />
+            <div className="h-4 bg-[rgb(var(--foreground))]/10 rounded" />
           </div>
         </div>
       </motion.div>
@@ -159,14 +147,27 @@ export function CurrentWeatherWidget() {
       initial={{ opacity: 0, x: 50 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.6 }}
-      className="bg-[#1E2A3B] text-white rounded-xl p-6 shadow-md w-full max-w-sm border border-gray-700"
+      className="bg-[rgb(var(--background))] text-[rgb(var(--foreground))] rounded-xl p-6 w-full max-w-sm border border-[rgb(var(--foreground))]/20"
     >
       <div className="flex items-start justify-between mb-4">
         <div>
           <h3 className="text-lg font-semibold">
             {location.name}, {location.region}
           </h3>
-          <p className="text-sm text-gray-400">{condition.text}</p>
+          <p className="text-sm text-[rgb(var(--foreground))]/70 flex items-center gap-1">
+            <span>
+              {condition.text.includes("Clear")
+                ? "☀️"
+                : condition.text.includes("Cloud")
+                ? "⛅️"
+                : condition.text.includes("Rain")
+                ? "🌧️"
+                : condition.text.includes("Storm")
+                ? "🌩️"
+                : "🌤️"}
+            </span>
+            {condition.text}
+          </p>
         </div>
         <img
           src={`https:${condition.icon}`}
@@ -179,36 +180,58 @@ export function CurrentWeatherWidget() {
         <div className="text-4xl font-bold">
           {isFahrenheit ? `${Math.round(temp_f)}°F` : `${Math.round(temp_c)}°C`}
         </div>
-        <div className="text-sm text-gray-400">
+        <div className="text-sm text-[rgb(var(--foreground))]/60">
           Feels like {isFahrenheit ? `${feelslike_f}°F` : `${feelslike_c}°C`}
         </div>
       </div>
 
       <div className="mb-4">
-        <button
-          onClick={toggleUnit}
-          className="text-sm text-blue-400 hover:text-blue-300 transition"
-        >
-          Show in {isFahrenheit ? "Celsius (°C)" : "Fahrenheit (°F)"}
-        </button>
+        <div className="inline-flex border border-[rgb(var(--foreground))]/30 rounded-md overflow-hidden text-sm">
+          <button
+            onClick={() => {
+              setIsFahrenheit(false);
+              localStorage.setItem("weather_temp_unit", "celsius");
+            }}
+            className={`px-3 py-1 transition ${
+              !isFahrenheit
+                ? "bg-[rgb(var(--accent))] text-white"
+                : "text-[rgb(var(--foreground))] hover:bg-[rgb(var(--foreground))]/10"
+            }`}
+          >
+            °C
+          </button>
+          <button
+            onClick={() => {
+              setIsFahrenheit(true);
+              localStorage.setItem("weather_temp_unit", "fahrenheit");
+            }}
+            className={`px-3 py-1 transition ${
+              isFahrenheit
+                ? "bg-[rgb(var(--accent))] text-white"
+                : "text-[rgb(var(--foreground))] hover:bg-[rgb(var(--foreground))]/10"
+            }`}
+          >
+            °F
+          </button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-4 text-sm text-gray-300 mb-4">
-        <div className="flex items-center gap-2">
-          <WindIcon className="h-4 w-4 text-blue-400" />
-          {wind_kph} km/h
+      <div className="grid grid-cols-3 gap-4 text-sm text-[rgb(var(--foreground))]/80 mb-4">
+        <div className="flex items-center justify-center gap-2 whitespace-nowrap">
+          <WindIcon className="h-4 w-4 shrink-0 text-[rgb(var(--primary))]" />
+          <span>{wind_kph}&nbsp;km/h</span>
         </div>
-        <div className="flex items-center gap-2">
-          <DropletsIcon className="h-4 w-4 text-blue-300" />
-          {humidity}%
+        <div className="flex items-center justify-center gap-2 whitespace-nowrap">
+          <DropletsIcon className="h-4 w-4 shrink-0 text-[rgb(var(--primary))]/80" />
+          <span>{humidity}&nbsp;%</span>
         </div>
-        <div className="flex items-center gap-2">
-          <ThermometerIcon className="h-4 w-4 text-red-400" />
-          {isFahrenheit ? `${feelslike_f}°F` : `${feelslike_c}°C`}
+        <div className="flex items-center justify-center gap-2 whitespace-nowrap">
+          <ThermometerIcon className="h-4 w-4 shrink-0 text-[rgb(var(--accent))]" />
+          <span>{isFahrenheit ? `${feelslike_f}°F` : `${feelslike_c}°C`}</span>
         </div>
       </div>
 
-      <div className="text-xs text-gray-400 text-right mt-2">
+      <div className="text-xs text-[rgb(var(--foreground))]/50 text-right mt-2">
         Updated: {new Date(last_updated).toLocaleTimeString()}
       </div>
     </motion.div>

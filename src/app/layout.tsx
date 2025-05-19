@@ -1,22 +1,27 @@
-import './globals.css'
-import { Inter } from 'next/font/google'
-import { ThemeProvider } from '@/components/ThemeProvider'
+import "./globals.css";
+import { Inter } from "next/font/google";
+import { ThemeProvider } from "@/components/ThemeProvider";
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: 'Anguilla Ferry Tracker',
-  description: 'Live schedules, travel info, and booking for ferries to/from Anguilla.'
-}
+  title: "Anguilla Ferry Tracker",
+  description:
+    "Live schedules, travel info, and booking for ferries to/from Anguilla.",
+};
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.className} bg-white text-gray-800 dark:bg-[#0E1117] dark:text-gray-200`}>
+      <body className={`${inter.className} bg-background text-foreground`}>
         <ThemeProvider>
           <div className="min-h-screen p-6">{children}</div>
         </ThemeProvider>
       </body>
     </html>
-  )
+  );
 }
