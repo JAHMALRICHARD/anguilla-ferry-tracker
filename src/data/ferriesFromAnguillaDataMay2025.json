@@ -76,7 +76,7 @@
   },
   {
     "id": 6,
-    "operator": "Diamond",
+    "operator": "Tee Zech",
     "departurePort": "Blowing Point, Anguilla",
     "arrivalPort": "Marigot, St. Martin",
     "departureTime": "2:00 PM",
@@ -87,11 +87,11 @@
     "status": "on-time",
     "direction": "from-anguilla",
     "date": "05-01-25",
-    "logoUrl": "/logos/anguilla-ferry-d-logo.svg"
+    "logoUrl": "/logos/anguilla-ferry-t-logo.svg"
   },
   {
     "id": 7,
-    "operator": "Tee Zech",
+    "operator": "Diamond",
     "departurePort": "Blowing Point, Anguilla",
     "arrivalPort": "Marigot, St. Martin",
     "departureTime": "3:30 PM",
@@ -102,11 +102,11 @@
     "status": "on-time",
     "direction": "from-anguilla",
     "date": "05-01-25",
-    "logoUrl": "/logos/anguilla-ferry-t-logo.svg"
+    "logoUrl": "/logos/anguilla-ferry-d-logo.svg"
   },
   {
     "id": 8,
-    "operator": "Diamond",
+    "operator": "Tee Zech",
     "departurePort": "Blowing Point, Anguilla",
     "arrivalPort": "Marigot, St. Martin",
     "departureTime": "4:30 PM",
@@ -117,11 +117,11 @@
     "status": "on-time",
     "direction": "from-anguilla",
     "date": "05-01-25",
-    "logoUrl": "/logos/anguilla-ferry-d-logo.svg"
+    "logoUrl": "/logos/anguilla-ferry-t-logo.svg"
   },
   {
     "id": 9,
-    "operator": "Lady Maria",
+    "operator": "Diamond",
     "departurePort": "Blowing Point, Anguilla",
     "arrivalPort": "Marigot, St. Martin",
     "departureTime": "5:15 PM",
@@ -132,7 +132,7 @@
     "status": "on-time",
     "direction": "from-anguilla",
     "date": "05-01-25",
-    "logoUrl": "/logos/anguilla-ferry-l-logo.svg"
+    "logoUrl": "/logos/anguilla-ferry-d-logo.svg"
   },
   {
     "id": 10,
