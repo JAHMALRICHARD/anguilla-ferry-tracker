@@ -99,7 +99,7 @@ export function CurrentWeatherWidget() {
     };
 
     loadWeather();
-  }, []);
+  }, [CACHE_DURATION_MS]);
 
   if (loading || !weather) {
     return (

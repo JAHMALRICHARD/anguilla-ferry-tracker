@@ -11,7 +11,9 @@
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.2",
     "@radix-ui/react-toast": "^1.2.13",
+    "@supabase/supabase-js": "^2.49.5",
     "date-fns": "^4.1.0",
+    "dotenv": "^16.5.0",
     "firebase": "^11.7.1",
     "framer-motion": "^12.10.5",
     "lucide-react": "^0.509.0",
@@ -29,7 +31,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
+    "@types/node": "^20.17.48",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/react-world-flags": "^1.6.0",
@@ -38,6 +40,7 @@
     "eslint-config-next": "15.3.2",
     "postcss": "^8.5.3",
     "tailwindcss": "^4.1.6",
-    "typescript": "^5"
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
   }
 }
