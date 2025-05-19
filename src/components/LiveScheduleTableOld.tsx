@@ -96,6 +96,12 @@ export function LiveScheduleTable({
   const [pastFerries, setPastFerries] = useState<FerryItem[]>([]);
   const [sailingFerry, setSailingFerry] = useState<FerryItem | null>(null);
   const [selectedFerry, setSelectedFerry] = useState<FerryItem | null>(null);
+  const [tick, setTick] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => setTick((t) => t + 1), 60000);
+    return () => clearInterval(interval);
+  }, [setTick]);
 
   useEffect(() => {
     const localNow = new Date(
@@ -158,7 +164,7 @@ export function LiveScheduleTable({
 
     setUpcomingFerries(upcoming);
     setPastFerries(past);
-  }, [route.to, selectedDate, ferryData]);
+  }, [route.to, selectedDate, tick]);
 
   useEffect(() => {
     const now = new Date().getTime();
@@ -355,7 +361,7 @@ export function LiveScheduleTable({
 
     setUpcomingFerries(filteredUpcoming);
     setPastFerries(filteredPast);
-  }, [route.to, selectedDate, ferryData]);
+  }, [route.to, selectedDate]);
 
   useEffect(() => {
     const now = new Date().getTime();
