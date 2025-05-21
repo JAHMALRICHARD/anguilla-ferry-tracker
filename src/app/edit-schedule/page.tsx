@@ -2,23 +2,20 @@
 
 import React, { useEffect, useState } from "react";
 import { supabase } from "@/utils/supabase";
-import { CheckIcon, XIcon, PlusIcon } from "lucide-react";
+import { CheckIcon, XIcon, UndoIcon } from "lucide-react";
+import { format, isBefore } from "date-fns";
 
 interface FerrySchedule {
   id: number;
-  date: string;
-  departureTime: string;
+  schedule_date: string;
+  departure_time: string;
   operator: string;
   status: string;
   direction: string;
 }
 
-// export const metadata = {
-//   title: "Edit Ferry Schedule",
-// };
-
-const operators = ["Lady Maria", "Diamond", "Excellence II", "Cheers II"];
 const statuses = ["on-time", "delayed", "cancelled"];
+const directions = ["from-anguilla", "to-anguilla"];
 
 export default function EditSchedulePage() {
   const [schedules, setSchedules] = useState<FerrySchedule[]>([]);
@@ -26,22 +23,53 @@ export default function EditSchedulePage() {
   const [editing, setEditing] = useState<
     Record<number, Partial<FerrySchedule>>
   >({});
-  const [message, setMessage] = useState("");
+  const [originals, setOriginals] = useState<Record<number, FerrySchedule>>({});
+  const [toast, setToast] = useState("");
+  const [directionFilter, setDirectionFilter] = useState("");
+  const [editDate, setEditDate] = useState(format(new Date(), "yyyy-MM-dd"));
+  const [operators, setOperators] = useState<string[]>([]);
+
+  const showToast = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(""), 3000);
+  };
+
+  useEffect(() => {
+    const fetchOperators = async () => {
+      const { data, error } = await supabase
+        .from("ferry_schedules")
+        .select("operator");
+
+      if (data && !error) {
+        const unique = [...new Set(data.map((item) => item.operator))];
+        setOperators(unique);
+      }
+    };
+    fetchOperators();
+  }, []);
 
   useEffect(() => {
     const fetchSchedules = async () => {
+      setLoading(true);
       const { data, error } = await supabase
         .from("ferry_schedules")
         .select("*")
-        .order("schedule_date", { ascending: true });
+        .eq("schedule_date", editDate)
+        .order("departure_time", { ascending: true });
 
-      if (data) setSchedules(data);
-      if (error) console.error("❌ Error fetching schedule", error);
+      if (data && !error) {
+        setSchedules(data);
+        const originalMap: Record<number, FerrySchedule> = {};
+        data.forEach((d) => (originalMap[d.id] = { ...d }));
+        setOriginals(originalMap);
+      }
+
+      if (error) console.error("❌ Error fetching schedule:", error.message);
       setLoading(false);
     };
 
     fetchSchedules();
-  }, []);
+  }, [editDate]);
 
   const handleEditChange = (
     id: number,
@@ -72,13 +100,11 @@ export default function EditSchedulePage() {
         delete newEdits[id];
         return newEdits;
       });
-      setMessage("✅ Schedule updated successfully!");
+      showToast("✅ Schedule updated!");
     } else {
       console.error("Update failed", error);
-      setMessage("❌ Failed to update schedule.");
+      showToast("❌ Update failed.");
     }
-
-    setTimeout(() => setMessage(""), 3000);
   };
 
   const handleCancel = (id: number) => {
@@ -89,11 +115,61 @@ export default function EditSchedulePage() {
     });
   };
 
+  const handleUndo = (id: number) => {
+    const original = originals[id];
+    if (!original) return;
+    setEditing((prev) => ({
+      ...prev,
+      [id]: { ...original },
+    }));
+  };
+
+  const filteredSchedules = directionFilter
+    ? schedules.filter((s) => s.direction === directionFilter)
+    : schedules;
+
   return (
     <div className="max-w-7xl mx-auto py-12 px-6 text-white">
-      <h1 className="text-3xl font-bold mb-6">Edit Ferry Schedule</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Edit Ferry Schedule</h1>
+        <div className="text-sm text-gray-300">
+          Total ferries: <strong>{filteredSchedules.length}</strong>
+        </div>
+      </div>
 
-      {message && <div className="mb-4 text-green-400">{message}</div>}
+      {toast && (
+        <div className="mb-4 bg-green-700 text-white px-4 py-2 rounded shadow">
+          {toast}
+        </div>
+      )}
+
+      <div className="mb-4 flex flex-wrap items-center gap-4">
+        <div>
+          <label className="mr-2 text-sm">Filter by direction:</label>
+          <select
+            value={directionFilter}
+            onChange={(e) => setDirectionFilter(e.target.value)}
+            className="bg-[#151923] border border-gray-600 text-white px-2 py-1 rounded"
+          >
+            <option value="">All</option>
+            {directions.map((dir) => (
+              <option key={dir} value={dir}>
+                {dir}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="mr-2 text-sm">Edit date:</label>
+          <input
+            type="date"
+            value={editDate}
+            onChange={(e) => setEditDate(e.target.value)}
+            className="bg-[#151923] border border-gray-600 text-white px-2 py-1 rounded"
+          />
+        </div>
+      </div>
 
       {loading ? (
         <p>Loading schedule...</p>
@@ -110,20 +186,40 @@ export default function EditSchedulePage() {
             </tr>
           </thead>
           <tbody>
-            {schedules.map((ferry) => {
+            {filteredSchedules.map((ferry) => {
+              const currentTime = new Date();
+              const ferryTime = new Date(
+                `${ferry.schedule_date}T${ferry.departure_time}`
+              );
+              const isPast = isBefore(ferryTime, currentTime);
+
+              const overlapping = schedules.some(
+                (s) =>
+                  s.id !== ferry.id &&
+                  s.schedule_date === ferry.schedule_date &&
+                  s.departure_time === ferry.departure_time &&
+                  s.direction === ferry.direction
+              );
+
               return (
-                <tr key={ferry.id} className="border-t border-gray-700">
-                  <td className="p-3">{ferry.date}</td>
+                <tr
+                  key={ferry.id}
+                  className={`border-t border-gray-700 ${
+                    isPast ? "text-gray-500" : "text-white"
+                  } ${overlapping ? "bg-red-900" : ""}`}
+                >
+                  <td className="p-3">{ferry.schedule_date}</td>
                   <td className="p-3">
                     <input
                       type="time"
                       value={
-                        editing[ferry.id]?.departureTime || ferry.departureTime
+                        editing[ferry.id]?.departure_time ||
+                        ferry.departure_time
                       }
                       onChange={(e) =>
                         handleEditChange(
                           ferry.id,
-                          "departureTime",
+                          "departure_time",
                           e.target.value
                         )
                       }
@@ -164,15 +260,21 @@ export default function EditSchedulePage() {
                   <td className="p-3 flex gap-2">
                     <button
                       onClick={() => handleSave(ferry.id)}
-                      className="text-green-400 hover:text-green-300"
+                      className="text-green-400"
                     >
                       <CheckIcon className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => handleCancel(ferry.id)}
-                      className="text-red-400 hover:text-red-300"
+                      className="text-red-400"
                     >
                       <XIcon className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleUndo(ferry.id)}
+                      className="text-yellow-400"
+                    >
+                      <UndoIcon className="w-4 h-4" />
                     </button>
                   </td>
                 </tr>
@@ -181,13 +283,6 @@ export default function EditSchedulePage() {
           </tbody>
         </table>
       )}
-
-      <div className="mt-6">
-        <button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-white text-sm">
-          <PlusIcon className="w-4 h-4" />
-          Add Next Month Schedule
-        </button>
-      </div>
     </div>
   );
 }

@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -6,8 +7,7 @@ import Image from "next/image";
 import "react-datepicker/dist/react-datepicker.css";
 import { getSecondsUntilArrival } from "../helpers/getSecondsUntilArrival";
 
-import { fromAnguillaData } from "../data/from-anguilla-ferry-data";
-import { toAnguillaData } from "../data/to-anguilla-ferry-data";
+import { supabase } from "@/utils/supabase";
 
 import { convertTo24Hour } from "../helpers/convertTo24Hour";
 import { FerryProgress } from "./FerryProgress";
@@ -15,20 +15,20 @@ import { CustomDatePicker } from "./CustomDatePicker"; // adjust path if needed
 import { FerryDetailsCard } from "./FerryDetailsCard";
 import { addDays } from "date-fns";
 
-interface FerryItem {
+export interface FerryItem {
   id: number;
   operator: string;
-  departurePort: string;
-  arrivalPort: string;
-  departureTime: string;
-  arrivalTime: string;
+  departure_port: string;
+  arrival_port: string;
+  departure_time: string;
+  arrival_time?: string;
   price: string;
   duration: string;
-  vesselName: string;
+  vessel_name?: string;
   status: string;
   direction: string;
-  date: string;
-  logoUrl: string;
+  schedule_date: string;
+  logo_url: string;
 }
 
 // good
@@ -85,85 +85,114 @@ function getCutOffTime(departureTime: string): string {
   });
 }
 
+const getFerryDateTime = (ferry: FerryItem) =>
+  new Date(`${ferry.schedule_date}T${convertTo24Hour(ferry.departure_time)}`);
+
 export function LiveScheduleTable({
   selectedDate,
   onDateChange,
   route,
   onRouteChange,
 }: LiveScheduleTableProps) {
-  const ferryData = route.to === "Anguilla" ? toAnguillaData : fromAnguillaData;
+  const [ferryData, setFerryData] = useState<FerryItem[]>([]);
   const [upcomingFerries, setUpcomingFerries] = useState<FerryItem[]>([]);
   const [pastFerries, setPastFerries] = useState<FerryItem[]>([]);
   const [sailingFerry, setSailingFerry] = useState<FerryItem | null>(null);
   const [selectedFerry, setSelectedFerry] = useState<FerryItem | null>(null);
 
+  // ✅ Add this right here — only once
+  const now = new Date();
+  const localNow = new Date(
+    now.toLocaleString("en-US", { timeZone: "America/Puerto_Rico" })
+  );
+
+  //ferrydata
+
   useEffect(() => {
+    const fetchFerryData = async () => {
+      const { data, error } = await supabase
+        .from("ferry_schedules")
+        .select("*")
+        .eq(
+          "direction",
+          route.to === "Anguilla" ? "to-anguilla" : "from-anguilla"
+        )
+        .eq("schedule_date", selectedDate.toISOString().split("T")[0])
+        .order("departure_time", { ascending: true });
+
+      if (error) {
+        console.error("Supabase fetch error:", error);
+        return;
+      }
+
+      setFerryData(data || []);
+    };
+
+    fetchFerryData();
+  }, [route.to, selectedDate]);
+
+  // upcoming & past ferries
+  useEffect(() => {
+    const now = new Date();
     const localNow = new Date(
-      new Date().toLocaleString("en-US", { timeZone: "America/Puerto_Rico" })
+      now.toLocaleString("en-US", { timeZone: "America/Puerto_Rico" })
     );
 
     const upcoming = ferryData
       .filter((ferry) => {
-        const [month, day, year] = ferry.date.split("-");
-        const ferryDateTime = new Date(
-          `20${year}-${month}-${day}T${convertTo24Hour(ferry.departureTime)}`
-        );
+        const ferryDateTime = getFerryDateTime(ferry);
         return (
           ferry.direction ===
             (route.to === "Anguilla" ? "to-anguilla" : "from-anguilla") &&
-          ferryDateTime.toDateString() === selectedDate.toDateString() &&
+          ferry.schedule_date === selectedDate.toISOString().split("T")[0] &&
           ferryDateTime >= localNow
         );
       })
       .sort((a, b) => {
         const dateA = new Date(
-          `20${a.date.split("-")[2]}-${a.date.split("-")[0]}-${
-            a.date.split("-")[1]
-          }T${convertTo24Hour(a.departureTime)}`
+          `${a.schedule_date}T${convertTo24Hour(a.departure_time)}`
         );
         const dateB = new Date(
-          `20${b.date.split("-")[2]}-${b.date.split("-")[0]}-${
-            b.date.split("-")[1]
-          }T${convertTo24Hour(b.departureTime)}`
+          `${b.schedule_date}T${convertTo24Hour(b.departure_time)}`
         );
         return dateA.getTime() - dateB.getTime();
       });
 
     const past = ferryData
       .filter((ferry) => {
-        const [month, day, year] = ferry.date.split("-");
-        const ferryDateTime = new Date(
-          `20${year}-${month}-${day}T${convertTo24Hour(ferry.departureTime)}`
-        );
+        const ferryDateTime = getFerryDateTime(ferry);
+
         return (
           ferry.direction ===
             (route.to === "Anguilla" ? "to-anguilla" : "from-anguilla") &&
-          ferryDateTime.toDateString() === selectedDate.toDateString() &&
+          ferry.schedule_date === selectedDate.toISOString().split("T")[0] &&
           ferryDateTime < localNow
         );
       })
       .sort((a, b) => {
         const dateA = new Date(
-          `20${a.date.split("-")[2]}-${a.date.split("-")[0]}-${
-            a.date.split("-")[1]
-          }T${convertTo24Hour(a.departureTime)}`
+          `${a.schedule_date}T${convertTo24Hour(a.departure_time)}`
         );
         const dateB = new Date(
-          `20${b.date.split("-")[2]}-${b.date.split("-")[0]}-${
-            b.date.split("-")[1]
-          }T${convertTo24Hour(b.departureTime)}`
+          `${b.schedule_date}T${convertTo24Hour(b.departure_time)}`
         );
         return dateB.getTime() - dateA.getTime();
       });
 
     setUpcomingFerries(upcoming);
+    console.log("✅ Past Ferries Count", past.length);
+    console.log(
+      "🛳️ Past ferries:",
+      past.map((f) => f.departure_time)
+    );
     setPastFerries(past);
   }, [route.to, selectedDate, ferryData]);
 
+  // sailing ferries
   useEffect(() => {
     const now = new Date().getTime();
     const sailing = pastFerries.find((ferry) => {
-      const [hours, minutes] = convertTo24Hour(ferry.departureTime)
+      const [hours, minutes] = convertTo24Hour(ferry.departure_time)
         .split(":")
         .map(Number);
       const departure = new Date();
@@ -180,7 +209,7 @@ export function LiveScheduleTable({
 
   const cutoffDate = new Date();
   if (nextDeparture) {
-    const [hours, minutes] = convertTo24Hour(nextDeparture.departureTime)
+    const [hours, minutes] = convertTo24Hour(nextDeparture.departure_time)
       .split(":")
       .map(Number);
     cutoffDate.setHours(hours);
@@ -199,8 +228,7 @@ export function LiveScheduleTable({
     fallbackNextFerry =
       ferryData
         .filter((ferry) => {
-          const [month, day, year] = ferry.date.split("-");
-          const ferryDate = new Date(`20${year}-${month}-${day}`);
+          const ferryDate = new Date(ferry.schedule_date);
           return (
             ferry.direction ===
               (route.to === "Anguilla" ? "to-anguilla" : "from-anguilla") &&
@@ -208,8 +236,8 @@ export function LiveScheduleTable({
           );
         })
         .sort((a, b) => {
-          const timeA = convertTo24Hour(a.departureTime);
-          const timeB = convertTo24Hour(b.departureTime);
+          const timeA = convertTo24Hour(a.departure_time);
+          const timeB = convertTo24Hour(b.departure_time);
           return (
             new Date(`1970-01-01T${timeA}`).getTime() -
             new Date(`1970-01-01T${timeB}`).getTime()
@@ -217,7 +245,7 @@ export function LiveScheduleTable({
         })[0] || null;
   }
 
-  const timeLeft = useCountdown(nextDeparture?.departureTime || null);
+  const timeLeft = useCountdown(nextDeparture?.departure_time || null);
 
   let currentFerry: FerryItem | null = null;
 
@@ -225,7 +253,7 @@ export function LiveScheduleTable({
     currentFerry = sailingFerry;
   } else if (pastFerries.length > 0) {
     const candidate = pastFerries[0];
-    const [hours, minutes] = convertTo24Hour(candidate.departureTime)
+    const [hours, minutes] = convertTo24Hour(candidate.departure_time)
       .split(":")
       .map(Number);
     const departure = new Date();
@@ -246,7 +274,7 @@ export function LiveScheduleTable({
   let eta = "";
   if (currentFerry) {
     const [departureHour, departureMinute] = convertTo24Hour(
-      currentFerry.departureTime
+      currentFerry.departure_time
     )
       .split(":")
       .map(Number);
@@ -264,9 +292,9 @@ export function LiveScheduleTable({
   const sailingProgress = sailingFerry
     ? ((parseInt(sailingFerry.duration) * 60 -
         getSecondsUntilArrival(
-          sailingFerry.departureTime,
+          sailingFerry.departure_time,
           sailingFerry.duration,
-          sailingFerry.date
+          sailingFerry.schedule_date
         )) /
         (parseInt(sailingFerry.duration) * 60)) *
       100
@@ -298,57 +326,52 @@ export function LiveScheduleTable({
   };
 
   useEffect(() => {
-    const now = new Date();
-    const localNow = new Date(
-      now.toLocaleString("en-US", { timeZone: "America/Puerto_Rico" })
-    );
-
     const filteredUpcoming = ferryData
       .filter((ferry) => {
-        const [month, day, year] = ferry.date.split("-");
         const ferryDateTime = new Date(
-          `20${year}-${month}-${day}T${convertTo24Hour(ferry.departureTime)}`
+          `${ferry.schedule_date}T${ferry.departure_time}`
         );
+
         return (
           ferry.direction ===
             (route.to === "Anguilla" ? "to-anguilla" : "from-anguilla") &&
-          ferryDateTime.toDateString() === selectedDate.toDateString() &&
+          ferry.schedule_date === selectedDate.toISOString().split("T")[0] &&
           ferryDateTime >= localNow
         );
       })
       .sort((a, b) => {
-        const [monthA, dayA, yearA] = a.date.split("-");
-        const [monthB, dayB, yearB] = b.date.split("-");
+        const [monthA, dayA, yearA] = a.schedule_date.split("-");
+        const [monthB, dayB, yearB] = b.schedule_date.split("-");
         const dateA = new Date(
-          `20${yearA}-${monthA}-${dayA}T${convertTo24Hour(a.departureTime)}`
+          `20${yearA}-${monthA}-${dayA}T${convertTo24Hour(a.departure_time)}`
         );
         const dateB = new Date(
-          `20${yearB}-${monthB}-${dayB}T${convertTo24Hour(b.departureTime)}`
+          `20${yearB}-${monthB}-${dayB}T${convertTo24Hour(b.departure_time)}`
         );
         return dateA.getTime() - dateB.getTime();
       });
 
     const filteredPast = ferryData
       .filter((ferry) => {
-        const [month, day, year] = ferry.date.split("-");
         const ferryDateTime = new Date(
-          `20${year}-${month}-${day}T${convertTo24Hour(ferry.departureTime)}`
+          `${ferry.schedule_date}T${ferry.departure_time}`
         );
+
         return (
           ferry.direction ===
             (route.to === "Anguilla" ? "to-anguilla" : "from-anguilla") &&
-          ferryDateTime.toDateString() === selectedDate.toDateString() &&
+          ferry.schedule_date === selectedDate.toISOString().split("T")[0] &&
           ferryDateTime < localNow
         );
       })
       .sort((a, b) => {
-        const [monthA, dayA, yearA] = a.date.split("-");
-        const [monthB, dayB, yearB] = b.date.split("-");
+        const [monthA, dayA, yearA] = a.schedule_date.split("-");
+        const [monthB, dayB, yearB] = b.schedule_date.split("-");
         const dateA = new Date(
-          `20${yearA}-${monthA}-${dayA}T${convertTo24Hour(a.departureTime)}`
+          `20${yearA}-${monthA}-${dayA}T${convertTo24Hour(a.departure_time)}`
         );
         const dateB = new Date(
-          `20${yearB}-${monthB}-${dayB}T${convertTo24Hour(b.departureTime)}`
+          `20${yearB}-${monthB}-${dayB}T${convertTo24Hour(b.departure_time)}`
         );
         return dateB.getTime() - dateA.getTime();
       });
@@ -360,7 +383,7 @@ export function LiveScheduleTable({
   useEffect(() => {
     const now = new Date().getTime();
     const live = pastFerries.find((ferry) => {
-      const [hours, minutes] = convertTo24Hour(ferry.departureTime)
+      const [hours, minutes] = convertTo24Hour(ferry.departure_time)
         .split(":")
         .map(Number);
       const departure = new Date();
@@ -375,9 +398,9 @@ export function LiveScheduleTable({
       console.log("🛳️ Sailing Ferry Found:", {
         id: live.id,
         operator: live.operator,
-        departureTime: live.departureTime,
+        departureTime: live.departure_time,
         duration: live.duration,
-        date: live.date,
+        date: live.schedule_date,
       });
     } else {
       console.log("🚫 No Sailing Ferry Found");
@@ -395,13 +418,8 @@ export function LiveScheduleTable({
     | "NOW ARRIVING"
     | "ARRIVED" = "DOCKED";
 
-  const now = new Date();
-  const localNow = new Date(
-    now.toLocaleString("en-US", { timeZone: "America/Puerto_Rico" })
-  );
-
   if (sailingFerry) {
-    const [hours, minutes] = convertTo24Hour(sailingFerry.departureTime)
+    const [hours, minutes] = convertTo24Hour(sailingFerry.departure_time)
       .split(":")
       .map(Number);
     const ferryDeparture = new Date(localNow);
@@ -435,7 +453,7 @@ export function LiveScheduleTable({
       ferryStatus = "DOCKED";
     }
   } else if (nextDeparture) {
-    const [hours, minutes] = convertTo24Hour(nextDeparture.departureTime)
+    const [hours, minutes] = convertTo24Hour(nextDeparture.departure_time)
       .split(":")
       .map(Number);
     const nextDep = new Date(localNow);
@@ -458,7 +476,7 @@ export function LiveScheduleTable({
     currentFerry = sailingFerry;
   } else if (pastFerries.length > 0) {
     const candidate = pastFerries[0]; // most recent one
-    const [hours, minutes] = convertTo24Hour(candidate.departureTime)
+    const [hours, minutes] = convertTo24Hour(candidate.departure_time)
       .split(":")
       .map(Number);
     const departure = new Date(localNow);
@@ -591,7 +609,7 @@ export function LiveScheduleTable({
                   <div className="text-3xl font-extrabold text-white leading-tight mt-1 whitespace-nowrap">
                     {noMoreFerriesToday
                       ? "CLOSED"
-                      : getCutOffTime(nextDeparture?.departureTime || "00:00")}
+                      : getCutOffTime(nextDeparture?.departure_time || "00:00")}
                   </div>
                 </div>
               </div>
@@ -604,7 +622,7 @@ export function LiveScheduleTable({
                   </span>
                   <div className="text-3xl font-extrabold text-white leading-tight mt-1 whitespace-nowrap">
                     {(noMoreFerriesToday ? fallbackNextFerry : nextDeparture)
-                      ?.departureTime || "--:--"}
+                      ?.departure_time || "--:--"}
                   </div>
                 </div>
               </div>
@@ -703,14 +721,14 @@ export function LiveScheduleTable({
                       key={ferry.id}
                       className="hover:bg-[#1E2A3B] transition-colors"
                     >
-                      <td className="py-4">{ferry.departureTime}</td>
+                      <td className="py-4">{ferry.departure_time}</td>
                       <td className="py-4">
-                        {ferry.departurePort.split(",")[0]}
+                        {ferry.departure_port.split(",")[0]}
                       </td>
                       <td className="py-4">
                         <div className="flex items-center gap-3">
                           <Image
-                            src={ferry.logoUrl}
+                            src={ferry.logo_url}
                             alt={`${ferry.operator} logo`}
                             width={32}
                             height={32}
@@ -721,10 +739,10 @@ export function LiveScheduleTable({
                       </td>
                       <td className="py-4">{ferry.duration}</td>
                       <td className="py-4">
-                        {getArrivalTime(ferry.departureTime, ferry.duration)}
+                        {getArrivalTime(ferry.departure_time, ferry.duration)}
                       </td>
                       <td className="py-4">
-                        {ferry.arrivalPort.split(",")[0]}
+                        {ferry.arrival_port.split(",")[0]}
                       </td>
                       <td className="py-4">
                         <span
@@ -794,7 +812,7 @@ export function LiveScheduleTable({
                 <tbody className="divide-y divide-gray-800">
                   {pastFerries.map((ferry) => {
                     const [hours, minutes] = convertTo24Hour(
-                      ferry.departureTime
+                      ferry.departure_time
                     )
                       .split(":")
                       .map(Number);
@@ -832,14 +850,14 @@ export function LiveScheduleTable({
                         key={`past-${ferry.id}`}
                         className="hover:bg-[#1E2A3B] transition-colors"
                       >
-                        <td className="py-4">{ferry.departureTime}</td>
+                        <td className="py-4">{ferry.departure_time}</td>
                         <td className="py-4">
-                          {ferry.departurePort.split(",")[0]}
+                          {ferry.departure_port.split(",")[0]}
                         </td>
                         <td className="py-4">
                           <div className="flex items-center gap-3">
                             <Image
-                              src={ferry.logoUrl}
+                              src={ferry.logo_url}
                               alt={`${ferry.operator} logo`}
                               width={32}
                               height={32}
@@ -850,10 +868,10 @@ export function LiveScheduleTable({
                         </td>
                         <td className="py-4">{ferry.duration}</td>
                         <td className="py-4">
-                          {getArrivalTime(ferry.departureTime, ferry.duration)}
+                          {getArrivalTime(ferry.departure_time, ferry.duration)}
                         </td>
                         <td className="py-4">
-                          {ferry.arrivalPort.split(",")[0]}
+                          {ferry.arrival_port.split(",")[0]}
                         </td>
                         <td className="py-4">
                           <span
