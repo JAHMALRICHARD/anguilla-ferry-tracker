@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import Header from "@/components/Header";
+import { Header } from "@/components/Header";
 import { HeroSection } from "@/components/HeroSection";
 import { TravelAlertBanner } from "@/components/TravelAlertBanner";
 import { LiveScheduleTable } from "@/components/LiveScheduleTable";

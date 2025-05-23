@@ -25,7 +25,7 @@ type AppUser = {
   role: "admin" | "operator" | "public";
 };
 
-export default function Header() {
+export function Header() {
   const { theme, toggleTheme } = useThemeContext();
   const [user, setUser] = useState<AppUser | null>(null);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
