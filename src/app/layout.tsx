@@ -19,7 +19,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.className} bg-background text-foreground`}>
         <ThemeProvider>
-          <div className="min-h-screen p-6">{children}</div>
+          <div className="min-h-screen">{children}</div>
         </ThemeProvider>
       </body>
     </html>
