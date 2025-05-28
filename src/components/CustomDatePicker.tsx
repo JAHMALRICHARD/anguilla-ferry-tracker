@@ -1,18 +1,19 @@
-'use client'
+"use client";
 
-import React, { useState, useRef } from 'react'
-import { CalendarIcon } from 'lucide-react'
-import DatePicker from 'react-datepicker'
+import React, { useRef, useState } from "react";
+import { CalendarIcon } from "lucide-react";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 export function CustomDatePicker({
   selectedDate,
-  onDateChange
+  onDateChange,
 }: {
-  selectedDate: Date
-  onDateChange: (date: Date) => void
+  selectedDate: Date;
+  onDateChange: (date: Date) => void;
 }) {
-  const [isOpen, setIsOpen] = useState(false)
-  const ref = useRef(null)
+  const [isOpen, setIsOpen] = useState(false);
+  const ref = useRef(null);
 
   return (
     <div
@@ -24,20 +25,20 @@ export function CustomDatePicker({
         selected={selectedDate}
         onChange={(date) => {
           if (date) {
-            onDateChange(date)
-            setIsOpen(false)
+            onDateChange(date);
+            setIsOpen(false);
           }
         }}
         open={isOpen}
         onClickOutside={() => setIsOpen(false)}
         dateFormat="MMMM d, yyyy"
         readOnly
-        className="bg-transparent text-white outline-none w-36"
+        className="bg-transparent text-white outline-none w-36 cursor-pointer"
         calendarClassName="bg-[#1E2A3B] text-white rounded-lg shadow-md border border-gray-700 w-auto"
         popperPlacement="bottom-start"
         popperClassName="z-50"
         ref={ref}
       />
     </div>
-  )
+  );
 }
