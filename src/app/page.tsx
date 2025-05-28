@@ -11,24 +11,30 @@ import useSWR from "swr";
 import FeatureImageAndWeather from "@/components/FeatureImageAndWeather";
 import TimeAndCountdowns from "@/components/TimeAndCountdowns";
 import RouteDateAndSearchBar from "@/components/RouteDateAndSearchBar";
+import { getFerriesForRoute } from "@/components/RouteDateAndSearchBar"; // wherever defined
 import UpcomingAndPastFerries from "@/components/UpcomingAndPastFerries";
-import { useLiveScheduleData } from "@/hooks/useLiveScheduleData";
+import { FerryItem, useLiveScheduleData } from "@/hooks/useLiveScheduleData";
 
 export default function HomePage() {
   const [selectedDate, setSelectedDate] = useState(new Date());
-
   const [route, setRoute] = useState({
-    from: "Anguilla",
-    to: "St. Martin",
+    from: "St. Martin",
+    to: "To Anguilla - via Marigot",
   });
+
+  const { upcomingFerries, pastFerries } = useLiveScheduleData(
+    selectedDate,
+    route
+  );
+
+  const handleDetails = (ferry: FerryItem) => {
+    console.log("Selected ferry:", ferry);
+  };
 
   const { data: weatherData } = useSWR(
     "/api/weather?q=Blowing Point, Anguilla",
     (url: string) => fetch(url).then((res) => res.json())
   );
-
-  const { upcomingFerries, pastFerries, setSelectedFerry, localNow } =
-    useLiveScheduleData(selectedDate, route);
 
   return (
     <div className="min-h-screen bg-[#0B0F19] text-white">
@@ -59,10 +65,11 @@ export default function HomePage() {
           onRouteChange={setRoute} // Ensure prop exists in component
         />
         <UpcomingAndPastFerries
-          upcomingFerries={upcomingFerries}
+          upcomingFerries={getFerriesForRoute(route.to, upcomingFerries)}
           pastFerries={pastFerries}
-          localNow={localNow}
-          onDetails={(ferry) => setSelectedFerry(ferry)}
+          localNow={new Date()}
+          onDetails={handleDetails}
+          route={route}
         />
 
         <InfoCards />
