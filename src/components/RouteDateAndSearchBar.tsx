@@ -28,9 +28,7 @@ export default function RouteDateAndSearchBar({
         className="bg-[#1e293b] text-white rounded-md px-4 py-2 text-sm outline-none"
       >
         <option>To St. Martin</option>
-        <option>To St. Maarten</option>
         <option>To Anguilla - via Marigot</option>
-        <option>To Anguilla - via PJIA</option>
       </select>
 
       {/* Calendar Picker + Route Info */}
