@@ -8,7 +8,7 @@ export interface FerryItem {
   price: string;
   duration: string;
   vessel_name?: string;
-  status: string;
+  status: "on-time" | "delayed" | "cancelled" | "scheduled";
   direction: string;
   schedule_date: string;
   logo_url: string;
