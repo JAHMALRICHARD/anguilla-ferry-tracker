@@ -19,26 +19,44 @@ export interface FerryItem {
   logo_url: string;
 }
 
+// ✅ ADD THIS FUNCTION RIGHT HERE
+function buildDateWithCurrentPRTime(selectedDate: Date): Date {
+  const now = new Date();
+  const isToday = now.toDateString() === selectedDate.toDateString();
+
+  if (isToday) {
+    return new Date(
+      new Date().toLocaleString("en-US", {
+        timeZone: "America/Puerto_Rico",
+      })
+    );
+  } else {
+    return new Date(
+      selectedDate.getFullYear(),
+      selectedDate.getMonth(),
+      selectedDate.getDate(),
+      0,
+      0,
+      0
+    );
+  }
+}
+
 export function useLiveScheduleData(selectedDate: Date) {
   const [allFerries, setAllFerries] = useState<FerryItem[]>([]);
   const [upcomingFerries, setUpcomingFerries] = useState<FerryItem[]>([]);
   const [pastFerries, setPastFerries] = useState<FerryItem[]>([]);
   const [selectedFerry, setSelectedFerry] = useState<FerryItem | null>(null);
 
-  const now = new Date();
-  const localNow = new Date(
-    now.toLocaleString("en-US", { timeZone: "America/Puerto_Rico" })
+  // ✅ Use it here to set initial localNow
+  const [localNow, setLocalNow] = useState<Date>(() =>
+    buildDateWithCurrentPRTime(selectedDate)
   );
 
-  const getFerryDateTime = (ferry: FerryItem): Date => {
-    const [hour, minute, second] = ferry.departure_time
-      .split(":")
-      .map((part) => parseInt(part));
-    const [year, month, day] = ferry.schedule_date
-      .split("-")
-      .map((part) => parseInt(part));
-    return new Date(year, month - 1, day, hour, minute, second || 0);
-  };
+  // ✅ Update localNow on date change
+  useEffect(() => {
+    setLocalNow(buildDateWithCurrentPRTime(selectedDate));
+  }, [selectedDate]);
 
   useEffect(() => {
     const fetchFerryData = async () => {
@@ -60,6 +78,16 @@ export function useLiveScheduleData(selectedDate: Date) {
   }, [selectedDate]);
 
   useEffect(() => {
+    const getFerryDateTime = (ferry: FerryItem): Date => {
+      const [hour, minute, second] = ferry.departure_time
+        .split(":")
+        .map((part) => parseInt(part));
+      const [year, month, day] = ferry.schedule_date
+        .split("-")
+        .map((part) => parseInt(part));
+      return new Date(year, month - 1, day, hour, minute, second || 0);
+    };
+
     const upcoming = allFerries.filter(
       (ferry) => getFerryDateTime(ferry) >= localNow
     );
@@ -69,7 +97,7 @@ export function useLiveScheduleData(selectedDate: Date) {
 
     setUpcomingFerries(upcoming);
     setPastFerries(past);
-  }, [allFerries]);
+  }, [allFerries, localNow]);
 
   return {
     allFerries,
