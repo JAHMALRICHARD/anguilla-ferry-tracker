@@ -4,12 +4,11 @@ import React from "react";
 import { ScheduledFerriesTable } from "../components/ScheduledFerriesTable";
 import { SailedFerriesTable } from "../components/SailedFerriesTable";
 import { FerryItem } from "../components/FerryProps";
-import { getFerriesForRoute } from "../components/RouteDateAndSearchBar";
 
 interface UpcomingAndPastFerriesProps {
   upcomingFerries: FerryItem[];
   pastFerries: FerryItem[];
-  route: { from: string; to: string }; // ✅ added route
+  route: { from: string; to: string };
   localNow: Date;
   onDetails: (ferry: FerryItem) => void;
 }
@@ -17,13 +16,9 @@ interface UpcomingAndPastFerriesProps {
 export default function UpcomingAndPastFerries({
   upcomingFerries,
   pastFerries,
-  route,
   localNow,
   onDetails,
 }: UpcomingAndPastFerriesProps) {
-  // ✅ Apply route-based logic to adjust display
-  const adjustedUpcomingFerries = getFerriesForRoute(route.to, upcomingFerries);
-
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mt-8">
       {/* Scheduled Ferries */}
@@ -33,7 +28,7 @@ export default function UpcomingAndPastFerries({
         </h3>
         <div className="rounded-xl overflow-x-auto">
           <ScheduledFerriesTable
-            ferries={adjustedUpcomingFerries}
+            ferries={upcomingFerries}
             onDetails={onDetails}
           />
         </div>

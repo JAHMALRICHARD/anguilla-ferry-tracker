@@ -8,21 +8,18 @@ export interface FerryItem {
   operator: string;
   departure_port: string;
   arrival_port: string;
-  departure_time: string; // "HH:mm:ss"
+  departure_time: string;
   arrival_time?: string;
   price: string;
-  duration: string; // "HH:mm"
+  duration: string;
   vessel_name?: string;
   status: string;
   direction: string;
-  schedule_date: string; // "YYYY-MM-DD"
+  schedule_date: string;
   logo_url: string;
 }
 
-export function useLiveScheduleData(
-  selectedDate: Date,
-  route: { from: string; to: string }
-) {
+export function useLiveScheduleData(selectedDate: Date) {
   const [allFerries, setAllFerries] = useState<FerryItem[]>([]);
   const [upcomingFerries, setUpcomingFerries] = useState<FerryItem[]>([]);
   const [pastFerries, setPastFerries] = useState<FerryItem[]>([]);
@@ -48,10 +45,6 @@ export function useLiveScheduleData(
       const { data, error } = await supabase
         .from("ferry_schedules")
         .select("*")
-        .eq(
-          "direction",
-          route.to === "Anguilla" ? "to-anguilla" : "from-anguilla"
-        )
         .eq("schedule_date", selectedDate.toISOString().split("T")[0])
         .order("departure_time", { ascending: true });
 
@@ -64,7 +57,7 @@ export function useLiveScheduleData(
     };
 
     fetchFerryData();
-  }, [route.to, selectedDate]);
+  }, [selectedDate]);
 
   useEffect(() => {
     const upcoming = allFerries.filter(

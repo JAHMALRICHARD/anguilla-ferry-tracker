@@ -27,11 +27,13 @@ export default function RouteDateAndSearchBar({
         onChange={(e) => onRouteChange({ ...route, to: e.target.value })}
         className="bg-[#1e293b] text-white rounded-md px-4 py-2 text-sm outline-none"
       >
-        <option>To St. Martin</option>
-        <option>To Anguilla - via Marigot</option>
+        <option value="To St. Martin">To St. Martin</option>
+        <option value="To Anguilla - via Marigot">
+          To Anguilla - via Marigot
+        </option>
       </select>
 
-      {/* Calendar Picker + Route Info */}
+      {/* Calendar Picker */}
       <div className="flex items-center gap-4 flex-wrap">
         <CustomDatePicker
           selectedDate={selectedDate}
@@ -66,7 +68,7 @@ export default function RouteDateAndSearchBar({
         </button>
       </div>
 
-      {/* Search Field */}
+      {/* Search Field (UI only unless wired) */}
       <div className="relative flex-1 min-w-[160px]">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
         <input
@@ -76,7 +78,7 @@ export default function RouteDateAndSearchBar({
         />
       </div>
 
-      {/* Status Filter */}
+      {/* Status Filter (static for now) */}
       <select className="bg-[#1e293b] text-white rounded-md px-4 py-2 text-sm outline-none">
         <option>Status</option>
         <option>On Time</option>
@@ -90,38 +92,4 @@ export default function RouteDateAndSearchBar({
       </button>
     </div>
   );
-}
-
-// Inline getFerriesForRoute helper function
-import { FerryItem } from "./FerryProps";
-
-export function getFerriesForRoute(
-  route: string,
-  ferries: FerryItem[]
-): FerryItem[] {
-  if (route === "To Anguilla - via Marigot") {
-    return ferries.map((ferry) => {
-      const [depHour, depMin] = ferry.departure_time.split(":").map(Number);
-      const [durHour, durMin] = ferry.duration.split(":").map(Number);
-
-      const etaDate = new Date();
-      etaDate.setHours(depHour + durHour);
-      etaDate.setMinutes(depMin + durMin);
-
-      const returnDepHour = etaDate.getHours();
-      const returnDepMin = etaDate.getMinutes();
-      const returnDepTime = `${returnDepHour
-        .toString()
-        .padStart(2, "0")}:${returnDepMin.toString().padStart(2, "0")}`;
-
-      return {
-        ...ferry,
-        departure_time: returnDepTime,
-        departure_port: ferry.arrival_port,
-        arrival_port: ferry.departure_port,
-      };
-    });
-  }
-
-  return ferries;
 }

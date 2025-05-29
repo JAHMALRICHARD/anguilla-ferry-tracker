@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { FerryItem } from "./FerryProps";
 import { formatTime12Hour } from "@/helpers/formatTime12Hour";
 
@@ -9,14 +9,42 @@ interface SailedFerriesTableProps {
   localNow: Date;
 }
 
-export function SailedFerriesTable({
-  ferries,
-  localNow,
-}: SailedFerriesTableProps) {
+export function SailedFerriesTable({ ferries }: SailedFerriesTableProps) {
+  const [localNow, setLocalNow] = useState(new Date());
+
+  // ⏱ Auto-update time every 60 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setLocalNow(new Date());
+    }, 60000); // every 1 minute
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const ferriesWithETA = ferries
+    .map((ferry) => {
+      const [depHour, depMin] = ferry.departure_time
+        ?.split(":")
+        .map(Number) || [0, 0];
+      const [durHour, durMin] = ferry.duration?.split(":").map(Number) || [
+        0, 0,
+      ];
+
+      const depDate = new Date(localNow);
+      depDate.setHours(depHour, depMin, 0, 0);
+
+      const etaDate = new Date(
+        depDate.getTime() + (durHour * 60 + durMin) * 60000
+      );
+
+      return { ...ferry, etaDate };
+    })
+    .sort((a, b) => b.etaDate.getTime() - a.etaDate.getTime());
+
   return (
     <div className="p-0">
       <div className="overflow-x-auto">
-        {ferries.length > 0 ? (
+        {ferriesWithETA.length > 0 ? (
           <table className="w-full text-sm text-white">
             <thead className="text-left text-gray-400 border-b border-gray-700">
               <tr>
@@ -29,44 +57,16 @@ export function SailedFerriesTable({
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-800">
-              {ferries.map((ferry) => {
+              {ferriesWithETA.map((ferry) => {
                 const departure = ferry.departure_time
                   ? formatTime12Hour(ferry.departure_time)
                   : "—";
 
-                let eta = "—";
-                let hasSailed = false;
+                const eta = formatTime12Hour(
+                  ferry.etaDate.toTimeString().substring(0, 5)
+                );
 
-                try {
-                  if (ferry.departure_time && ferry.duration && localNow) {
-                    const [depHour, depMin] = ferry.departure_time
-                      .split(":")
-                      .map(Number);
-                    const depDate = new Date(localNow);
-                    depDate.setHours(depHour, depMin, 0, 0);
-
-                    const [durHour, durMin] = ferry.duration
-                      .split(":")
-                      .map(Number);
-                    const etaDate = new Date(
-                      depDate.getTime() + (durHour * 60 + durMin) * 60000
-                    );
-
-                    eta = formatTime12Hour(
-                      etaDate.toTimeString().substring(0, 5)
-                    );
-
-                    // Ensure both dates are valid
-                    if (
-                      !isNaN(etaDate.getTime()) &&
-                      !isNaN(localNow.getTime())
-                    ) {
-                      hasSailed = etaDate.getTime() <= localNow.getTime();
-                    }
-                  }
-                } catch (error) {
-                  console.error("Error calculating ETA or hasSailed:", error);
-                }
+                const hasSailed = ferry.etaDate.getTime() <= localNow.getTime();
 
                 return (
                   <tr key={ferry.id} className="hover:bg-[#1C2533] transition">

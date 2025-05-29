@@ -11,9 +11,9 @@ import useSWR from "swr";
 import FeatureImageAndWeather from "@/components/FeatureImageAndWeather";
 import TimeAndCountdowns from "@/components/TimeAndCountdowns";
 import RouteDateAndSearchBar from "@/components/RouteDateAndSearchBar";
-import { getFerriesForRoute } from "@/components/RouteDateAndSearchBar"; // wherever defined
 import UpcomingAndPastFerries from "@/components/UpcomingAndPastFerries";
-import { FerryItem, useLiveScheduleData } from "@/hooks/useLiveScheduleData";
+import { getFerriesForRoute } from "@/utils/getFerriesForRoute";
+import { useLiveScheduleData, FerryItem } from "@/hooks/useLiveScheduleData";
 
 export default function HomePage() {
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -22,13 +22,30 @@ export default function HomePage() {
     to: "To Anguilla - via Marigot",
   });
 
-  const { upcomingFerries, pastFerries } = useLiveScheduleData(
-    selectedDate,
-    route
-  );
+  const {
+    allFerries = [],
+    localNow,
+    setSelectedFerry,
+  } = useLiveScheduleData(selectedDate);
+
+  const fullRouteFerries = getFerriesForRoute(route.to, allFerries);
+
+  const upcomingFerries = fullRouteFerries.filter((ferry) => {
+    const [hour, minute] = ferry.departure_time.split(":").map(Number);
+    const depTime = new Date(localNow);
+    depTime.setHours(hour, minute, 0, 0);
+    return depTime >= localNow;
+  });
+
+  const pastFerries = fullRouteFerries.filter((ferry) => {
+    const [hour, minute] = ferry.departure_time.split(":").map(Number);
+    const depTime = new Date(localNow);
+    depTime.setHours(hour, minute, 0, 0);
+    return depTime < localNow;
+  });
 
   const handleDetails = (ferry: FerryItem) => {
-    console.log("Selected ferry:", ferry);
+    setSelectedFerry(ferry);
   };
 
   const { data: weatherData } = useSWR(
@@ -62,12 +79,13 @@ export default function HomePage() {
           selectedDate={selectedDate}
           onDateChange={setSelectedDate}
           route={route}
-          onRouteChange={setRoute} // Ensure prop exists in component
+          onRouteChange={setRoute}
         />
+
         <UpcomingAndPastFerries
-          upcomingFerries={getFerriesForRoute(route.to, upcomingFerries)}
+          upcomingFerries={upcomingFerries}
           pastFerries={pastFerries}
-          localNow={new Date()}
+          localNow={localNow}
           onDetails={handleDetails}
           route={route}
         />
