@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
-import { useThemeContext } from "@/components/ThemeProvider";
+import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/utils/supabase";
 import {
@@ -13,11 +13,20 @@ import {
   User,
   Sun,
   Moon,
+  Menu,
   ChevronDown,
   LogOut,
   Edit,
-  Menu,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
+} from "@/components/ui/dropdown-menu";
 
 type AppUser = {
   id: string;
@@ -26,22 +35,21 @@ type AppUser = {
 };
 
 export function Header() {
-  const { theme, toggleTheme } = useThemeContext();
+  const { resolvedTheme, setTheme } = useTheme();
+  const toggleTheme = () =>
+    setTheme(resolvedTheme === "dark" ? "light" : "dark");
+
+  const [mounted, setMounted] = useState(false);
   const [user, setUser] = useState<AppUser | null>(null);
-  const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter();
 
-  const navigationItems = [
-    { name: "Home", icon: Home },
-    { name: "Schedule", icon: Calendar },
-    { name: "Track", icon: MapPin },
-    { name: "Alerts", icon: Bell },
-    { name: "Profile", icon: User },
-  ];
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const fetchUserRole = async (userId: string): Promise<AppUser["role"]> => {
     const { data, error } = await supabase
@@ -96,143 +104,125 @@ export function Header() {
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setUser(null);
-    setShowUserDropdown(false);
   };
 
-  const themeClasses =
-    theme === "dark"
-      ? "bg-slate-950 text-white border-slate-800"
-      : "bg-white text-slate-900 border-slate-200";
-
-  //const secondaryBg = theme === "dark" ? "bg-slate-800" : "bg-slate-100";
-  const hoverBg =
-    theme === "dark" ? "hover:bg-slate-800" : "hover:bg-slate-100";
-  const mutedText = theme === "dark" ? "text-slate-400" : "text-slate-600";
+  const navigationItems = [
+    { name: "Home", icon: Home },
+    { name: "Schedule", icon: Calendar },
+    { name: "Track", icon: MapPin },
+    { name: "Alerts", icon: Bell },
+    { name: "Profile", icon: User },
+  ];
 
   return (
-    <header className={`${themeClasses} border-b sticky top-0 z-50`}>
+    <header className="bg-background text-foreground border-b border-border sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-        {/* Logo */}
         <div className="text-xl font-bold">Ferry Tracker</div>
 
         {/* Desktop Nav */}
         <nav className="hidden md:flex gap-1">
           {navigationItems.map(({ name, icon: Icon }) => (
-            <button
+            <Button
               key={name}
-              className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium ${hoverBg} ${mutedText}`}
+              variant="ghost"
+              className="flex items-center gap-2 text-sm font-medium"
             >
               <Icon className="h-4 w-4" />
               {name}
-            </button>
+            </Button>
           ))}
         </nav>
 
         {/* Mobile Menu Button */}
         <div className="md:hidden">
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => setShowMobileMenu(!showMobileMenu)}
-            className={`p-2 rounded-md ${hoverBg}`}
           >
             <Menu className="h-5 w-5" />
-          </button>
+          </Button>
         </div>
 
         {/* Right Side */}
         <div className="flex items-center gap-2">
-          <button onClick={toggleTheme} className={`p-2 rounded-md ${hoverBg}`}>
-            {theme === "dark" ? (
-              <Sun className="h-5 w-5" />
-            ) : (
-              <Moon className="h-5 w-5" />
-            )}
-          </button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleTheme}
+            className="transition-transform duration-300 hover:rotate-12"
+          >
+            {mounted &&
+              (resolvedTheme === "dark" ? (
+                <Sun className="h-5 w-5 transition-all duration-300" />
+              ) : (
+                <Moon className="h-5 w-5 transition-all duration-300" />
+              ))}
+          </Button>
 
-          <button className={`p-2 rounded-md ${hoverBg} relative`}>
+          <Button variant="ghost" size="icon" className="relative">
             <Bell className="h-5 w-5" />
             <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
               3
             </span>
-          </button>
+          </Button>
 
           {user ? (
-            <div className="relative">
-              <button
-                onClick={() => setShowUserDropdown(!showUserDropdown)}
-                className={`flex items-center gap-2 p-2 rounded-md ${hoverBg}`}
-              >
-                <div className="w-8 h-8 bg-blue-500 rounded-full overflow-hidden">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="flex items-center gap-2 px-2 py-1"
+                >
                   <Image
                     src="/profile/jrichard-head-photo-mqa.jpg"
                     alt="Profile"
                     width={32}
                     height={32}
-                    className="object-cover rounded-full"
+                    className="rounded-full object-cover"
                   />
-                </div>
-                <div className="hidden lg:block text-left">
-                  <p className="text-sm font-medium">
-                    {user.email.split("@")[0]}
-                  </p>
-                  <p className={`text-xs ${mutedText}`}>{user.role}</p>
-                </div>
-                <ChevronDown className={`h-4 w-4 ${mutedText}`} />
-              </button>
-
-              {showUserDropdown && (
-                <div
-                  className={`absolute right-0 mt-2 w-56 ${themeClasses} border rounded-lg shadow-lg z-50`}
-                >
-                  <div className="px-3 py-2 border-b border-slate-700">
-                    <p className="text-sm font-medium">{user.email}</p>
-                    <p className={`text-xs ${mutedText}`}>{user.role}</p>
-                  </div>
-                  {user.role === "admin" && (
-                    <button
-                      onClick={() => router.push("/edit-schedule")}
-                      className={`w-full text-left px-3 py-2 text-sm ${hoverBg} flex items-center gap-2`}
-                    >
-                      <Edit className="h-4 w-4" />
-                      Edit Schedule
-                    </button>
-                  )}
-                  <button
-                    onClick={handleLogout}
-                    className={`w-full text-left px-3 py-2 text-sm ${hoverBg} flex items-center gap-2 text-red-500`}
+                  <ChevronDown className="w-4 h-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>{user.email}</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {user.role === "admin" && (
+                  <DropdownMenuItem
+                    onClick={() => router.push("/edit-schedule")}
                   >
-                    <LogOut className="h-4 w-4" />
-                    Logout
-                  </button>
-                </div>
-              )}
-            </div>
+                    <Edit className="w-4 h-4 mr-2" />
+                    Edit Schedule
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem
+                  onClick={handleLogout}
+                  className="text-red-500"
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           ) : (
-            <button
-              onClick={() => setIsLoginModalOpen(true)}
-              className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors"
-            >
-              Login
-            </button>
+            <Button onClick={() => setIsLoginModalOpen(true)}>Login</Button>
           )}
         </div>
       </div>
 
       {/* Mobile Menu */}
       {showMobileMenu && (
-        <div
-          className={`md:hidden border-t ${
-            theme === "dark" ? "border-slate-800" : "border-slate-200"
-          }`}
-        >
+        <div className="md:hidden border-t border-border">
           <div className="px-4 py-2 space-y-1">
             {navigationItems.map(({ name, icon: Icon }) => (
-              <button
+              <Button
                 key={name}
-                className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium ${hoverBg} ${mutedText}`}
+                variant="ghost"
+                className="w-full flex items-center gap-2 text-sm font-medium"
               >
                 <Icon className="h-4 w-4" />
                 {name}
-              </button>
+              </Button>
             ))}
           </div>
         </div>
@@ -241,9 +231,7 @@ export function Header() {
       {/* Login Modal */}
       {isLoginModalOpen && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-          <div
-            className={`${themeClasses} border p-6 rounded-lg shadow-xl w-full max-w-md mx-4`}
-          >
+          <div className="bg-background text-foreground border border-border p-6 rounded-lg shadow-xl w-full max-w-md mx-4">
             <h2 className="text-lg font-semibold mb-4">
               Login to Ferry Tracker
             </h2>
@@ -251,42 +239,25 @@ export function Header() {
               <input
                 type="email"
                 placeholder="Email"
-                className={`w-full px-3 py-2 rounded-md border ${
-                  theme === "dark"
-                    ? "bg-slate-800 border-slate-700 text-white"
-                    : "bg-white border-slate-300 text-slate-900"
-                } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                className="w-full px-3 py-2 rounded-md border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
               <input
                 type="password"
                 placeholder="Password"
-                className={`w-full px-3 py-2 rounded-md border ${
-                  theme === "dark"
-                    ? "bg-slate-800 border-slate-700 text-white"
-                    : "bg-white border-slate-300 text-slate-900"
-                } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                className="w-full px-3 py-2 rounded-md border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
               <div className="flex justify-end gap-2 pt-2">
-                <button
+                <Button
+                  variant="outline"
                   onClick={() => setIsLoginModalOpen(false)}
-                  className={`px-4 py-2 rounded-md border ${
-                    theme === "dark"
-                      ? "border-slate-700 hover:bg-slate-800"
-                      : "border-slate-300 hover:bg-slate-100"
-                  }`}
                 >
                   Cancel
-                </button>
-                <button
-                  onClick={handleLogin}
-                  className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors"
-                >
-                  Sign In
-                </button>
+                </Button>
+                <Button onClick={handleLogin}>Sign In</Button>
               </div>
             </div>
           </div>

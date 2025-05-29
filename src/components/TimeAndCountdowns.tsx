@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { FerryItem } from "./FerryProps";
+import { FerryItem } from "@/types/FerryItem"; // Make sure it's the unified type file
 import { formatTime12Hour } from "@/helpers/formatTime12Hour";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface TimeAndCountdownsProps {
   ferries: FerryItem[];
@@ -15,7 +16,6 @@ export default function TimeAndCountdowns({
 }: TimeAndCountdownsProps) {
   const [localTime, setLocalTime] = useState(new Date());
 
-  // ✅ Use actual local time, not selectedDate hybrid
   useEffect(() => {
     const interval = setInterval(() => {
       setLocalTime(new Date());
@@ -23,7 +23,6 @@ export default function TimeAndCountdowns({
     return () => clearInterval(interval);
   }, []);
 
-  // ✅ Normalize ferry data and calculate full departure Date
   const futureFerries = ferries
     .map((ferry) => {
       const [depHour, depMinute] = ferry.departure_time
@@ -45,56 +44,45 @@ export default function TimeAndCountdowns({
 
   const nextFerry = futureFerries.length > 0 ? futureFerries[0] : null;
 
-  // ✅ Calculate Cut-Off Time (5 mins before departure)
   const cutoffTime = nextFerry
     ? new Date(nextFerry.depDate.getTime() - 5 * 60 * 1000)
     : null;
 
+  const cardData = [
+    {
+      title: "Local Time",
+      value: formatTime12Hour(localTime.toTimeString().substring(0, 5)),
+    },
+    {
+      title: "Ferry Cut Off Time",
+      value: cutoffTime
+        ? formatTime12Hour(cutoffTime.toTimeString().substring(0, 5))
+        : "--:--",
+    },
+    {
+      title: "Next Departure Time",
+      value: nextFerry
+        ? formatTime12Hour(nextFerry.depDate.toTimeString().substring(0, 5))
+        : "--:--",
+    },
+    {
+      title: "Next Ferry Operator",
+      value: nextFerry ? nextFerry.operator : "--",
+    },
+  ];
+
   return (
     <div className="flex flex-wrap gap-4 justify-between max-w-5xl mx-auto px-4 py-6">
-      {/* Card 1: Current Time */}
-      <div className="flex-1 min-w-[160px] bg-[#112238] text-white rounded-xl p-4 text-center shadow-md">
-        <p className="text-xs uppercase text-gray-300 tracking-widest mb-1">
-          Local Time
-        </p>
-        <p className="text-2xl font-semibold">
-          {formatTime12Hour(localTime.toTimeString().substring(0, 5))}
-        </p>
-      </div>
-
-      {/* Card 2: Cut Off Time */}
-      <div className="flex-1 min-w-[160px] bg-[#112238] text-white rounded-xl p-4 text-center shadow-md">
-        <p className="text-xs uppercase text-gray-300 tracking-widest mb-1">
-          Ferry Cut Off Time
-        </p>
-        <p className="text-2xl font-semibold">
-          {cutoffTime
-            ? formatTime12Hour(cutoffTime.toTimeString().substring(0, 5))
-            : "--:--"}
-        </p>
-      </div>
-
-      {/* Card 3: Next Departure Time */}
-      <div className="flex-1 min-w-[160px] bg-[#112238] text-white rounded-xl p-4 text-center shadow-md">
-        <p className="text-xs uppercase text-gray-300 tracking-widest mb-1">
-          Next Departure Time
-        </p>
-        <p className="text-2xl font-semibold">
-          {nextFerry
-            ? formatTime12Hour(nextFerry.depDate.toTimeString().substring(0, 5))
-            : "--:--"}
-        </p>
-      </div>
-
-      {/* Card 4: Next Ferry Operator */}
-      <div className="flex-1 min-w-[160px] bg-[#112238] text-white rounded-xl p-4 text-center shadow-md">
-        <p className="text-xs uppercase text-gray-300 tracking-widest mb-1">
-          Next Ferry Operator
-        </p>
-        <p className="text-2xl font-semibold">
-          {nextFerry ? nextFerry.operator : "--"}
-        </p>
-      </div>
+      {cardData.map(({ title, value }, index) => (
+        <Card key={index} className="flex-1 min-w-[160px] shadow-md">
+          <CardContent className="p-4 text-center">
+            <p className="text-xs uppercase text-muted-foreground tracking-widest mb-1">
+              {title}
+            </p>
+            <p className="text-2xl font-semibold">{value}</p>
+          </CardContent>
+        </Card>
+      ))}
     </div>
   );
 }

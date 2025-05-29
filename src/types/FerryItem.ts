@@ -1,3 +1,4 @@
+// src/types/FerryItem.ts
 export type FerryStatus = "on-time" | "delayed" | "cancelled" | "scheduled";
 
 export interface FerryItem {

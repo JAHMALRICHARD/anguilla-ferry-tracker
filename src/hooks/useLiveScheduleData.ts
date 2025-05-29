@@ -2,22 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/utils/supabase";
-
-export interface FerryItem {
-  id: number;
-  operator: string;
-  departure_port: string;
-  arrival_port: string;
-  departure_time: string;
-  arrival_time?: string;
-  price: string;
-  duration: string;
-  vessel_name?: string;
-  status: string;
-  direction: string;
-  schedule_date: string;
-  logo_url: string;
-}
+import type { FerryItem } from "@/types/FerryItem";
 
 // ✅ ADD THIS FUNCTION RIGHT HERE
 function buildDateWithCurrentPRTime(selectedDate: Date): Date {

@@ -13,7 +13,8 @@ import TimeAndCountdowns from "@/components/TimeAndCountdowns";
 import RouteDateAndSearchBar from "@/components/RouteDateAndSearchBar";
 import UpcomingAndPastFerries from "@/components/UpcomingAndPastFerries";
 import { getFerriesForRoute } from "@/utils/getFerriesForRoute";
-import { useLiveScheduleData, FerryItem } from "@/hooks/useLiveScheduleData";
+import { useLiveScheduleData } from "@/hooks/useLiveScheduleData";
+import type { FerryItem } from "@/types/FerryItem";
 
 export default function HomePage() {
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -54,7 +55,7 @@ export default function HomePage() {
   );
 
   return (
-    <div className="min-h-screen bg-[#0B0F19] text-white">
+    <div className="min-h-screen bg-background text-foreground transition-colors duration-300 ease-in-out">
       <Header />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {weatherData?.current?.wind_kph && (

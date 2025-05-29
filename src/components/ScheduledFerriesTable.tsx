@@ -4,6 +4,16 @@ import React from "react";
 import { FerryItem } from "./FerryProps";
 import { formatTime12Hour } from "@/helpers/formatTime12Hour";
 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+
 interface ScheduledFerriesTableProps {
   ferries: FerryItem[];
   onDetails: (ferry: FerryItem) => void;
@@ -15,33 +25,30 @@ export function ScheduledFerriesTable({
 }: ScheduledFerriesTableProps) {
   return (
     <div className="p-0">
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto border border-border rounded-xl">
         {ferries.length > 0 ? (
-          <table className="w-full text-sm text-white">
-            <thead className="text-left text-gray-400 border-b border-gray-700">
-              <tr>
-                <th className="py-3 pr-4">Departure</th>
-                <th className="py-3 pr-4">Ferry</th>
-                <th className="py-3 pr-4">Origin</th>
-                <th className="py-3 pr-4">Destination</th>
-                <th className="py-3 pr-4">ETA</th>
-                <th className="py-3 pr-4">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-800">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Departure</TableHead>
+                <TableHead>Ferry</TableHead>
+                <TableHead>Origin</TableHead>
+                <TableHead>Destination</TableHead>
+                <TableHead>ETA</TableHead>
+                <TableHead>Status</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {ferries.map((ferry) => {
-                // Parse 24-hour departure time
                 const [hourStr, minuteStr] = ferry.departure_time.split(":");
                 const depHour = Number(hourStr);
                 const depMinute = Number(minuteStr);
 
                 const departure = formatTime12Hour(`${depHour}:${minuteStr}`);
 
-                // Duration is expected to be in "HH:MM" format
                 const [durHour, durMin] = ferry.duration.split(":").map(Number);
                 const totalMinutes =
                   depHour * 60 + depMinute + durHour * 60 + durMin;
-
                 const etaHour = Math.floor(totalMinutes / 60) % 24;
                 const etaMinute = totalMinutes % 60;
                 const eta = formatTime12Hour(
@@ -50,35 +57,46 @@ export function ScheduledFerriesTable({
                     .padStart(2, "0")}`
                 );
 
+                const getStatusVariant = (status: string) => {
+                  switch (status.toLowerCase()) {
+                    case "on-time":
+                      return "default"; // neutral
+                    case "delayed":
+                      return "destructive"; // red
+                    case "cancelled":
+                      return "outline"; // outlined
+                    default:
+                      return "secondary"; // gray
+                  }
+                };
+
                 return (
-                  <tr
+                  <TableRow
                     key={ferry.id}
                     onClick={() => onDetails(ferry)}
-                    className="hover:bg-[#1C2533] transition cursor-pointer"
+                    className="cursor-pointer hover:bg-muted/50 transition"
                   >
-                    <td className="py-3 pr-4">{departure}</td>
-                    <td className="py-3 pr-4 font-medium">{ferry.operator}</td>
-                    <td className="py-3 pr-4">
-                      {ferry.departure_port.split(",")[0]}
-                    </td>
-                    <td className="py-3 pr-4">
-                      {ferry.arrival_port.split(",")[0]}
-                    </td>
-                    <td className="py-3 pr-4">{eta}</td>
-                    <td className="py-3 pr-4">
-                      <span className="bg-blue-500 text-white px-2 py-1 rounded-md text-xs font-semibold tracking-wide uppercase">
+                    <TableCell>{departure}</TableCell>
+                    <TableCell className="font-medium">
+                      {ferry.operator}
+                    </TableCell>
+                    <TableCell>{ferry.departure_port.split(",")[0]}</TableCell>
+                    <TableCell>{ferry.arrival_port.split(",")[0]}</TableCell>
+                    <TableCell>{eta}</TableCell>
+                    <TableCell>
+                      <Badge variant={getStatusVariant(ferry.status)}>
                         {ferry.status}
-                      </span>
-                    </td>
-                  </tr>
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
                 );
               })}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         ) : (
-          <p className="text-gray-400 text-sm mt-4">
-            No ferries scheduled for this day.
-          </p>
+          <div className="text-muted-foreground p-4 text-center">
+            No scheduled ferries available.
+          </div>
         )}
       </div>
     </div>

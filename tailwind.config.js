@@ -4,21 +4,29 @@ module.exports = {
   darkMode: "class", // class-based toggling
   theme: {
     extend: {
-      colors: {
+      ccolors: {
         background: "rgb(var(--background) / <alpha-value>)",
         foreground: "rgb(var(--foreground) / <alpha-value>)",
-        success: "rgb(34, 197, 94)",
-        warning: "rgb(234, 179, 8)",
-        danger: "rgb(239, 68, 68)",
+        muted: "rgb(var(--muted) / <alpha-value>)",
+        border: "rgb(var(--border) / <alpha-value>)",
+        primary: "rgb(var(--primary) / <alpha-value>)",
+        "primary-foreground": "rgb(var(--primary-foreground) / <alpha-value>)",
+        success: "rgb(var(--success) / <alpha-value>)",
+        warning: "rgb(var(--warning) / <alpha-value>)",
+        danger: "rgb(var(--danger) / <alpha-value>)",
 
-        // 🇦🇮 Anguilla Theme Colors
+        // 🎨 Anguilla theme additions (optional static tokens)
         sand: "#F5F5F0",
         turquoise: "#00B4D8",
         sunset: "#FF6B35",
-        navy: "#002B5B", // optional for dark UI contrast
+        navy: "#002B5B",
       },
       animation: {
         "spin-slow": "spin 6s linear infinite",
+      },
+      transitionProperty: {
+        DEFAULT:
+          "background-color, border-color, color, fill, stroke, opacity, box-shadow, transform",
       },
     },
   },
