@@ -21,14 +21,13 @@ export default function FerryOperatorPage({
   params: { slug: string };
 }) {
   const operator = ferryCharters[params.slug];
-
   if (!operator) return notFound();
 
   const stockHero =
     "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=1600&q=80";
 
   return (
-    <div className="text-white">
+    <div className="bg-background text-foreground">
       {/* Hero Section */}
       <div className="relative h-[400px] w-full">
         <img
@@ -46,24 +45,25 @@ export default function FerryOperatorPage({
         </div>
       </div>
 
+      {/* Main Content */}
       <div className="max-w-5xl mx-auto p-6 space-y-12">
-        {/* Fleet */}
+        {/* Fleet Section */}
         <section>
           <div className="flex items-center gap-2 mb-2">
-            <ShipIcon className="text-blue-400" />
+            <ShipIcon className="text-blue-500" />
             <h2 className="text-2xl font-semibold">Our Fleet</h2>
           </div>
-          <p className="text-gray-300">{operator.fleetDescription}</p>
-          <hr className="my-6 border-gray-700" />
+          <p className="text-muted-foreground">{operator.fleetDescription}</p>
+          <hr className="my-6 border-border" />
         </section>
 
-        {/* Services */}
+        {/* Services Section */}
         <section>
           <div className="flex items-center gap-2 mb-2">
-            <InfoIcon className="text-green-400" />
+            <InfoIcon className="text-green-500" />
             <h2 className="text-2xl font-semibold">Services Offered</h2>
           </div>
-          <ul className="grid grid-cols-1 md:grid-cols-2 gap-3 text-gray-300">
+          <ul className="grid grid-cols-1 md:grid-cols-2 gap-3 text-muted-foreground">
             {operator.services.map((service, i) => (
               <li key={i} className="flex items-start gap-2">
                 <ArrowRightLeftIcon className="mt-1" size={18} />
@@ -71,71 +71,73 @@ export default function FerryOperatorPage({
               </li>
             ))}
           </ul>
-          <hr className="my-6 border-gray-700" />
+          <hr className="my-6 border-border" />
         </section>
 
-        {/* Schedule */}
+        {/* Schedule Section */}
         <section>
           <div className="flex items-center gap-2 mb-2">
-            <CalendarIcon className="text-yellow-400" />
+            <CalendarIcon className="text-yellow-500" />
             <h2 className="text-2xl font-semibold">Daily Schedule</h2>
           </div>
-          <ul className="space-y-2 text-gray-300">
+          <ul className="space-y-2 text-muted-foreground">
             {operator.schedule.map((entry, i) => (
               <li key={i} className="flex items-center gap-3">
                 <PlaneTakeoffIcon size={20} />
-                <span className="font-medium">{entry.from}</span> →{" "}
-                <span className="text-gray-400">{entry.to}</span>
+                <span className="font-medium text-foreground">
+                  {entry.from}
+                </span>{" "}
+                → <span className="text-muted-foreground">{entry.to}</span>
               </li>
             ))}
           </ul>
-          <hr className="my-6 border-gray-700" />
+          <hr className="my-6 border-border" />
         </section>
 
-        {/* Taxes */}
+        {/* Departure Taxes Section */}
         <section>
           <div className="flex items-center gap-2 mb-2">
-            <BadgeDollarSignIcon className="text-pink-400" />
+            <BadgeDollarSignIcon className="text-pink-500" />
             <h2 className="text-2xl font-semibold">Departure Taxes</h2>
           </div>
-          <ul className="list-disc list-inside text-gray-300">
+          <ul className="list-disc list-inside text-muted-foreground">
             {operator.departureTaxes.map((tax, i) => (
               <li key={i}>{tax}</li>
             ))}
           </ul>
-          <hr className="my-6 border-gray-700" />
+          <hr className="my-6 border-border" />
         </section>
 
-        {/* Travel Tips */}
+        {/* Travel Tips Section */}
         <section>
           <div className="flex items-center gap-2 mb-2">
-            <MapIcon className="text-purple-400" />
+            <MapIcon className="text-purple-500" />
             <h2 className="text-2xl font-semibold">Travel Tips</h2>
           </div>
-          <ul className="list-disc list-inside text-gray-300">
+          <ul className="list-disc list-inside text-muted-foreground">
             {operator.travelTips.map((tip, i) => (
               <li key={i}>{tip}</li>
             ))}
           </ul>
-          <hr className="my-6 border-gray-700" />
+          <hr className="my-6 border-border" />
         </section>
 
-        {/* Testimonials */}
+        {/* Testimonials Section */}
         <section>
           <div className="flex items-center gap-2 mb-2">
-            <MessageCircleIcon className="text-teal-400" />
+            <MessageCircleIcon className="text-teal-500" />
             <h2 className="text-2xl font-semibold">Testimonials</h2>
           </div>
           <div className="space-y-4">
             {operator.testimonials.map((testimonial, i) => (
               <div
                 key={i}
-                className="bg-[#1e293b] p-4 rounded-lg shadow border border-gray-700"
+                className="bg-muted p-4 rounded-xl border border-border"
               >
-                <blockquote className="text-gray-200 italic">
+                <blockquote className="italic text-foreground">
                   “{testimonial.message}”
                 </blockquote>
-                <cite className="block text-sm mt-2 text-gray-400">
+                <cite className="block text-sm mt-2 text-muted-foreground">
                   – {testimonial.author}
                 </cite>
               </div>
@@ -149,7 +151,7 @@ export default function FerryOperatorPage({
             href={operator.bookingUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-block bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-full shadow-md transition"
+            className="inline-block bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-full shadow transition"
           >
             Book Now
           </a>
