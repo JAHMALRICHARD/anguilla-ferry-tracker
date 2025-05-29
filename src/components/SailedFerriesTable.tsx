@@ -39,16 +39,21 @@ export function SailedFerriesTable({
 
                 try {
                   if (ferry.departure_time && ferry.duration && localNow) {
-                    const [h, m] = ferry.duration.split(":").map(Number);
-                    const depDate = new Date(
-                      `1970-01-01T${ferry.departure_time}`
-                    );
+                    const [depHour, depMin] = ferry.departure_time
+                      .split(":")
+                      .map(Number);
+                    const depDate = new Date(localNow);
+                    depDate.setHours(depHour, depMin, 0, 0);
+
+                    const [durHour, durMin] = ferry.duration
+                      .split(":")
+                      .map(Number);
                     const etaDate = new Date(
-                      depDate.getTime() + (h * 60 + m) * 60000
+                      depDate.getTime() + (durHour * 60 + durMin) * 60000
                     );
 
                     eta = formatTime12Hour(
-                      etaDate.toISOString().substring(11, 16)
+                      etaDate.toTimeString().substring(0, 5)
                     );
 
                     // Ensure both dates are valid
