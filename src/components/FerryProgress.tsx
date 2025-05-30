@@ -1,6 +1,16 @@
+"use client";
+
 import React from "react";
 import Image from "next/image";
 import { ArrowBigRightDash, ArrowBigLeftDash, UsersRound } from "lucide-react";
+
+interface FerryProgressProps {
+  operatorName: string;
+  progressPercent: number;
+  eta: string;
+  status: "DOCKED" | "BOARDING" | "SAILING" | "NOW ARRIVING" | "ARRIVED";
+  direction: "to-anguilla" | "to-st-martin";
+}
 
 export function FerryProgress({
   operatorName,
@@ -8,13 +18,7 @@ export function FerryProgress({
   eta,
   status: originalStatus,
   direction,
-}: {
-  operatorName: string;
-  progressPercent: number;
-  eta: string;
-  status: "DOCKED" | "BOARDING" | "SAILING" | "NOW ARRIVING" | "ARRIVED";
-  direction: "to-anguilla" | "to-st-martin";
-}) {
+}: FerryProgressProps) {
   const isBeforeReturnTrip =
     direction === "to-anguilla" && originalStatus === "DOCKED";
   const status = isBeforeReturnTrip ? "ON THE WAY" : originalStatus;
@@ -39,8 +43,14 @@ export function FerryProgress({
 
   const displayProgress = status === "ARRIVED" ? 100 : progressPercent;
   const ferryColor = ferryColorMap[status];
+  const isFlipped = direction === "to-anguilla";
 
-  const positionStyle = {
+  const shouldShowIcon = !(
+    status === "ON THE WAY" ||
+    (status === "DOCKED" && direction === "to-anguilla")
+  );
+
+  const ferryIconStyle: React.CSSProperties = {
     left:
       direction === "to-st-martin"
         ? `calc(${displayProgress}% + 10px)`
@@ -49,18 +59,12 @@ export function FerryProgress({
     top: -5,
   };
 
-  const isFlipped = direction === "to-anguilla";
-
-  const shouldShowIcon = !(
-    status === "ON THE WAY" ||
-    (status === "DOCKED" && direction === "to-anguilla")
-  );
-
   return (
-    <div className="relative w-[340px] bg-[#1D283A] text-gray-100 px-4 py-2 rounded-xl shadow-sm border border-gray-700">
-      {/* Labels and Status with Lucide Directional Arrow */}
-      <div className="flex justify-between items-center mb-1 text-sm font-medium text-gray-300">
+    <div className="relative w-[340px] bg-card text-card-foreground px-4 py-3 rounded-xl shadow-sm border border-border">
+      {/* Header */}
+      <div className="flex justify-between items-center mb-2 text-sm font-medium text-gray-300">
         <span>ANGUILLA</span>
+
         <div className="text-center">
           <span
             className={`text-[10px] uppercase py-1 px-2 rounded-full tracking-wider ${
@@ -74,6 +78,7 @@ export function FerryProgress({
           >
             {status}
           </span>
+
           <div className="mt-1 flex justify-center">
             {direction === "to-st-martin" ? (
               <ArrowBigRightDash size={20} className="text-blue-400" />
@@ -82,23 +87,24 @@ export function FerryProgress({
             )}
           </div>
         </div>
+
         <span>ST. MARTIN</span>
       </div>
 
-      {/* Ferry Icon Positioned Above Progress */}
+      {/* Ferry Icon Position */}
       <div className="relative h-4">
         {shouldShowIcon && (
-          <div className="absolute z-10" style={positionStyle}>
+          <div className="absolute z-10" style={ferryIconStyle}>
             {status === "BOARDING" || status === "ARRIVED" ? (
               <UsersRound
                 size={16}
-                className={`drop-shadow animate-pulse-status`}
+                className="drop-shadow animate-pulse-status"
                 color={ferryColor}
               />
             ) : (
               <Image
                 src="/ferry-icon.png"
-                alt="Ferry Icon"
+                alt="Ferry"
                 width={32}
                 height={32}
                 className={`drop-shadow animate-boat ${
@@ -112,27 +118,19 @@ export function FerryProgress({
 
       {/* Progress Bar */}
       <div className="relative w-full h-1.5 bg-gray-700 rounded-full overflow-hidden">
-        {direction === "to-st-martin" ? (
-          <div
-            className="absolute top-0 left-0 h-1.5 rounded-full transition-all duration-700 ease-out"
-            style={{
-              width: `${displayProgress}%`,
-              backgroundColor: ferryColor,
-            }}
-          />
-        ) : (
-          <div
-            className="absolute top-0 right-0 h-1.5 rounded-full transition-all duration-700 ease-out"
-            style={{
-              width: `${displayProgress}%`,
-              backgroundColor: ferryColor,
-            }}
-          />
-        )}
+        <div
+          className={`absolute top-0 ${
+            direction === "to-st-martin" ? "left-0" : "right-0"
+          } h-1.5 rounded-full transition-all duration-700 ease-out`}
+          style={{
+            width: `${displayProgress}%`,
+            backgroundColor: ferryColor,
+          }}
+        />
       </div>
 
-      {/* Operator & ETA */}
-      <div className="text-[10px] text-gray-400 text-center mt-1">
+      {/* Footer Info */}
+      <div className="text-[10px] text-gray-400 text-center mt-2">
         {operatorName} • ETA {eta}
       </div>
     </div>

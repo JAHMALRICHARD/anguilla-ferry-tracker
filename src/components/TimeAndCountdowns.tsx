@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { FerryItem } from "@/types/FerryItem"; // Make sure it's the unified type file
+import { FerryItem } from "@/types/FerryItem";
 import { formatTime12Hour } from "@/helpers/formatTime12Hour";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -14,14 +14,20 @@ export default function TimeAndCountdowns({
   ferries,
   selectedDate,
 }: TimeAndCountdownsProps) {
-  const [localTime, setLocalTime] = useState(new Date());
+  const [localTime, setLocalTime] = useState<Date | null>(null);
 
   useEffect(() => {
+    const now = new Date();
+    setLocalTime(now); // Set once after mount to avoid hydration error
+
     const interval = setInterval(() => {
       setLocalTime(new Date());
     }, 1000);
+
     return () => clearInterval(interval);
   }, []);
+
+  if (!localTime) return null; // Don't render until client time is available
 
   const futureFerries = ferries
     .map((ferry) => {
@@ -31,13 +37,11 @@ export default function TimeAndCountdowns({
         .map(Number);
       const [year, month, day] = ferry.schedule_date.split("-").map(Number);
       const depDate = new Date(year, month - 1, day, depHour, depMinute);
-      depDate.setHours(depHour, depMinute, 0, 0);
       return { ...ferry, depDate };
     })
     .filter((ferry) => {
       const sameDay =
-        new Date(ferry.depDate).toDateString() ===
-        new Date(selectedDate).toDateString();
+        ferry.depDate.toDateString() === selectedDate.toDateString();
       return sameDay && ferry.depDate > localTime;
     })
     .sort((a, b) => a.depDate.getTime() - b.depDate.getTime());
