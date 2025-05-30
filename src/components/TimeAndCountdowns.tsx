@@ -72,7 +72,7 @@ export default function TimeAndCountdowns({
   ];
 
   return (
-    <div className="flex flex-wrap gap-4 justify-between max-w-5xl mx-auto px-4 py-6">
+    <div className="flex flex-wrap gap-4 justify-between max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
       {cardData.map(({ title, value }, index) => (
         <Card key={index} className="flex-1 min-w-[160px] shadow-md">
           <CardContent className="p-4 text-center">

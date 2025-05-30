@@ -1,21 +1,29 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: ["./app/**/*.{js,ts,jsx,tsx}", "./src/**/*.{js,ts,jsx,tsx}"],
-  darkMode: "class", // class-based toggling
+  darkMode: "class",
   theme: {
     extend: {
-      ccolors: {
-        background: "rgb(var(--background) / <alpha-value>)",
-        foreground: "rgb(var(--foreground) / <alpha-value>)",
-        muted: "rgb(var(--muted) / <alpha-value>)",
-        border: "rgb(var(--border) / <alpha-value>)",
-        primary: "rgb(var(--primary) / <alpha-value>)",
-        "primary-foreground": "rgb(var(--primary-foreground) / <alpha-value>)",
-        success: "rgb(var(--success) / <alpha-value>)",
-        warning: "rgb(var(--warning) / <alpha-value>)",
-        danger: "rgb(var(--danger) / <alpha-value>)",
+      colors: {
+        background: "hsl(var(--background) / <alpha-value>)",
+        foreground: "hsl(var(--foreground) / <alpha-value>)",
+        muted: "hsl(var(--muted) / <alpha-value>)",
+        "muted-foreground": "hsl(var(--muted-foreground) / <alpha-value>)",
+        border: "hsl(var(--border) / <alpha-value>)",
+        input: "hsl(var(--input) / <alpha-value>)",
+        ring: "hsl(var(--ring) / <alpha-value>)",
+        primary: "hsl(var(--primary) / <alpha-value>)",
+        "primary-foreground": "hsl(var(--primary-foreground) / <alpha-value>)",
+        secondary: "hsl(var(--secondary) / <alpha-value>)",
+        "secondary-foreground":
+          "hsl(var(--secondary-foreground) / <alpha-value>)",
+        accent: "hsl(var(--accent) / <alpha-value>)",
+        "accent-foreground": "hsl(var(--accent-foreground) / <alpha-value>)",
+        destructive: "hsl(var(--destructive) / <alpha-value>)",
+        "destructive-foreground":
+          "hsl(var(--destructive-foreground) / <alpha-value>)",
 
-        // 🎨 Anguilla theme additions (optional static tokens)
+        // 🎨 Anguilla brand additions
         sand: "#F5F5F0",
         turquoise: "#00B4D8",
         sunset: "#FF6B35",
@@ -30,25 +38,5 @@ module.exports = {
       },
     },
   },
-  safelist: [
-    "bg-background",
-    "bg-background/100",
-    "text-foreground",
-    "text-foreground/70",
-    "text-foreground/60",
-    "text-foreground/50",
-    "border-foreground/30",
-    "text-accent",
-    "text-accent/80",
-    "text-primary",
-    "text-primary/90",
-    // existing ones
-    "bg-success/10",
-    "text-success",
-    "bg-warning/10",
-    "text-warning",
-    "bg-danger/10",
-    "text-danger",
-  ],
   plugins: [],
 };

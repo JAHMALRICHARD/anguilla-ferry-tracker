@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 
 export default function FeatureImageAndWeather() {
   return (
-    <div className="max-w-7xl mx-auto px-4 py-12">
+    <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="flex flex-col lg:flex-row items-start justify-between gap-8">
         {/* Left Column: Hero Banner */}
         <div className="flex-1 relative rounded-2xl overflow-hidden text-white bg-[url('/hero/resized-sxm-to-axa-hero-featured-image.jpg')] bg-cover bg-center py-16 md:py-24 px-6">

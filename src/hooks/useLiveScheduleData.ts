@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/utils/supabase";
 import type { FerryItem } from "@/types/FerryItem";
 
-// ✅ ADD THIS FUNCTION RIGHT HERE
 function buildDateWithCurrentPRTime(selectedDate: Date): Date {
   const now = new Date();
   const isToday = now.toDateString() === selectedDate.toDateString();
@@ -32,34 +31,40 @@ export function useLiveScheduleData(selectedDate: Date) {
   const [upcomingFerries, setUpcomingFerries] = useState<FerryItem[]>([]);
   const [pastFerries, setPastFerries] = useState<FerryItem[]>([]);
   const [selectedFerry, setSelectedFerry] = useState<FerryItem | null>(null);
-
-  // ✅ Use it here to set initial localNow
   const [localNow, setLocalNow] = useState<Date>(() =>
     buildDateWithCurrentPRTime(selectedDate)
   );
 
-  // ✅ Update localNow on date change
   useEffect(() => {
     setLocalNow(buildDateWithCurrentPRTime(selectedDate));
   }, [selectedDate]);
 
+  // ✅ FETCH FUNCTION EXTRACTED
+  const fetchFerryData = async () => {
+    const { data, error } = await supabase
+      .from("ferry_schedules")
+      .select("*")
+      .eq("schedule_date", selectedDate.toISOString().split("T")[0])
+      .order("departure_time", { ascending: true });
+
+    if (error) {
+      console.error("Supabase fetch error:", error);
+      return;
+    }
+
+    setAllFerries(data || []);
+  };
+
+  // ✅ INITIAL FETCH + AUTO-REFRESH
   useEffect(() => {
-    const fetchFerryData = async () => {
-      const { data, error } = await supabase
-        .from("ferry_schedules")
-        .select("*")
-        .eq("schedule_date", selectedDate.toISOString().split("T")[0])
-        .order("departure_time", { ascending: true });
+    fetchFerryData(); // first load
 
-      if (error) {
-        console.error("Supabase fetch error:", error);
-        return;
-      }
+    const interval = setInterval(() => {
+      setLocalNow(buildDateWithCurrentPRTime(selectedDate));
+      fetchFerryData(); // refresh every 60 sec
+    }, 10000);
 
-      setAllFerries(data || []);
-    };
-
-    fetchFerryData();
+    return () => clearInterval(interval); // clean up
   }, [selectedDate]);
 
   useEffect(() => {

@@ -31,7 +31,7 @@ export default function RouteDateAndSearchBar({
   const tomorrow = addDays(today, 1);
 
   return (
-    <div className="bg-background text-foreground border rounded-xl p-4 flex flex-wrap gap-3 items-center justify-between w-full max-w-7xl mx-auto shadow-sm">
+    <div className="bg-background text-foreground border rounded-xl p-4 flex flex-wrap gap-3 items-center justify-between w-full max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 shadow-sm">
       {/* Route Selector (Preserves original logic) */}
       <Select
         value={route.to}

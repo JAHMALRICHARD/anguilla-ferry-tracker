@@ -49,6 +49,17 @@ export function SailedFerriesTable({ ferries }: SailedFerriesTableProps) {
     })
     .sort((a, b) => b.etaDate.getTime() - a.etaDate.getTime());
 
+  const getStatusClass = (status: string) => {
+    switch (status.toLowerCase()) {
+      case "sailed":
+        return "bg-green-600 text-white";
+      case "sailing":
+        return "bg-indigo-600 text-white";
+      default:
+        return "bg-muted text-foreground";
+    }
+  };
+
   return (
     <div className="p-0">
       <div className="overflow-x-auto border border-border rounded-xl">
@@ -93,11 +104,13 @@ export function SailedFerriesTable({ ferries }: SailedFerriesTableProps) {
                     <TableCell>{departure}</TableCell>
                     <TableCell>{eta}</TableCell>
                     <TableCell>
-                      {hasSailed ? (
-                        <Badge variant="secondary">Sailed</Badge>
-                      ) : (
-                        <Badge variant="outline">Sailing</Badge>
-                      )}
+                      <Badge
+                        className={`uppercase ${getStatusClass(
+                          hasSailed ? "sailed" : "sailing"
+                        )}`}
+                      >
+                        {hasSailed ? "Sailed" : "Sailing"}
+                      </Badge>
                     </TableCell>
                   </TableRow>
                 );

@@ -19,35 +19,31 @@ const getSeaCondition = (windSpeedKmh: number) => {
     return {
       state: "Calm",
       color: "bg-green-500",
-      icon: <CheckCircleIcon className="h-5 w-5 text-white" />,
-      description:
-        "Tranquil seas ahead. Perfect for a smooth and relaxing ferry ride.",
+      icon: <CheckCircleIcon className="h-4 w-4 text-white" />,
+      description: "Tranquil seas. Smooth ride expected.",
     };
   }
   if (windSpeedKmh <= 30) {
     return {
       state: "Moderate",
       color: "bg-yellow-500",
-      icon: <WavesIcon className="h-5 w-5 text-white" />,
-      description:
-        "Gentle sea breeze with light waves. A touch of adventure adds to the charm.",
+      icon: <WavesIcon className="h-4 w-4 text-white" />,
+      description: "Light waves with a gentle breeze.",
     };
   }
   if (windSpeedKmh <= 50) {
     return {
       state: "Choppy",
       color: "bg-orange-500",
-      icon: <AlertTriangleIcon className="h-5 w-5 text-white" />,
-      description:
-        "Waves may be more noticeable today. Hold on and enjoy the ocean's rhythm.",
+      icon: <AlertTriangleIcon className="h-4 w-4 text-white" />,
+      description: "More noticeable waves. Moderate conditions.",
     };
   }
   return {
     state: "Strong Winds",
     color: "bg-red-500",
-    icon: <AlertTriangleIcon className="h-5 w-5 text-white" />,
-    description:
-      "Conditions may be challenging today. Please check with your operator for updates.",
+    icon: <AlertTriangleIcon className="h-4 w-4 text-white" />,
+    description: "Rough conditions. Check with your operator.",
   };
 };
 
@@ -61,17 +57,19 @@ export function SeaConditionBanner({ windSpeedKmh }: SeaConditionBannerProps) {
       transition={{ duration: 0.5 }}
     >
       <Card className={`shadow-md border-0 ${color}`}>
-        <CardContent className="p-4 text-white flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div className="flex items-center gap-3">
+        <CardContent className="px-3 py-2 text-white flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <div className="flex items-center gap-2">
             {icon}
-            <div>
-              <p className="font-semibold text-lg">Sea Condition: {state}</p>
-              <p className="text-sm text-white/90">{description}</p>
+            <div className="leading-tight">
+              <p className="font-medium text-sm sm:text-base">
+                Sea Condition: {state}
+              </p>
+              <p className="text-xs text-white/90">{description}</p>
             </div>
           </div>
-          <div className="flex items-center gap-2 mt-1 sm:mt-0">
-            <WindIcon className="h-5 w-5 text-white" />
-            <span className="text-sm">{windSpeedKmh} km/h winds</span>
+          <div className="flex items-center gap-1 text-xs sm:text-sm">
+            <WindIcon className="h-4 w-4 text-white" />
+            <span>{windSpeedKmh} km/h winds</span>
           </div>
         </CardContent>
       </Card>

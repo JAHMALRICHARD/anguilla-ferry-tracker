@@ -80,7 +80,6 @@ export function CurrentWeatherWidget() {
       try {
         const res = await fetch("/api/weather?q=Blowing Point, Anguilla");
         const data: WeatherAPIResponse = await res.json();
-
         if ("error" in data || !data.current) {
           setWeather(fallbackWeather);
         } else {
@@ -100,7 +99,7 @@ export function CurrentWeatherWidget() {
     };
 
     loadWeather();
-  }, [CACHE_DURATION_MS]);
+  }, []);
 
   if (loading || !weather) {
     return (
@@ -108,21 +107,21 @@ export function CurrentWeatherWidget() {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="bg-[rgb(var(--background))] text-[rgb(var(--foreground))] rounded-xl p-6 w-full max-w-sm border border-[rgb(var(--foreground))]/20"
+        className="w-full"
       >
         <div className="animate-pulse space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <div className="h-4 bg-[rgb(var(--foreground))]/20 rounded w-2/3 mb-2" />
-              <div className="h-3 bg-[rgb(var(--foreground))]/10 rounded w-1/3" />
+              <div className="h-4 bg-muted rounded w-2/3 mb-2" />
+              <div className="h-3 bg-muted rounded w-1/3" />
             </div>
-            <div className="h-12 w-12 bg-[rgb(var(--foreground))]/10 rounded-full" />
+            <div className="h-12 w-12 bg-muted rounded-full" />
           </div>
-          <div className="h-10 bg-[rgb(var(--foreground))]/10 rounded w-1/2 mx-auto" />
+          <div className="h-10 bg-muted rounded w-1/2 mx-auto" />
           <div className="grid grid-cols-3 gap-4 mt-4">
-            <div className="h-4 bg-[rgb(var(--foreground))]/10 rounded" />
-            <div className="h-4 bg-[rgb(var(--foreground))]/10 rounded" />
-            <div className="h-4 bg-[rgb(var(--foreground))]/10 rounded" />
+            <div className="h-4 bg-muted rounded" />
+            <div className="h-4 bg-muted rounded" />
+            <div className="h-4 bg-muted rounded" />
           </div>
         </div>
       </motion.div>
@@ -148,14 +147,14 @@ export function CurrentWeatherWidget() {
       initial={{ opacity: 0, x: 50 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.6 }}
-      className="bg-[rgb(var(--background))] text-[rgb(var(--foreground))] rounded-xl p-6 w-full max-w-sm border border-[rgb(var(--foreground))]/20"
+      className="w-full"
     >
       <div className="flex items-start justify-between mb-4">
         <div>
           <h3 className="text-lg font-semibold">
             {location.name}, {location.region}
           </h3>
-          <p className="text-sm text-[rgb(var(--foreground))]/70 flex items-center gap-1">
+          <p className="text-sm text-muted-foreground flex items-center gap-1">
             <span>
               {condition.text.includes("Clear")
                 ? "☀️"
@@ -183,13 +182,13 @@ export function CurrentWeatherWidget() {
         <div className="text-4xl font-bold">
           {isFahrenheit ? `${Math.round(temp_f)}°F` : `${Math.round(temp_c)}°C`}
         </div>
-        <div className="text-sm text-[rgb(var(--foreground))]/60">
+        <div className="text-sm text-muted-foreground">
           Feels like {isFahrenheit ? `${feelslike_f}°F` : `${feelslike_c}°C`}
         </div>
       </div>
 
       <div className="mb-4">
-        <div className="inline-flex border border-[rgb(var(--foreground))]/30 rounded-md overflow-hidden text-sm">
+        <div className="inline-flex border border-border rounded-md overflow-hidden text-sm">
           <button
             onClick={() => {
               setIsFahrenheit(false);
@@ -197,8 +196,8 @@ export function CurrentWeatherWidget() {
             }}
             className={`px-3 py-1 transition ${
               !isFahrenheit
-                ? "bg-[rgb(var(--accent))] text-white"
-                : "text-[rgb(var(--foreground))] hover:bg-[rgb(var(--foreground))]/10"
+                ? "bg-accent text-accent-foreground"
+                : "text-foreground hover:bg-muted"
             }`}
           >
             °C
@@ -210,8 +209,8 @@ export function CurrentWeatherWidget() {
             }}
             className={`px-3 py-1 transition ${
               isFahrenheit
-                ? "bg-[rgb(var(--accent))] text-white"
-                : "text-[rgb(var(--foreground))] hover:bg-[rgb(var(--foreground))]/10"
+                ? "bg-accent text-accent-foreground"
+                : "text-foreground hover:bg-muted"
             }`}
           >
             °F
@@ -219,22 +218,22 @@ export function CurrentWeatherWidget() {
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-4 text-sm text-[rgb(var(--foreground))]/80 mb-4">
+      <div className="grid grid-cols-3 gap-4 text-sm text-muted-foreground mb-4">
         <div className="flex items-center justify-center gap-2 whitespace-nowrap">
-          <WindIcon className="h-4 w-4 shrink-0 text-[rgb(var(--primary))]" />
+          <WindIcon className="h-4 w-4 shrink-0 text-primary" />
           <span>{wind_kph}&nbsp;km/h</span>
         </div>
         <div className="flex items-center justify-center gap-2 whitespace-nowrap">
-          <DropletsIcon className="h-4 w-4 shrink-0 text-[rgb(var(--primary))]/80" />
+          <DropletsIcon className="h-4 w-4 shrink-0 text-primary/80" />
           <span>{humidity}&nbsp;%</span>
         </div>
         <div className="flex items-center justify-center gap-2 whitespace-nowrap">
-          <ThermometerIcon className="h-4 w-4 shrink-0 text-[rgb(var(--accent))]" />
+          <ThermometerIcon className="h-4 w-4 shrink-0 text-accent" />
           <span>{isFahrenheit ? `${feelslike_f}°F` : `${feelslike_c}°C`}</span>
         </div>
       </div>
 
-      <div className="text-xs text-[rgb(var(--foreground))]/50 text-right mt-2">
+      <div className="text-xs text-muted-foreground text-right mt-2">
         Updated: {new Date(last_updated).toLocaleTimeString()}
       </div>
     </motion.div>

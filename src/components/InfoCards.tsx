@@ -70,7 +70,7 @@ export function InfoCards() {
   };
 
   return (
-    <div className="mb-16">
+    <div className="pt-12 mb-16">
       <h2 className="text-2xl font-bold mb-8">Before You Board</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {cards.map((card) => (

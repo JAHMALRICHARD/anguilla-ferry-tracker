@@ -57,16 +57,22 @@ export function ScheduledFerriesTable({
                     .padStart(2, "0")}`
                 );
 
-                const getStatusVariant = (status: string) => {
+                const getStatusClass = (status: string) => {
                   switch (status.toLowerCase()) {
                     case "on-time":
-                      return "default"; // neutral
+                      return "bg-green-600 text-white";
                     case "delayed":
-                      return "destructive"; // red
+                      return "bg-red-600 text-white";
                     case "cancelled":
-                      return "outline"; // outlined
+                      return "bg-gray-600 text-white border border-gray-400";
+                    case "boarding":
+                      return "bg-yellow-500 text-black";
+                    case "docked":
+                      return "bg-blue-500 text-white";
+                    case "sailing":
+                      return "bg-indigo-600 text-white";
                     default:
-                      return "secondary"; // gray
+                      return "bg-muted text-foreground";
                   }
                 };
 
@@ -84,7 +90,9 @@ export function ScheduledFerriesTable({
                     <TableCell>{ferry.arrival_port.split(",")[0]}</TableCell>
                     <TableCell>{eta}</TableCell>
                     <TableCell>
-                      <Badge variant={getStatusVariant(ferry.status)}>
+                      <Badge
+                        className={`uppercase ${getStatusClass(ferry.status)}`}
+                      >
                         {ferry.status}
                       </Badge>
                     </TableCell>

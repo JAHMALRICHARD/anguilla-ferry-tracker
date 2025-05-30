@@ -116,7 +116,7 @@ export function Header() {
 
   return (
     <header className="bg-background text-foreground border-b border-border sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+      <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         <div className="text-xl font-bold">Ferry Tracker</div>
 
         {/* Desktop Nav */}
@@ -205,7 +205,9 @@ export function Header() {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Button onClick={() => setIsLoginModalOpen(true)}>Login</Button>
+            <Button variant="outline" onClick={() => setIsLoginModalOpen(true)}>
+              Login
+            </Button>
           )}
         </div>
       </div>
@@ -239,14 +241,14 @@ export function Header() {
               <input
                 type="email"
                 placeholder="Email"
-                className="w-full px-3 py-2 rounded-md border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 rounded-md border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
               <input
                 type="password"
                 placeholder="Password"
-                className="w-full px-3 py-2 rounded-md border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 rounded-md border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
