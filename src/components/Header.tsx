@@ -188,11 +188,9 @@ export function Header() {
                 <DropdownMenuLabel>{user.email}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 {user.role === "admin" && (
-                  <DropdownMenuItem
-                    onClick={() => router.push("/edit-schedule")}
-                  >
+                  <DropdownMenuItem onClick={() => router.push("/dashboard")}>
                     <Edit className="w-4 h-4 mr-2" />
-                    Edit Schedule
+                    Dashboard
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuItem
