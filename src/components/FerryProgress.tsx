@@ -62,7 +62,7 @@ export function FerryProgress({
   return (
     <div className="relative w-[340px] bg-card text-card-foreground px-4 py-3 rounded-xl shadow-sm border border-border">
       {/* Header */}
-      <div className="flex justify-between items-center mb-2 text-sm font-medium text-gray-300">
+      <div className="flex justify-between items-center mb-2 text-sm font-medium text-foreground">
         <span>ANGUILLA</span>
 
         <div className="text-center">
