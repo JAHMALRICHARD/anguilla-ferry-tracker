@@ -29,8 +29,8 @@ const navigationItems = [
     icon: BarChart3,
   },
   {
-    title: "Data Sources",
-    url: "/sources",
+    title: "Schedule",
+    url: "/schedule",
     icon: Database,
   },
   {
@@ -112,7 +112,7 @@ export function Sidebar() {
         <div className="p-2 text-xs text-muted-foreground">
           <div className="flex items-center space-x-2">
             <div className="w-2 h-2 bg-green-500 rounded-full" />
-            <span>Connected to Django Backend</span>
+            <span></span>
           </div>
         </div>
       </SidebarFooter>
