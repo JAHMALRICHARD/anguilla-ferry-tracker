@@ -30,19 +30,19 @@ export const AmenitiesModal: React.FC<AmenitiesModalProps> = ({ onClose }) => {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center px-4">
-      <div className="bg-background text-foreground max-w-5xl w-full rounded-2xl shadow-2xl p-8 relative border border-border font-sans overflow-y-auto max-h-[90vh]">
+      <div className="w-full max-w-5xl sm:max-w-5xl md:max-w-5xl lg:max-w-5xl xl:max-w-5xl 2xl:max-w-5xl bg-background text-foreground rounded-2xl shadow-2xl p-10 relative border border-border font-sans overflow-y-auto max-h-[90vh]">
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-muted-foreground hover:text-white transition"
+          className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition"
           title="Close"
         >
           <XIcon className="h-5 w-5" />
         </button>
 
         {/* Title */}
-        <h2 className="text-3xl font-bold mb-6 flex items-center gap-2">
-          <MapPinIcon className="h-6 w-6 text-blue-500" />
+        <h2 className="text-3xl font-bold mb-8 flex items-center gap-2">
+          <MapPinIcon className="h-6 w-6 text-primary" />
           Terminal Amenities
         </h2>
 
@@ -50,7 +50,7 @@ export const AmenitiesModal: React.FC<AmenitiesModalProps> = ({ onClose }) => {
           {/* Anguilla Section */}
           <div className="w-full md:w-1/2 space-y-6">
             <div>
-              <h3 className="text-xl font-semibold text-white mb-3 flex items-center gap-2">
+              <h3 className="text-xl font-semibold text-foreground mb-3 flex items-center gap-2">
                 <BadgeCheckIcon className="h-5 w-5 text-yellow-400" />
                 Blowing Point Ferry Terminal (Anguilla)
               </h3>
@@ -104,7 +104,7 @@ export const AmenitiesModal: React.FC<AmenitiesModalProps> = ({ onClose }) => {
           {/* Marigot Section */}
           <div className="w-full md:w-1/2 space-y-6">
             <div>
-              <h3 className="text-xl font-semibold text-white mb-3 flex items-center gap-2">
+              <h3 className="text-xl font-semibold text-foreground mb-3 flex items-center gap-2">
                 <InfoIcon className="h-5 w-5 text-cyan-400" />
                 Marigot Ferry Terminal (St. Martin)
               </h3>

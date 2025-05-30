@@ -1,8 +1,7 @@
 "use client";
 
-import React, { useEffect } from "react";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import {
-  XIcon,
   CreditCardIcon,
   WalletIcon,
   EuroIcon,
@@ -13,46 +12,41 @@ import {
 } from "lucide-react";
 
 interface HowToPayModalProps {
+  open: boolean;
   onClose: () => void;
 }
 
-export const HowToPayModal: React.FC<HowToPayModalProps> = ({ onClose }) => {
-  useEffect(() => {
-    document.body.classList.add("overflow-hidden");
-    return () => {
-      document.body.classList.remove("overflow-hidden");
-    };
-  }, []);
-
+export const HowToPayModal: React.FC<HowToPayModalProps> = ({
+  open,
+  onClose,
+}) => {
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center px-4">
-      <div className="bg-background text-foreground max-w-5xl w-full rounded-2xl shadow-2xl p-8 relative border border-border overflow-y-auto max-h-[90vh]">
-        {/* Close Button */}
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-muted-foreground hover:text-white transition"
-          title="Close"
-        >
-          <XIcon className="h-5 w-5" />
-        </button>
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="w-full max-w-5xl sm:max-w-5xl md:max-w-5xl lg:max-w-5xl xl:max-w-5xl 2xl:max-w-5xl bg-background text-foreground font-sans px-10 py-12 border border-border rounded-2xl shadow-2xl">
+        <DialogTitle className="sr-only">
+          <span className="flex items-center gap-2">
+            <CreditCardIcon className="h-6 w-6 text-primary" />
+            How to Pay
+          </span>
+        </DialogTitle>
 
-        {/* Title */}
-        <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-          <CreditCardIcon className="h-6 w-6 text-blue-500" />
+        <h2 className="text-3xl font-bold mb-8 flex items-center gap-2">
+          <CreditCardIcon className="h-6 w-6 text-primary" />
           How to Pay
         </h2>
 
-        {/* Split View */}
-        <div className="flex flex-col md:flex-row gap-10 text-sm sm:text-base text-muted-foreground leading-relaxed">
+        <div className="flex flex-col md:flex-row gap-12 text-sm sm:text-base text-muted-foreground leading-relaxed">
           {/* Blowing Point Section */}
           <div className="w-full md:w-1/2 space-y-6">
-            <h3 className="text-xl font-semibold text-white mb-3 flex items-center gap-2">
+            <h3 className="text-xl font-semibold text-foreground mb-3 flex items-center gap-2">
               <WalletIcon className="h-5 w-5 text-green-400" />
               Blowing Point Ferry Terminal (Anguilla)
             </h3>
 
             <div>
-              <p className="text-white font-medium mb-2">Payment Methods:</p>
+              <p className="font-medium text-foreground mb-2">
+                Payment Methods:
+              </p>
               <ul className="space-y-2">
                 <li className="flex items-start gap-2">
                   <BanknoteIcon className="h-4 w-4 text-green-400 mt-1" />
@@ -75,21 +69,23 @@ export const HowToPayModal: React.FC<HowToPayModalProps> = ({ onClose }) => {
             </div>
 
             <div>
-              <p className="text-white font-medium mb-2">What You’ll Pay:</p>
+              <p className="font-medium text-foreground mb-2">
+                What You’ll Pay:
+              </p>
               <ul className="space-y-2">
                 <li className="flex items-start gap-2">
-                  <BadgeDollarSignIcon className="h-4 w-4 text-white mt-1" />
+                  <BadgeDollarSignIcon className="h-4 w-4 text-primary mt-1" />
                   Ferry Fare: $30 USD (adults), $15 USD (children)
                 </li>
                 <li className="flex items-start gap-2">
-                  <TerminalIcon className="h-4 w-4 text-white mt-1" />
+                  <TerminalIcon className="h-4 w-4 text-primary mt-1" />
                   Departure Tax: $28 USD (visitors), $11 USD (residents)
                 </li>
               </ul>
             </div>
 
             <div>
-              <p className="text-white font-medium mb-2">Where to Pay:</p>
+              <p className="font-medium text-foreground mb-2">Where to Pay:</p>
               <p>
                 <strong>In person</strong> at the terminal counter using{" "}
                 <strong>cash only</strong>.
@@ -102,13 +98,15 @@ export const HowToPayModal: React.FC<HowToPayModalProps> = ({ onClose }) => {
 
           {/* Marigot Section */}
           <div className="w-full md:w-1/2 space-y-6">
-            <h3 className="text-xl font-semibold text-white mb-3 flex items-center gap-2">
+            <h3 className="text-xl font-semibold text-foreground mb-3 flex items-center gap-2">
               <EuroIcon className="h-5 w-5 text-yellow-300" />
               Marigot Ferry Terminal (St. Martin)
             </h3>
 
             <div>
-              <p className="text-white font-medium mb-2">Payment Methods:</p>
+              <p className="font-medium text-foreground mb-2">
+                Payment Methods:
+              </p>
               <ul className="space-y-2">
                 <li className="flex items-start gap-2">
                   <BanknoteIcon className="h-4 w-4 text-green-400 mt-1" />
@@ -125,36 +123,38 @@ export const HowToPayModal: React.FC<HowToPayModalProps> = ({ onClose }) => {
             </div>
 
             <div>
-              <p className="text-white font-medium mb-2">What You’ll Pay:</p>
+              <p className="font-medium text-foreground mb-2">
+                What You’ll Pay:
+              </p>
               <ul className="space-y-2">
                 <li className="flex items-start gap-2">
-                  <BadgeDollarSignIcon className="h-4 w-4 text-white mt-1" />
+                  <BadgeDollarSignIcon className="h-4 w-4 text-primary mt-1" />
                   Ferry Fare: $30 USD (adults), $15 USD (children)
                 </li>
                 <li className="flex items-start gap-2">
-                  <TerminalIcon className="h-4 w-4 text-white mt-1" />
+                  <TerminalIcon className="h-4 w-4 text-primary mt-1" />
                   Head Tax: €7 per person — paid before boarding
                 </li>
               </ul>
             </div>
 
             <div>
-              <p className="text-white font-medium mb-2">Where to Pay:</p>
+              <p className="font-medium text-foreground mb-2">Where to Pay:</p>
               <ul className="space-y-2">
                 <li className="flex items-start gap-2">
-                  <TerminalIcon className="h-4 w-4 text-white mt-1" />
+                  <TerminalIcon className="h-4 w-4 text-primary mt-1" />
                   Head Tax at the terminal counter{" "}
                   <strong>before departure</strong>.
                 </li>
                 <li className="flex items-start gap-2">
-                  <BanknoteIcon className="h-4 w-4 text-white mt-1" />
+                  <BanknoteIcon className="h-4 w-4 text-primary mt-1" />
                   Ferry Fare <strong>paid on board</strong> to the operator.
                 </li>
               </ul>
             </div>
           </div>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };

@@ -105,15 +105,22 @@ export function InfoCards() {
         />
       )}
       {modals["Ferry Prices"] && (
-        <FerryPriceModal onClose={() => handleCloseModal("Ferry Prices")} />
+        <FerryPriceModal
+          open={modals["Ferry Prices"]}
+          onClose={() => handleCloseModal("Ferry Prices")}
+        />
       )}
       {modals["Departure Taxes"] && (
         <DepartureTaxesModal
+          open={modals["Departure Taxes"]}
           onClose={() => handleCloseModal("Departure Taxes")}
         />
       )}
       {modals["How to Pay"] && (
-        <HowToPayModal onClose={() => handleCloseModal("How to Pay")} />
+        <HowToPayModal
+          open={modals["How to Pay"]}
+          onClose={() => handleCloseModal("How to Pay")}
+        />
       )}
       {modals["Security"] && (
         <SecurityModal onClose={() => handleCloseModal("Security")} />
