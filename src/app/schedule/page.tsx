@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
-import { Save, X, CalendarIcon } from "lucide-react";
+import { Save, X } from "lucide-react";
 import { supabase } from "@/utils/supabase";
 import { FerryItem } from "@/types/FerryItem";
 
@@ -13,15 +13,9 @@ import { useDropdownOptions } from "@/hooks/useDropdownOptions";
 import { OutboundTableCard } from "@/components/FerrySchedule/OutboundTableCard";
 import { ReturnTableCard } from "@/components/FerrySchedule/ReturnTableCard";
 import { ScheduleDateToolbar } from "@/components/FerrySchedule/ScheduleDateToolbar";
-import { cloneSchedulePattern } from "@/utils/cloneSchedulePattern";
 
-import {
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
 import { UserCard } from "@/components/FerrySchedule/UserCard";
+import { CloneScheduleModal } from "@/components/FerrySchedule/CloneScheduleModal";
 
 type FerryWithExtras = Omit<FerryItem, "id"> & {
   id: number | string;
@@ -61,15 +55,7 @@ export default function SchedulePage() {
   }>({});
   const [fromEditable, setFromEditable] = useState<FerryWithExtras[]>([]);
 
-  const [dateRange, setDateRange] = useState<{
-    from: Date | undefined;
-    to: Date | undefined;
-  }>({
-    from: undefined,
-    to: undefined,
-  });
   const [isCloning, setIsCloning] = useState(false);
-  const [cloneWeeks, setCloneWeeks] = useState(3);
   const [isCloningLoading, setIsCloningLoading] = useState(false);
 
   useEffect(() => {
@@ -203,10 +189,15 @@ export default function SchedulePage() {
   const saveSchedules = async () => {
     const formattedDate = format(selectedDate, "yyyy-MM-dd");
 
-    const outboundTrips =
-      schedules.length > 0
-        ? schedules.filter((s) => s.direction === "from-anguilla")
-        : fromEditable.filter((s) => s.operator && s.operator !== "--");
+    const outboundTrips = fromEditable.filter(
+      (s) =>
+        s.operator &&
+        s.operator !== "--" &&
+        s.departure_time &&
+        s.departure_time !== "" &&
+        s.departure_port &&
+        s.arrival_port
+    );
 
     const existingReturnKeys = new Set(
       schedules
@@ -240,8 +231,12 @@ export default function SchedulePage() {
       ...outboundTrips.map((s) => ({
         ...s,
         duration: "00:30:00",
+        created_by: userInfo?.id ?? null,
       })),
-      ...returnTrips,
+      ...returnTrips.map((r) => ({
+        ...r,
+        created_by: userInfo?.id ?? null,
+      })),
     ];
 
     if (fullUpdates.length === 0) {
@@ -257,20 +252,18 @@ export default function SchedulePage() {
 
     if (error) {
       alert("❌ Failed to save schedules.");
-      console.error(error);
+      console.error("❌ Save error:", error.message, error.details, error);
     } else {
       alert("✅ Schedules saved successfully!");
       await fetchSchedules(selectedDate);
     }
   };
 
-  const [previewSchedules, setPreviewSchedules] = useState<FerryItem[]>([]);
-  const [isPreviewing, setIsPreviewing] = useState(false);
-
   const [userInfo, setUserInfo] = useState<{
     full_name: string;
     email: string;
     role: string;
+    id: string;
   } | null>(null);
 
   useEffect(() => {
@@ -290,10 +283,7 @@ export default function SchedulePage() {
         .eq("id", userId)
         .maybeSingle();
 
-      if (!user || error) {
-        console.error("User not found or query failed", error);
-        return;
-      }
+      if (!user || error) return;
 
       const { data: roleRow } = await supabase
         .from("roles")
@@ -305,11 +295,21 @@ export default function SchedulePage() {
         full_name: user.full_name ?? "Unknown",
         email: user.email ?? "Unknown",
         role: roleRow?.name ?? "Unknown",
+        id: userId, // ✅ Store user ID for saving
       });
     };
 
     fetchUserInfo();
   }, []);
+
+  const isSaveDisabled = fromEditable.some(
+    (ferry) =>
+      !ferry.operator ||
+      ferry.operator === "--" ||
+      !ferry.departure_time ||
+      !ferry.departure_port ||
+      !ferry.arrival_port
+  );
 
   return (
     <>
@@ -356,7 +356,14 @@ export default function SchedulePage() {
                 >
                   <X className="h-4 w-4 mr-2" /> Cancel
                 </Button>
-                <Button variant="default" onClick={saveSchedules}>
+                <Button
+                  variant="default"
+                  onClick={saveSchedules}
+                  disabled={isSaveDisabled}
+                  title={
+                    isSaveDisabled ? "Fill out all rows before saving" : ""
+                  }
+                >
                   <Save className="h-4 w-4 mr-2" /> Save
                 </Button>
                 <Button variant="secondary" onClick={() => setIsCloning(true)}>
@@ -368,175 +375,13 @@ export default function SchedulePage() {
         </div>
       </div>
 
-      {isCloning && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 shadow-md w-full max-w-3xl space-y-4 max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-bold">Clone Ferry Schedule</h2>
-            <p>Clone this week&apos;s schedule to how many future weeks?</p>
-
-            <input
-              type="number"
-              value={cloneWeeks}
-              onChange={(e) => setCloneWeeks(Number(e.target.value))}
-              className="w-full border rounded p-2"
-              min={1}
-              max={12}
-            />
-
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start text-left font-normal"
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {dateRange.from && dateRange.to
-                    ? `${format(dateRange.from, "MMM d")} – ${format(
-                        dateRange.to,
-                        "MMM d"
-                      )}`
-                    : "Select base week"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="range"
-                  selected={dateRange}
-                  onSelect={(range) => {
-                    if (range?.from && range?.to) {
-                      setDateRange({ from: range.from, to: range.to });
-                    }
-                  }}
-                  numberOfMonths={2}
-                />
-              </PopoverContent>
-            </Popover>
-
-            <div className="flex justify-end gap-4">
-              <Button
-                variant="ghost"
-                onClick={() => {
-                  if (!dateRange.from || !dateRange.to) {
-                    alert("Please select a base week first.");
-                    return;
-                  }
-
-                  const baseWeekSchedules = schedules.filter((s) => {
-                    const d = new Date(s.schedule_date);
-                    return d >= dateRange.from! && d <= dateRange.to!;
-                  });
-
-                  const newSchedules: FerryItem[] = [];
-
-                  for (let i = 1; i <= cloneWeeks; i++) {
-                    baseWeekSchedules.forEach((s) => {
-                      const originalDate = new Date(s.schedule_date);
-                      const clonedDate = new Date(originalDate);
-                      clonedDate.setDate(originalDate.getDate() + 7 * i);
-
-                      newSchedules.push({
-                        ...s,
-                        id: crypto.randomUUID(),
-                        schedule_date: format(clonedDate, "yyyy-MM-dd"),
-                      });
-                    });
-                  }
-
-                  setPreviewSchedules(newSchedules);
-                  setIsPreviewing(true);
-                }}
-              >
-                🔍 Preview
-              </Button>
-
-              <Button variant="outline" onClick={() => setIsCloning(false)}>
-                Cancel
-              </Button>
-
-              <Button
-                disabled={isCloningLoading}
-                onClick={async () => {
-                  if (!dateRange?.from || !dateRange?.to) {
-                    alert("Please select a base week first.");
-                    return;
-                  }
-
-                  setIsCloningLoading(true);
-
-                  if (!dateRange?.from || !dateRange?.to) {
-                    alert(
-                      "Please select both start and end dates for the base week."
-                    );
-                    setIsCloningLoading(false);
-                    return;
-                  }
-
-                  const baseSchedules = schedules.filter((s) => {
-                    const d = new Date(s.schedule_date);
-                    return d >= dateRange.from! && d <= dateRange.to!;
-                  });
-
-                  const { success, error } = await cloneSchedulePattern({
-                    baseSchedules,
-                    startDate: format(dateRange.from, "yyyy-MM-dd"),
-                    numberOfWeeks: cloneWeeks,
-                  });
-
-                  setIsCloningLoading(false);
-                  setIsCloning(false);
-
-                  if (success) {
-                    alert("✅ Schedule cloned successfully!");
-                  } else {
-                    console.error(error);
-                    alert("❌ Failed to clone schedules.");
-                  }
-                }}
-              >
-                {isCloningLoading ? "Cloning..." : "Confirm Clone"}
-              </Button>
-            </div>
-
-            {isPreviewing && (
-              <div className="mt-6">
-                <h3 className="font-semibold mb-2">
-                  🗓️ Preview of Cloned Weeks
-                </h3>
-                <div className="border rounded-lg max-h-[300px] overflow-y-auto">
-                  <table className="w-full text-sm text-left">
-                    <thead className="bg-gray-100 sticky top-0">
-                      <tr>
-                        <th className="px-3 py-2">Date</th>
-                        <th className="px-3 py-2">Time</th>
-                        <th className="px-3 py-2">From</th>
-                        <th className="px-3 py-2">To</th>
-                        <th className="px-3 py-2">Operator</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {previewSchedules
-                        .sort((a, b) =>
-                          `${a.schedule_date} ${a.departure_time}`.localeCompare(
-                            `${b.schedule_date} ${b.departure_time}`
-                          )
-                        )
-                        .map((s) => (
-                          <tr key={s.id} className="border-t">
-                            <td className="px-3 py-2">{s.schedule_date}</td>
-                            <td className="px-3 py-2">{s.departure_time}</td>
-                            <td className="px-3 py-2">{s.departure_port}</td>
-                            <td className="px-3 py-2">{s.arrival_port}</td>
-                            <td className="px-3 py-2">{s.operator}</td>
-                          </tr>
-                        ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      <CloneScheduleModal
+        isCloning={isCloning}
+        onClose={() => setIsCloning(false)}
+        schedules={schedules}
+        isCloningLoading={isCloningLoading}
+        setIsCloningLoading={setIsCloningLoading}
+      />
     </>
   );
 }
