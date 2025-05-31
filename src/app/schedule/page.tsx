@@ -82,11 +82,52 @@ export default function SchedulePage() {
     const actualIndex = schedules.findIndex(
       (s) => s.id === filtered[index]?.id
     );
+
     if (actualIndex !== -1) {
       updated[actualIndex] = { ...updated[actualIndex], [field]: value };
       setSchedules(updated);
     }
+
+    // 🔁 Keep fallback editing in sync for from-anguilla (important!)
+    if (direction === "from-anguilla") {
+      setFromEditable((prev) => {
+        const copy = [...prev];
+        if (copy[index]) {
+          copy[index] = { ...copy[index], [field]: value };
+        }
+        return copy;
+      });
+    }
   };
+
+  useEffect(() => {
+    const outbound = schedules
+      .filter((s) => s.direction === "from-anguilla")
+      .sort((a, b) => a.departure_time.localeCompare(b.departure_time));
+
+    // ✅ Fallback logic: if none from DB, use generated
+    if (outbound.length === 0) {
+      const fallback = defaultDepartureTimes.map((time) => ({
+        id: crypto.randomUUID(),
+        operator: "--",
+        departure_time: time,
+        duration: "00:30:00",
+        status: "scheduled" as FerryItem["status"],
+        departure_port: "Blowing Point, Anguilla",
+        arrival_port: "Marigot, St. Martin",
+        direction: "from-anguilla",
+        schedule_date: format(selectedDate, "yyyy-MM-dd"),
+        vessel_name: null,
+        price: "30.00",
+        logo_url: "",
+        meta: { generated: true },
+      }));
+
+      setFromEditable(fallback);
+    } else {
+      setFromEditable(outbound);
+    }
+  }, [schedules, selectedDate]);
 
   const calculateETA = (departure: string, duration: string): string => {
     const [depHour, depMin] = departure.split(":").map(Number);
@@ -122,7 +163,7 @@ export default function SchedulePage() {
             operator: outbound.operator,
             departure_time: returnTime,
             duration: "00:30:00",
-            status: "scheduled",
+            status: "scheduled" as FerryItem["status"],
             departure_port: "Marigot, St. Martin",
             arrival_port: "Blowing Point, Anguilla",
             direction: "to-anguilla",
@@ -154,37 +195,70 @@ export default function SchedulePage() {
     }
   };
 
-  const fromAnguilla = schedules
-    .filter((s) => s.direction === "from-anguilla")
-    .sort((a, b) => a.departure_time.localeCompare(b.departure_time));
+  const defaultDepartureTimes = [
+    "07:30",
+    "08:30",
+    "09:30",
+    "11:00",
+    "12:30",
+    "14:00",
+    "15:30",
+    "16:30",
+    "17:15",
+  ];
 
-  const toAnguilla: FerryWithExtras[] = fromAnguilla.map((outbound, i) => {
-    const returnTime = marigotReturnTimes[i] || "00:00";
-    const existing = schedules.find(
-      (s) =>
-        s.direction === "to-anguilla" &&
-        s.operator === outbound.operator &&
-        s.departure_time === returnTime
-    );
+  const [fromEditable, setFromEditable] = useState<FerryWithExtras[]>([]);
 
-    return (
-      existing || {
-        id: crypto.randomUUID(),
-        operator: outbound.operator,
-        departure_port: "Marigot, St. Martin",
-        arrival_port: "Blowing Point, Anguilla",
-        direction: "to-anguilla",
-        departure_time: returnTime,
-        duration: "00:30:00",
-        status: "scheduled",
-        schedule_date: format(selectedDate, "yyyy-MM-dd"),
-        vessel_name: outbound.vessel_name || null,
-        price: outbound.price || "30.00",
-        logo_url: outbound.logo_url || "",
-        meta: { generated: true },
-      }
-    );
-  });
+  const fromAnguillaFallback: FerryWithExtras[] = defaultDepartureTimes.map(
+    (time) => ({
+      id: crypto.randomUUID(),
+      operator: "--",
+      departure_time: time,
+      duration: "00:30:00",
+      status: "scheduled",
+      departure_port: "Blowing Point, Anguilla",
+      arrival_port: "Marigot, St. Martin",
+      direction: "from-anguilla",
+      schedule_date: format(selectedDate, "yyyy-MM-dd"),
+      vessel_name: null,
+      price: "30.00",
+      logo_url: "",
+      meta: { generated: true },
+    })
+  );
+
+  const fromAnguillaEditable =
+    fromEditable.length > 0 ? fromEditable : fromAnguillaFallback;
+
+  const getToAnguillaEditable = (): FerryWithExtras[] => {
+    return fromAnguillaEditable.map((outbound, i) => {
+      const returnTime = marigotReturnTimes[i] || "00:00";
+      const existing = schedules.find(
+        (s) =>
+          s.direction === "to-anguilla" &&
+          s.operator === outbound.operator &&
+          s.departure_time === returnTime
+      );
+
+      return (
+        existing || {
+          id: crypto.randomUUID(),
+          operator: outbound.operator,
+          departure_port: "Marigot, St. Martin",
+          arrival_port: "Blowing Point, Anguilla",
+          direction: "to-anguilla",
+          departure_time: returnTime,
+          duration: "00:30:00",
+          status: outbound.status as FerryItem["status"],
+          schedule_date: format(selectedDate, "yyyy-MM-dd"),
+          vessel_name: outbound.vessel_name || null,
+          price: outbound.price || "30.00",
+          logo_url: outbound.logo_url || "",
+          meta: { generated: true },
+        }
+      );
+    });
+  };
 
   return (
     <div className="w-full flex justify-center">
@@ -257,7 +331,7 @@ export default function SchedulePage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {fromAnguilla.map((ferry, index) => (
+                    {fromAnguillaEditable.map((ferry, index) => (
                       <TableRow key={ferry.id}>
                         <TableCell>
                           <input
@@ -301,7 +375,7 @@ export default function SchedulePage() {
                         <TableCell>{ferry.departure_port}</TableCell>
                         <TableCell>{ferry.arrival_port}</TableCell>
                         <TableCell>
-                          {calculateETA(ferry.departure_time, "00:30:00")}
+                          {calculateETA(ferry.departure_time, ferry.duration)}
                         </TableCell>
                         <TableCell>
                           <Select
@@ -350,7 +424,7 @@ export default function SchedulePage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {toAnguilla.map((ferry, index) => (
+                    {getToAnguillaEditable().map((ferry, index) => (
                       <TableRow key={ferry.id}>
                         <TableCell className="min-w-[120px]">
                           <input
@@ -364,7 +438,7 @@ export default function SchedulePage() {
                         <TableCell>{ferry.departure_port}</TableCell>
                         <TableCell>{ferry.arrival_port}</TableCell>
                         <TableCell>
-                          {calculateETA(ferry.departure_time, "00:30:00")}
+                          {calculateETA(ferry.departure_time, ferry.duration)}
                         </TableCell>
                         <TableCell>
                           <Select
