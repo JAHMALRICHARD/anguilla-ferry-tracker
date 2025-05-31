@@ -9,6 +9,7 @@ import { FerryItem } from "@/types/FerryItem";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
+import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import {
   Table,
   TableHeader,
@@ -297,28 +298,49 @@ export default function SchedulePage() {
             <CardTitle>Ferry Schedule Editor</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="mb-6 border rounded-xl p-4 flex flex-wrap gap-3 items-center justify-between shadow-sm">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className="w-[200px] justify-start text-left"
-                  >
-                    <CalendarDays className="mr-2 h-4 w-4" />
-                    {format(selectedDate, "PPP")}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={selectedDate}
-                    onSelect={(date) => setSelectedDate(date || new Date())}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
+            <div className="mb-6 border rounded-xl p-4 flex flex-wrap gap-3 items-center justify-start shadow-sm">
+              {/* ← and → buttons */}
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="secondary"
+                  size="icon"
+                  className="size-8"
+                  onClick={() => setSelectedDate((prev) => addDays(prev, -1))}
+                >
+                  <ChevronLeftIcon className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="icon"
+                  className="size-8"
+                  onClick={() => setSelectedDate((prev) => addDays(prev, 1))}
+                >
+                  <ChevronRightIcon className="w-4 h-4" />
+                </Button>
+              </div>
 
-              <div className="flex gap-2">
+              {/* Calendar + Today + Tomorrow */}
+              <div className="flex items-center gap-2">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-[200px] justify-start text-left"
+                    >
+                      <CalendarDays className="mr-2 h-4 w-4" />
+                      {format(selectedDate, "PPP")}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={selectedDate}
+                      onSelect={(date) => setSelectedDate(date || new Date())}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+
                 <Button
                   variant={
                     selectedDate.toDateString() === today.toDateString()
@@ -352,7 +374,7 @@ export default function SchedulePage() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Departure</TableHead>
-                      <TableHead>Ferry</TableHead>
+                      <TableHead className="w-[140px]">Ferry</TableHead>
                       <TableHead>Origin</TableHead>
                       <TableHead>Destination</TableHead>
                       <TableHead>ETA</TableHead>
@@ -377,7 +399,7 @@ export default function SchedulePage() {
                             className="border p-1 rounded-md"
                           />
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="w-[140px]">
                           <Select
                             value={ferry.operator}
                             onValueChange={(val) =>
@@ -389,8 +411,8 @@ export default function SchedulePage() {
                               )
                             }
                           >
-                            <SelectTrigger>
-                              <SelectValue />
+                            <SelectTrigger className="w-full min-w-[120px]">
+                              <SelectValue placeholder="--" />
                             </SelectTrigger>
                             <SelectContent>
                               {operators.map((op) => (
@@ -445,7 +467,7 @@ export default function SchedulePage() {
                   <TableHeader>
                     <TableRow>
                       <TableHead className="min-w-[120px]">Departure</TableHead>
-                      <TableHead>Ferry</TableHead>
+                      <TableHead className="w-[140px]">Ferry</TableHead>
                       <TableHead>Origin</TableHead>
                       <TableHead>Destination</TableHead>
                       <TableHead>ETA</TableHead>
