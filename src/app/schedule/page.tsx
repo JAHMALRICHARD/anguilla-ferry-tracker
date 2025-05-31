@@ -53,6 +53,21 @@ export default function SchedulePage() {
   const [schedules, setSchedules] = useState<FerryItem[]>([]);
   const { operators, statuses } = useDropdownOptions();
 
+  const [fallbackEditsByDate, setFallbackEditsByDate] = useState<{
+    [date: string]: FerryWithExtras[];
+  }>({});
+
+  useEffect(() => {
+    localStorage.setItem("fallbackCache", JSON.stringify(fallbackEditsByDate));
+  }, [fallbackEditsByDate]);
+
+  useEffect(() => {
+    const fromStorage = localStorage.getItem("fallbackCache");
+    if (fromStorage) {
+      setFallbackEditsByDate(JSON.parse(fromStorage));
+    }
+  }, []);
+
   const today = new Date();
   const tomorrow = addDays(today, 1);
 
@@ -95,39 +110,53 @@ export default function SchedulePage() {
         if (copy[index]) {
           copy[index] = { ...copy[index], [field]: value };
         }
+
+        // Save this edit to fallback cache by date
+        const dateKey = format(selectedDate, "yyyy-MM-dd");
+        setFallbackEditsByDate((prevCache) => ({
+          ...prevCache,
+          [dateKey]: copy,
+        }));
+
         return copy;
       });
     }
   };
 
   useEffect(() => {
+    const dateKey = format(selectedDate, "yyyy-MM-dd");
     const outbound = schedules
       .filter((s) => s.direction === "from-anguilla")
       .sort((a, b) => a.departure_time.localeCompare(b.departure_time));
 
     // ✅ Fallback logic: if none from DB, use generated
     if (outbound.length === 0) {
-      const fallback = defaultDepartureTimes.map((time) => ({
-        id: crypto.randomUUID(),
-        operator: "--",
-        departure_time: time,
-        duration: "00:30:00",
-        status: "scheduled" as FerryItem["status"],
-        departure_port: "Blowing Point, Anguilla",
-        arrival_port: "Marigot, St. Martin",
-        direction: "from-anguilla",
-        schedule_date: format(selectedDate, "yyyy-MM-dd"),
-        vessel_name: null,
-        price: "30.00",
-        logo_url: "",
-        meta: { generated: true },
-      }));
+      // ✅ If cached fallback edits exist for this date, use them
+      if (fallbackEditsByDate[dateKey]) {
+        setFromEditable(fallbackEditsByDate[dateKey]);
+      } else {
+        const fallback = defaultDepartureTimes.map((time) => ({
+          id: crypto.randomUUID(),
+          operator: "--",
+          departure_time: time,
+          duration: "00:30:00",
+          status: "scheduled" as FerryItem["status"],
+          departure_port: "Blowing Point, Anguilla",
+          arrival_port: "Marigot, St. Martin",
+          direction: "from-anguilla",
+          schedule_date: dateKey,
+          vessel_name: null,
+          price: "30.00",
+          logo_url: "",
+          meta: { generated: true },
+        }));
 
-      setFromEditable(fallback);
+        setFromEditable(fallback);
+      }
     } else {
       setFromEditable(outbound);
     }
-  }, [schedules, selectedDate]);
+  }, [schedules, selectedDate, fallbackEditsByDate]);
 
   const calculateETA = (departure: string, duration: string): string => {
     const [depHour, depMin] = departure.split(":").map(Number);
