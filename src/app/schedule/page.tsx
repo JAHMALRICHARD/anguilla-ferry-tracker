@@ -21,6 +21,7 @@ import {
   PopoverContent,
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
+import { UserCard } from "@/components/FerrySchedule/UserCard";
 
 type FerryWithExtras = Omit<FerryItem, "id"> & {
   id: number | string;
@@ -202,9 +203,11 @@ export default function SchedulePage() {
   const saveSchedules = async () => {
     const formattedDate = format(selectedDate, "yyyy-MM-dd");
 
-    const outboundTrips = schedules.filter(
-      (s) => s.direction === "from-anguilla"
-    );
+    const outboundTrips =
+      schedules.length > 0
+        ? schedules.filter((s) => s.direction === "from-anguilla")
+        : fromEditable.filter((s) => s.operator && s.operator !== "--");
+
     const existingReturnKeys = new Set(
       schedules
         .filter((s) => s.direction === "to-anguilla")
@@ -221,7 +224,7 @@ export default function SchedulePage() {
           operator: outbound.operator,
           departure_time: returnTime,
           duration: "00:30:00",
-          status: "scheduled",
+          status: outbound.status,
           departure_port: "Marigot, St. Martin",
           arrival_port: "Blowing Point, Anguilla",
           direction: "to-anguilla",
@@ -234,24 +237,91 @@ export default function SchedulePage() {
     });
 
     const fullUpdates = [
-      ...schedules.map((s) => ({ ...s, duration: "00:30:00" })),
+      ...outboundTrips.map((s) => ({
+        ...s,
+        duration: "00:30:00",
+      })),
       ...returnTrips,
     ];
+
+    if (fullUpdates.length === 0) {
+      alert("⚠️ No valid rows to save.");
+      return;
+    }
+
     const { error } = await supabase
       .from("ferry_schedules")
-      .upsert(fullUpdates);
+      .upsert(fullUpdates, {
+        onConflict: "schedule_date,departure_time,direction",
+      });
+
     if (error) {
       alert("❌ Failed to save schedules.");
       console.error(error);
     } else {
       alert("✅ Schedules saved successfully!");
+      await fetchSchedules(selectedDate);
     }
   };
+
+  const [previewSchedules, setPreviewSchedules] = useState<FerryItem[]>([]);
+  const [isPreviewing, setIsPreviewing] = useState(false);
+
+  const [userInfo, setUserInfo] = useState<{
+    full_name: string;
+    email: string;
+    role: string;
+  } | null>(null);
+
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
+
+      if (sessionError || !session?.user) return;
+
+      const userId = session.user.id;
+
+      const { data: user, error } = await supabase
+        .from("users")
+        .select("full_name, email, role_id")
+        .eq("id", userId)
+        .maybeSingle();
+
+      if (!user || error) {
+        console.error("User not found or query failed", error);
+        return;
+      }
+
+      const { data: roleRow } = await supabase
+        .from("roles")
+        .select("name")
+        .eq("id", user.role_id)
+        .maybeSingle();
+
+      setUserInfo({
+        full_name: user.full_name ?? "Unknown",
+        email: user.email ?? "Unknown",
+        role: roleRow?.name ?? "Unknown",
+      });
+    };
+
+    fetchUserInfo();
+  }, []);
 
   return (
     <>
       <div className="w-full flex justify-center">
         <div className="w-full max-w-full px-6 space-y-4">
+          {userInfo && (
+            <UserCard
+              full_name={userInfo.full_name}
+              email={userInfo.email}
+              role={userInfo.role.toUpperCase()}
+            />
+          )}
           <Card>
             <CardHeader>
               <CardTitle>Ferry Schedule Editor</CardTitle>
@@ -300,7 +370,7 @@ export default function SchedulePage() {
 
       {isCloning && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 shadow-md w-full max-w-md space-y-4">
+          <div className="bg-white rounded-xl p-6 shadow-md w-full max-w-3xl space-y-4 max-h-[90vh] overflow-y-auto">
             <h2 className="text-xl font-bold">Clone Ferry Schedule</h2>
             <p>Clone this week&apos;s schedule to how many future weeks?</p>
 
@@ -332,19 +402,57 @@ export default function SchedulePage() {
                 <Calendar
                   mode="range"
                   selected={dateRange}
-                  onSelect={(range) =>
-                    setDateRange({ from: range?.from, to: range?.to })
-                  }
+                  onSelect={(range) => {
+                    if (range?.from && range?.to) {
+                      setDateRange({ from: range.from, to: range.to });
+                    }
+                  }}
                   numberOfMonths={2}
-                  defaultMonth={new Date("2025-06-01")}
                 />
               </PopoverContent>
             </Popover>
 
             <div className="flex justify-end gap-4">
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  if (!dateRange.from || !dateRange.to) {
+                    alert("Please select a base week first.");
+                    return;
+                  }
+
+                  const baseWeekSchedules = schedules.filter((s) => {
+                    const d = new Date(s.schedule_date);
+                    return d >= dateRange.from! && d <= dateRange.to!;
+                  });
+
+                  const newSchedules: FerryItem[] = [];
+
+                  for (let i = 1; i <= cloneWeeks; i++) {
+                    baseWeekSchedules.forEach((s) => {
+                      const originalDate = new Date(s.schedule_date);
+                      const clonedDate = new Date(originalDate);
+                      clonedDate.setDate(originalDate.getDate() + 7 * i);
+
+                      newSchedules.push({
+                        ...s,
+                        id: crypto.randomUUID(),
+                        schedule_date: format(clonedDate, "yyyy-MM-dd"),
+                      });
+                    });
+                  }
+
+                  setPreviewSchedules(newSchedules);
+                  setIsPreviewing(true);
+                }}
+              >
+                🔍 Preview
+              </Button>
+
               <Button variant="outline" onClick={() => setIsCloning(false)}>
                 Cancel
               </Button>
+
               <Button
                 disabled={isCloningLoading}
                 onClick={async () => {
@@ -355,8 +463,10 @@ export default function SchedulePage() {
 
                   setIsCloningLoading(true);
 
-                  if (!dateRange.from || !dateRange.to) {
-                    alert("Please select a base week first.");
+                  if (!dateRange?.from || !dateRange?.to) {
+                    alert(
+                      "Please select both start and end dates for the base week."
+                    );
                     setIsCloningLoading(false);
                     return;
                   }
@@ -386,6 +496,44 @@ export default function SchedulePage() {
                 {isCloningLoading ? "Cloning..." : "Confirm Clone"}
               </Button>
             </div>
+
+            {isPreviewing && (
+              <div className="mt-6">
+                <h3 className="font-semibold mb-2">
+                  🗓️ Preview of Cloned Weeks
+                </h3>
+                <div className="border rounded-lg max-h-[300px] overflow-y-auto">
+                  <table className="w-full text-sm text-left">
+                    <thead className="bg-gray-100 sticky top-0">
+                      <tr>
+                        <th className="px-3 py-2">Date</th>
+                        <th className="px-3 py-2">Time</th>
+                        <th className="px-3 py-2">From</th>
+                        <th className="px-3 py-2">To</th>
+                        <th className="px-3 py-2">Operator</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {previewSchedules
+                        .sort((a, b) =>
+                          `${a.schedule_date} ${a.departure_time}`.localeCompare(
+                            `${b.schedule_date} ${b.departure_time}`
+                          )
+                        )
+                        .map((s) => (
+                          <tr key={s.id} className="border-t">
+                            <td className="px-3 py-2">{s.schedule_date}</td>
+                            <td className="px-3 py-2">{s.departure_time}</td>
+                            <td className="px-3 py-2">{s.departure_port}</td>
+                            <td className="px-3 py-2">{s.arrival_port}</td>
+                            <td className="px-3 py-2">{s.operator}</td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
