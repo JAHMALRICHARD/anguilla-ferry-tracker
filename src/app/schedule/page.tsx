@@ -31,15 +31,34 @@ import {
 } from "@/components/ui/popover";
 import { useDropdownOptions } from "@/hooks/useDropdownOptions";
 
-export default function SchedulePage() {
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [schedules, setSchedules] = useState<FerryItem[]>([]);
+type FerryWithExtras = Omit<FerryItem, "id"> & {
+  id: number | string;
+  meta?: { generated: boolean };
+};
 
-  const { operators, departurePorts, arrivalPorts, statuses } =
-    useDropdownOptions();
+const marigotReturnTimes = [
+  "08:30",
+  "09:30",
+  "10:30",
+  "12:00",
+  "13:30",
+  "15:00",
+  "16:30",
+  "17:15",
+  "18:00",
+];
+
+export default function SchedulePage() {
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [schedules, setSchedules] = useState<FerryItem[]>([]);
+  const { operators, statuses } = useDropdownOptions();
 
   const today = new Date();
   const tomorrow = addDays(today, 1);
+
+  useEffect(() => {
+    fetchSchedules(selectedDate);
+  }, [selectedDate]);
 
   const fetchSchedules = async (date: Date) => {
     const formattedDate = format(date, "yyyy-MM-dd");
@@ -52,45 +71,130 @@ export default function SchedulePage() {
     else console.error("Fetch error:", error);
   };
 
-  useEffect(() => {
-    fetchSchedules(selectedDate);
-  }, [selectedDate]);
-
-  const updateSchedule = (index: number, field: string, value: string) => {
+  const updateSchedule = (
+    index: number,
+    field: string,
+    value: string,
+    direction: string
+  ) => {
     const updated = [...schedules];
-    updated[index] = { ...updated[index], [field]: value };
-    setSchedules(updated);
+    const filtered = schedules.filter((s) => s.direction === direction);
+    const actualIndex = schedules.findIndex(
+      (s) => s.id === filtered[index]?.id
+    );
+    if (actualIndex !== -1) {
+      updated[actualIndex] = { ...updated[actualIndex], [field]: value };
+      setSchedules(updated);
+    }
   };
 
   const calculateETA = (departure: string, duration: string): string => {
     const [depHour, depMin] = departure.split(":").map(Number);
     const [durHour, durMin] = duration.split(":").map(Number);
-    const etaDate = new Date();
-    etaDate.setHours(depHour + durHour, depMin + durMin);
-    return format(etaDate, "HH:mm");
+    const eta = new Date();
+    eta.setHours(depHour + durHour);
+    eta.setMinutes(depMin + durMin);
+    return format(eta, "HH:mm");
   };
 
   const saveSchedules = async () => {
-    const updates = schedules.map(({ ...rest }) => ({ ...rest }));
-    const { error } = await supabase.from("ferry_schedules").upsert(updates);
-    if (error) console.error("Save error:", error);
-    else alert("Schedules updated!");
+    const formattedDate = format(selectedDate, "yyyy-MM-dd");
+
+    const outboundTrips = schedules
+      .filter((s) => s.direction === "from-anguilla")
+      .sort((a, b) => a.departure_time.localeCompare(b.departure_time));
+
+    const existingReturnKeys = new Set(
+      schedules
+        .filter((s) => s.direction === "to-anguilla")
+        .map((s) => `${s.operator}_${s.departure_time}`)
+    );
+
+    const returnTrips: FerryItem[] = outboundTrips.flatMap(
+      (outbound, index) => {
+        const returnTime = marigotReturnTimes[index] || "00:00";
+        const returnKey = `${outbound.operator}_${returnTime}`;
+        if (existingReturnKeys.has(returnKey)) return [];
+
+        return [
+          {
+            id: crypto.randomUUID(),
+            operator: outbound.operator,
+            departure_time: returnTime,
+            duration: "00:30:00",
+            status: "scheduled",
+            departure_port: "Marigot, St. Martin",
+            arrival_port: "Blowing Point, Anguilla",
+            direction: "to-anguilla",
+            schedule_date: formattedDate,
+            vessel_name: outbound.vessel_name || null,
+            price: outbound.price || "30.00",
+            logo_url: outbound.logo_url || "",
+          },
+        ];
+      }
+    );
+
+    const outboundUpdates = schedules.map((s) => ({
+      ...s,
+      duration: "00:30:00",
+    }));
+
+    const fullUpdates = [...outboundUpdates, ...returnTrips];
+
+    const { error } = await supabase
+      .from("ferry_schedules")
+      .upsert(fullUpdates);
+
+    if (error) {
+      console.error("Save error:", error);
+      alert("❌ Failed to save schedules. Check the console.");
+    } else {
+      alert("✅ Schedules (including return trips) saved successfully!");
+    }
   };
 
+  const fromAnguilla = schedules
+    .filter((s) => s.direction === "from-anguilla")
+    .sort((a, b) => a.departure_time.localeCompare(b.departure_time));
+
+  const toAnguilla: FerryWithExtras[] = fromAnguilla.map((outbound, i) => {
+    const returnTime = marigotReturnTimes[i] || "00:00";
+    const existing = schedules.find(
+      (s) =>
+        s.direction === "to-anguilla" &&
+        s.operator === outbound.operator &&
+        s.departure_time === returnTime
+    );
+
+    return (
+      existing || {
+        id: crypto.randomUUID(),
+        operator: outbound.operator,
+        departure_port: "Marigot, St. Martin",
+        arrival_port: "Blowing Point, Anguilla",
+        direction: "to-anguilla",
+        departure_time: returnTime,
+        duration: "00:30:00",
+        status: "scheduled",
+        schedule_date: format(selectedDate, "yyyy-MM-dd"),
+        vessel_name: outbound.vessel_name || null,
+        price: outbound.price || "30.00",
+        logo_url: outbound.logo_url || "",
+        meta: { generated: true },
+      }
+    );
+  });
+
   return (
-    <div className="p-6 space-y-4 max-w-screen-2xl mx-auto">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex justify-between items-center">
-            Ferry Schedule Editor
-            <Button variant="default" onClick={saveSchedules}>
-              <Save className="h-4 w-4 mr-2" /> Save
-            </Button>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="mb-6 bg-background border rounded-xl p-4 flex flex-wrap gap-3 items-center justify-between shadow-sm">
-            <div className="flex items-center gap-4">
+    <div className="w-full flex justify-center">
+      <div className="w-full max-w-full px-6 space-y-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Ferry Schedule Editor</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="mb-6 border rounded-xl p-4 flex flex-wrap gap-3 items-center justify-between shadow-sm">
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
@@ -110,158 +214,203 @@ export default function SchedulePage() {
                   />
                 </PopoverContent>
               </Popover>
+
+              <div className="flex gap-2">
+                <Button
+                  variant={
+                    selectedDate.toDateString() === today.toDateString()
+                      ? "default"
+                      : "secondary"
+                  }
+                  onClick={() => setSelectedDate(today)}
+                >
+                  Today
+                </Button>
+                <Button
+                  variant={
+                    selectedDate.toDateString() === tomorrow.toDateString()
+                      ? "default"
+                      : "secondary"
+                  }
+                  onClick={() => setSelectedDate(tomorrow)}
+                >
+                  Tomorrow
+                </Button>
+              </div>
             </div>
 
-            <div className="flex space-x-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* Outbound Table */}
+              <div>
+                <h3 className="text-lg font-semibold mb-2">
+                  🛳 Blowing Point → Marigot
+                </h3>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Departure</TableHead>
+                      <TableHead>Ferry</TableHead>
+                      <TableHead>Origin</TableHead>
+                      <TableHead>Destination</TableHead>
+                      <TableHead>ETA</TableHead>
+                      <TableHead>Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {fromAnguilla.map((ferry, index) => (
+                      <TableRow key={ferry.id}>
+                        <TableCell>
+                          <input
+                            type="time"
+                            value={ferry.departure_time.slice(0, 5)}
+                            onChange={(e) =>
+                              updateSchedule(
+                                index,
+                                "departure_time",
+                                e.target.value + ":00",
+                                "from-anguilla"
+                              )
+                            }
+                            className="border p-1 rounded-md"
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Select
+                            value={ferry.operator}
+                            onValueChange={(val) =>
+                              updateSchedule(
+                                index,
+                                "operator",
+                                val,
+                                "from-anguilla"
+                              )
+                            }
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {operators.map((op) => (
+                                <SelectItem key={op} value={op}>
+                                  {op}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                        <TableCell>{ferry.departure_port}</TableCell>
+                        <TableCell>{ferry.arrival_port}</TableCell>
+                        <TableCell>
+                          {calculateETA(ferry.departure_time, "00:30:00")}
+                        </TableCell>
+                        <TableCell>
+                          <Select
+                            value={ferry.status}
+                            onValueChange={(val) =>
+                              updateSchedule(
+                                index,
+                                "status",
+                                val,
+                                "from-anguilla"
+                              )
+                            }
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {statuses.map((s) => (
+                                <SelectItem key={s} value={s}>
+                                  {s}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {/* Return Table */}
+              <div>
+                <h3 className="text-lg font-semibold mb-2">
+                  🛳 Marigot → Blowing Point
+                </h3>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="min-w-[120px]">Departure</TableHead>
+                      <TableHead>Ferry</TableHead>
+                      <TableHead>Origin</TableHead>
+                      <TableHead>Destination</TableHead>
+                      <TableHead>ETA</TableHead>
+                      <TableHead>Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {toAnguilla.map((ferry, index) => (
+                      <TableRow key={ferry.id}>
+                        <TableCell className="min-w-[120px]">
+                          <input
+                            type="time"
+                            value={ferry.departure_time}
+                            disabled
+                            className="border p-1 rounded-md bg-muted text-muted-foreground w-full"
+                          />
+                        </TableCell>
+                        <TableCell>{ferry.operator}</TableCell>
+                        <TableCell>{ferry.departure_port}</TableCell>
+                        <TableCell>{ferry.arrival_port}</TableCell>
+                        <TableCell>
+                          {calculateETA(ferry.departure_time, "00:30:00")}
+                        </TableCell>
+                        <TableCell>
+                          <Select
+                            value={ferry.status}
+                            onValueChange={(val) =>
+                              updateSchedule(
+                                index,
+                                "status",
+                                val,
+                                "to-anguilla"
+                              )
+                            }
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {statuses.map((s) => (
+                                <SelectItem key={s} value={s}>
+                                  {s}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-end gap-3">
               <Button
-                variant={
-                  selectedDate.toDateString() === today.toDateString()
-                    ? "default"
-                    : "secondary"
-                }
-                onClick={() => setSelectedDate(today)}
-                className="flex items-center gap-2"
+                variant="outline"
+                onClick={() => fetchSchedules(selectedDate)}
               >
-                <CalendarDays className="w-4 h-4" />
-                Today
+                <X className="h-4 w-4 mr-2" /> Cancel
               </Button>
-              <Button
-                variant={
-                  selectedDate.toDateString() === tomorrow.toDateString()
-                    ? "default"
-                    : "secondary"
-                }
-                onClick={() => setSelectedDate(tomorrow)}
-                className="flex items-center gap-2"
-              >
-                <CalendarDays className="w-4 h-4" />
-                Tomorrow
+              <Button variant="default" onClick={saveSchedules}>
+                <Save className="h-4 w-4 mr-2" /> Save
               </Button>
             </div>
-          </div>
-
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Departure</TableHead>
-                <TableHead>Ferry</TableHead>
-                <TableHead>Origin</TableHead>
-                <TableHead>Destination</TableHead>
-                <TableHead>ETA</TableHead>
-                <TableHead>Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {schedules.map((schedule, index) => (
-                <TableRow key={schedule.id}>
-                  <TableCell>
-                    <input
-                      type="time"
-                      value={schedule.departure_time.slice(0, 5)}
-                      onChange={(e) =>
-                        updateSchedule(
-                          index,
-                          "departure_time",
-                          e.target.value + ":00"
-                        )
-                      }
-                      className="border p-1 rounded-md"
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Select
-                      value={schedule.operator}
-                      onValueChange={(value) =>
-                        updateSchedule(index, "operator", value)
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select Ferry" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {operators.map((op) => (
-                          <SelectItem key={op} value={op}>
-                            {op}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </TableCell>
-                  <TableCell>
-                    <Select
-                      value={schedule.departure_port}
-                      onValueChange={(value) =>
-                        updateSchedule(index, "departure_port", value)
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select Origin" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {departurePorts.map((port) => (
-                          <SelectItem key={port} value={port}>
-                            {port}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </TableCell>
-                  <TableCell>
-                    <Select
-                      value={schedule.arrival_port}
-                      onValueChange={(value) =>
-                        updateSchedule(index, "arrival_port", value)
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select Destination" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {arrivalPorts.map((port) => (
-                          <SelectItem key={port} value={port}>
-                            {port}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </TableCell>
-                  <TableCell>
-                    {calculateETA(schedule.departure_time, schedule.duration)}
-                  </TableCell>
-                  <TableCell>
-                    <Select
-                      value={schedule.status}
-                      onValueChange={(value) =>
-                        updateSchedule(index, "status", value)
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select Status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {statuses.map((st) => (
-                          <SelectItem key={st} value={st}>
-                            {st}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-
-          <div className="mt-4">
-            <Button
-              variant="outline"
-              onClick={() => fetchSchedules(selectedDate)}
-            >
-              <X className="h-4 w-4 mr-2" /> Cancel
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

@@ -2,7 +2,7 @@
 export type FerryStatus = "on-time" | "delayed" | "cancelled" | "scheduled";
 
 export interface FerryItem {
-  id: number;
+  id: number | string;
   operator: string;
   departure_port: string;
   arrival_port: string;
@@ -10,7 +10,7 @@ export interface FerryItem {
   arrival_time?: string;
   price: string;
   duration: string;
-  vessel_name?: string;
+  vessel_name?: string | null;
   status: FerryStatus;
   direction: string;
   schedule_date: string;
