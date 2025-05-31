@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { format, addDays } from "date-fns";
+import { format } from "date-fns";
 import { Save, X, CalendarIcon } from "lucide-react";
 import { supabase } from "@/utils/supabase";
 import { FerryItem } from "@/types/FerryItem";
@@ -60,11 +60,13 @@ export default function SchedulePage() {
   }>({});
   const [fromEditable, setFromEditable] = useState<FerryWithExtras[]>([]);
 
-  const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>({
-    from: new Date(),
-    to: addDays(new Date(), 6),
+  const [dateRange, setDateRange] = useState<{
+    from: Date | undefined;
+    to: Date | undefined;
+  }>({
+    from: undefined,
+    to: undefined,
   });
-
   const [isCloning, setIsCloning] = useState(false);
   const [cloneWeeks, setCloneWeeks] = useState(3);
   const [isCloningLoading, setIsCloningLoading] = useState(false);
@@ -157,7 +159,7 @@ export default function SchedulePage() {
     } else {
       setFromEditable(outbound);
     }
-  }, [schedules, selectedDate, fallbackEditsByDate, defaultDepartureTimes]);
+  }, [schedules, selectedDate, fallbackEditsByDate]);
 
   const calculateETA = (departure: string, duration: string) => {
     const [depHour, depMin] = departure.split(":").map(Number);
@@ -330,12 +332,11 @@ export default function SchedulePage() {
                 <Calendar
                   mode="range"
                   selected={dateRange}
-                  onSelect={(range) => {
-                    if (range?.from && range.to) {
-                      setDateRange({ from: range.from, to: range.to });
-                    }
-                  }}
+                  onSelect={(range) =>
+                    setDateRange({ from: range?.from, to: range?.to })
+                  }
                   numberOfMonths={2}
+                  defaultMonth={new Date("2025-06-01")}
                 />
               </PopoverContent>
             </Popover>
@@ -353,9 +354,16 @@ export default function SchedulePage() {
                   }
 
                   setIsCloningLoading(true);
+
+                  if (!dateRange.from || !dateRange.to) {
+                    alert("Please select a base week first.");
+                    setIsCloningLoading(false);
+                    return;
+                  }
+
                   const baseSchedules = schedules.filter((s) => {
                     const d = new Date(s.schedule_date);
-                    return d >= dateRange.from && d <= dateRange.to;
+                    return d >= dateRange.from! && d <= dateRange.to!;
                   });
 
                   const { success, error } = await cloneSchedulePattern({
