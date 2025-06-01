@@ -18,13 +18,10 @@ function groupByWeekAndDate(schedules: FerryItem[]) {
     const dateObj = parseISO(item.schedule_date);
 
     const weekStart = format(
-      startOfWeek(dateObj, { weekStartsOn: 1 }), // Start week on Monday
+      startOfWeek(dateObj, { weekStartsOn: 1 }),
       "yyyy-MM-dd"
     );
     const dateKey = format(dateObj, "yyyy-MM-dd");
-
-    // 🧪 Debug log (optional)
-    // console.log(`📦 ${dateKey} grouped under week: ${weekStart}`);
 
     if (!weekMap.has(weekStart)) weekMap.set(weekStart, new Map());
     const dayMap = weekMap.get(weekStart)!;
@@ -67,25 +64,27 @@ export function PreviewModal({
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl p-6 shadow-md w-full max-w-6xl max-h-[85vh] overflow-y-auto relative">
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+      <div className="bg-background text-foreground rounded-2xl p-6 shadow-xl w-full max-w-6xl max-h-[90vh] overflow-y-auto border space-y-6">
         <button
-          className="absolute top-4 right-4 text-gray-500 hover:text-black"
+          className="absolute top-4 right-4 text-muted-foreground hover:text-foreground"
           onClick={onClose}
         >
           <X className="w-5 h-5" />
         </button>
 
-        <h3 className="text-xl font-bold mb-2">
-          📅 Preview of Cloned Schedules
-        </h3>
-        <p className="text-sm text-gray-600 mb-4">
-          Showing <strong>{previewSchedules.length}</strong> ferry trips.
-        </p>
+        <div className="space-y-1">
+          <h3 className="text-2xl font-semibold">
+            📅 Preview of Cloned Schedules
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            Showing <strong>{previewSchedules.length}</strong> ferry trips.
+          </p>
+        </div>
 
         {grouped.map(([weekStart, dayMap]) => (
-          <div key={weekStart} className="mb-8">
-            <h4 className="text-lg font-semibold mb-4">
+          <div key={weekStart} className="space-y-4">
+            <h4 className="text-lg font-medium">
               Week of {format(parseISO(weekStart), "MMMM d")} –{" "}
               {format(addDays(parseISO(weekStart), 6), "MMMM d")}
             </h4>
@@ -97,19 +96,19 @@ export function PreviewModal({
                 const inbound = trips.filter(isReturn);
 
                 return (
-                  <div key={date} className="mb-6">
-                    <h5 className="font-medium mb-2">
+                  <div key={date} className="space-y-2">
+                    <h5 className="font-medium text-muted-foreground">
                       {format(parseISO(date), "EEEE, MMMM d")}
                     </h5>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
-                        <h6 className="text-sm font-semibold mb-1 text-blue-600">
+                        <h6 className="text-sm font-semibold mb-2 text-primary">
                           Outbound Trips
                         </h6>
                         <ScheduleTable trips={outbound} />
                       </div>
                       <div>
-                        <h6 className="text-sm font-semibold mb-1 text-green-600">
+                        <h6 className="text-sm font-semibold mb-2 text-green-600">
                           Return Trips
                         </h6>
                         <ScheduleTable trips={inbound} />
@@ -121,10 +120,10 @@ export function PreviewModal({
           </div>
         ))}
 
-        <div className="mt-6 text-right">
+        <div className="pt-4 text-right">
           <button
             onClick={onClose}
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            className="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 transition"
           >
             Close
           </button>
@@ -136,37 +135,45 @@ export function PreviewModal({
 
 function ScheduleTable({ trips }: { trips: FerryItem[] }) {
   if (trips.length === 0)
-    return <p className="text-sm italic text-gray-500">No trips scheduled</p>;
+    return (
+      <p className="text-sm italic text-muted-foreground">No trips scheduled</p>
+    );
 
   return (
-    <table className="w-full text-sm border border-gray-200 rounded">
-      <thead className="bg-gray-100 text-left text-xs uppercase">
-        <tr>
-          <th className="px-3 py-2">Time</th>
-          <th className="px-3 py-2">Operator</th>
-          <th className="px-3 py-2">Departure</th>
-          <th className="px-3 py-2">Status</th>
-          <th className="px-3 py-2 text-center">Edit</th>
-        </tr>
-      </thead>
-      <tbody>
-        {trips.map((item) => (
-          <tr key={item.id} className="border-t">
-            <td className="px-3 py-2">{item.departure_time}</td>
-            <td className="px-3 py-2">{item.operator}</td>
-            <td className="px-3 py-2">{item.departure_port || "-"}</td>
-            <td className="px-3 py-2">{item.status}</td>
-            <td className="px-3 py-2 text-center">
-              <button
-                onClick={() => alert("Edit coming soon")}
-                className="text-blue-500 hover:underline flex items-center justify-center gap-1 text-xs"
-              >
-                <Pencil className="w-3 h-3" /> Edit
-              </button>
-            </td>
+    <div className="overflow-x-auto border rounded-lg">
+      <table className="w-full text-sm">
+        <thead className="bg-muted text-muted-foreground text-xs uppercase">
+          <tr>
+            <th className="px-3 py-2">Time</th>
+            <th className="px-3 py-2">Operator</th>
+            <th className="px-3 py-2">Departure</th>
+            <th className="px-3 py-2">Status</th>
+            <th className="px-3 py-2 text-center">Edit</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {trips.map((item) => (
+            <tr key={item.id} className="border-t border-border">
+              <td className="px-3 py-2 whitespace-nowrap">
+                {item.departure_time}
+              </td>
+              <td className="px-3 py-2 whitespace-nowrap">{item.operator}</td>
+              <td className="px-3 py-2 whitespace-nowrap">
+                {item.departure_port || "-"}
+              </td>
+              <td className="px-3 py-2 whitespace-nowrap">{item.status}</td>
+              <td className="px-3 py-2 text-center">
+                <button
+                  onClick={() => alert("Edit coming soon")}
+                  className="text-primary hover:underline flex items-center justify-center gap-1 text-xs"
+                >
+                  <Pencil className="w-3 h-3" /> Edit
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }

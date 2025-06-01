@@ -25,6 +25,8 @@ import { FerryItem } from "@/types/FerryItem";
 import { cloneSchedulePattern } from "@/utils/cloneSchedulePattern";
 import { PreviewModal } from "@/components/FerrySchedule/PreviewModal";
 import { supabase } from "@/utils/supabase";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { toast } from "sonner";
 
 interface CloneScheduleModalProps {
   isCloning: boolean;
@@ -57,6 +59,11 @@ export function CloneScheduleModal({
   );
   const [baseWeekSchedules, setBaseWeekSchedules] = useState<FerryItem[]>([]);
 
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [clonedResult, setClonedResult] = useState<FerryItemPreview[] | null>(
+    null
+  );
+
   useEffect(() => {
     const fetchBaseWeekSchedules = async () => {
       if (!dateRange.from || !dateRange.to) return;
@@ -73,11 +80,6 @@ export function CloneScheduleModal({
       if (error) {
         console.error("❌ Error fetching base week schedules:", error.message);
       } else {
-        console.log("📦 Base Week Schedule Dates:");
-        (data || []).forEach((item) => {
-          console.log("  •", item.schedule_date);
-        });
-
         setBaseWeekSchedules(data || []);
       }
     };
@@ -100,20 +102,13 @@ export function CloneScheduleModal({
 
     const generated: FerryItemPreview[] = [];
 
-    console.log(
-      "🧬 Starting clone pattern using +8 day offset from each base day..."
-    );
-
     for (const baseDate of baseDays) {
       const baseDateStr = format(baseDate, "yyyy-MM-dd");
       const baseSchedules = baseWeekSchedules.filter(
         (s) => s.schedule_date === baseDateStr
       );
 
-      if (baseSchedules.length === 0) {
-        console.warn(`⚠️ Skipping ${baseDateStr} — no matching schedules`);
-        continue;
-      }
+      if (baseSchedules.length === 0) continue;
 
       let cloneDate = addDays(baseDate, 8);
       while (cloneDate <= finalDate) {
@@ -127,20 +122,20 @@ export function CloneScheduleModal({
           });
         });
 
-        console.log(`📌 Cloned ${baseDateStr} → ${clonedDateStr}`);
         cloneDate = addDays(cloneDate, 8);
       }
     }
 
-    console.log(`✅ Total cloned schedules: ${generated.length}`);
     return generated;
   };
 
   return (
     <>
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white rounded-xl p-6 shadow-md w-full max-w-3xl space-y-4 max-h-[90vh] overflow-y-auto">
-          <h2 className="text-xl font-bold">Clone Ferry Schedule</h2>
+      <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+        <div className="bg-background rounded-2xl p-6 shadow-xl w-full max-w-3xl space-y-5 max-h-[90vh] overflow-y-auto border">
+          <h2 className="text-2xl font-semibold text-foreground">
+            Clone Ferry Schedule
+          </h2>
 
           <Popover>
             <PopoverTrigger asChild>
@@ -157,7 +152,7 @@ export function CloneScheduleModal({
                   : "Select base week"}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
+            <PopoverContent className="w-auto p-0 bg-popover text-popover-foreground">
               <Calendar
                 mode="range"
                 selected={dateRange}
@@ -170,7 +165,9 @@ export function CloneScheduleModal({
           </Popover>
 
           <div>
-            <label className="font-medium block mb-1">Clone Until Date</label>
+            <label className="font-medium block mb-1 text-foreground">
+              Clone Until Date
+            </label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -181,7 +178,7 @@ export function CloneScheduleModal({
                   {finalDate ? format(finalDate, "PPP") : "Pick end date"}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
+              <PopoverContent className="w-auto p-0 bg-popover text-popover-foreground">
                 <Calendar
                   mode="single"
                   selected={finalDate}
@@ -193,7 +190,7 @@ export function CloneScheduleModal({
             </Popover>
           </div>
 
-          <div className="text-sm text-gray-600">
+          <div className="text-sm text-muted-foreground">
             This will generate{" "}
             <strong>
               {finalDate && dateRange.from
@@ -220,31 +217,53 @@ export function CloneScheduleModal({
             <Button variant="outline" onClick={onClose}>
               Cancel
             </Button>
+
+            {/* ✅ Confirm Clone Button */}
             <Button
               disabled={isCloningLoading}
-              onClick={async () => {
+              onClick={() => {
                 const result = generateClonedSchedules();
                 if (!result) return;
-
-                setIsCloningLoading(true);
-
-                const { success, error } = await cloneSchedulePattern({
-                  baseSchedules: result, // result already has generated dates
-                });
-
-                setIsCloningLoading(false);
-                onClose();
-
-                if (success) {
-                  alert("✅ Schedule cloned successfully!");
-                } else {
-                  console.error(error);
-                  alert("❌ Failed to clone schedules.");
-                }
+                setClonedResult(result);
+                setShowConfirmDialog(true);
               }}
             >
               {isCloningLoading ? "Cloning..." : "Confirm Clone"}
             </Button>
+            <ConfirmDialog
+              open={showConfirmDialog}
+              title="Confirm Schedule Cloning"
+              description="Are you sure you want to clone the selected schedules? This action cannot be undone."
+              confirmText="Yes, Clone"
+              cancelText="Cancel"
+              isLoading={isCloningLoading}
+              onCancel={() => setShowConfirmDialog(false)}
+              onConfirm={async () => {
+                if (!clonedResult) return;
+
+                setIsCloningLoading(true);
+
+                const { success, error } = await cloneSchedulePattern({
+                  baseSchedules: clonedResult,
+                });
+
+                setIsCloningLoading(false);
+                setShowConfirmDialog(false);
+                onClose();
+
+                if (success) {
+                  toast("✅ Schedule Cloned", {
+                    description: "The ferry schedule was successfully cloned.",
+                  });
+                } else {
+                  console.error(error);
+                  toast("❌ Clone Failed", {
+                    description: "Something went wrong while cloning.",
+                    className: "bg-destructive text-white",
+                  });
+                }
+              }}
+            />
           </div>
         </div>
       </div>

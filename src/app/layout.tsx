@@ -1,6 +1,7 @@
 import "./globals.css";
 import { Inter } from "next/font/google";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { Toaster } from "sonner"; // ✅ import sonner
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -23,7 +24,11 @@ export default function RootLayout({
           defaultTheme="light"
           enableSystem={false}
         >
-          <div className="min-h-screen">{children}</div>
+          <div className="min-h-screen">
+            {children}
+            <Toaster richColors position="top-center" />{" "}
+            {/* ✅ Toasts rendered here */}
+          </div>
         </ThemeProvider>
       </body>
     </html>
