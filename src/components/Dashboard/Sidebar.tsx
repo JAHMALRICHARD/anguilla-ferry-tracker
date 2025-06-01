@@ -19,9 +19,15 @@ import {
   Users,
   FileText,
   Activity,
+  HouseIcon,
 } from "lucide-react";
 
 const navigationItems = [
+  {
+    title: "Home",
+    url: "/",
+    icon: HouseIcon,
+  },
   {
     title: "Dashboard",
     url: "/dashboard",
