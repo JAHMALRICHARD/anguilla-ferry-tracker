@@ -144,7 +144,7 @@ function ScheduleTable({ trips }: { trips: FerryItem[] }) {
         <tr>
           <th className="px-3 py-2">Time</th>
           <th className="px-3 py-2">Operator</th>
-          <th className="px-3 py-2">Vessel</th>
+          <th className="px-3 py-2">Departure</th>
           <th className="px-3 py-2">Status</th>
           <th className="px-3 py-2 text-center">Edit</th>
         </tr>
@@ -154,7 +154,7 @@ function ScheduleTable({ trips }: { trips: FerryItem[] }) {
           <tr key={item.id} className="border-t">
             <td className="px-3 py-2">{item.departure_time}</td>
             <td className="px-3 py-2">{item.operator}</td>
-            <td className="px-3 py-2">{item.vessel_name || "-"}</td>
+            <td className="px-3 py-2">{item.departure_port || "-"}</td>
             <td className="px-3 py-2">{item.status}</td>
             <td className="px-3 py-2 text-center">
               <button
