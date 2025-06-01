@@ -15,6 +15,8 @@ import { ReturnTableCard } from "@/components/FerrySchedule/ReturnTableCard";
 import { ScheduleDateToolbar } from "@/components/FerrySchedule/ScheduleDateToolbar";
 import { CloneScheduleModal } from "@/components/FerrySchedule/CloneScheduleModal";
 import { ReusableDashboardHeader } from "../ResuableDashboardHeader";
+import { useUserInfo } from "@/hooks/useUserInfo";
+import { handleLogout } from "@/utils/logout";
 
 type FerryWithExtras = Omit<FerryItem, "id"> & {
   id: number | string;
@@ -55,12 +57,6 @@ export default function SchedulePage() {
   const { operators, statuses } = useDropdownOptions();
   const [isCloning, setIsCloning] = useState(false);
   const [isCloningLoading, setIsCloningLoading] = useState(false);
-  const [userInfo, setUserInfo] = useState<{
-    full_name: string;
-    email: string;
-    role: string;
-    id: string;
-  } | null>(null);
 
   useEffect(() => {
     const fetchSchedules = async () => {
@@ -170,38 +166,6 @@ export default function SchedulePage() {
     });
   };
 
-  useEffect(() => {
-    const fetchUserInfo = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const userId = session?.user?.id;
-
-      if (!userId) return;
-
-      const { data: user } = await supabase
-        .from("users")
-        .select("full_name, email, role_id")
-        .eq("id", userId)
-        .maybeSingle();
-
-      const { data: roleRow } = await supabase
-        .from("roles")
-        .select("name")
-        .eq("id", user?.role_id)
-        .maybeSingle();
-
-      setUserInfo({
-        full_name: user?.full_name ?? "Unknown",
-        email: user?.email ?? "Unknown",
-        role: roleRow?.name ?? "Unknown",
-        id: userId,
-      });
-    };
-
-    fetchUserInfo();
-  }, []);
-
   const saveSchedules = async () => {
     const formattedDate = format(selectedDate, "yyyy-MM-dd");
 
@@ -264,10 +228,9 @@ export default function SchedulePage() {
       !f.departure_port
   );
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    window.location.reload();
-  };
+  const userInfo = useUserInfo();
+
+  if (!userInfo) return null;
 
   return (
     <div className="w-full bg-muted text-foreground">

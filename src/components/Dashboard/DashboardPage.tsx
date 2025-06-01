@@ -6,53 +6,13 @@ import { RecentDataTable } from "@/components/Dashboard/RecentDataTable";
 import { EmailLogsCard } from "@/components/Dashboard/EmailLogsCard";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { ReusableDashboardHeader } from "../ResuableDashboardHeader";
-import { supabase } from "@/utils/supabase";
-import { useEffect, useState } from "react";
-
-const handleLogout = async () => {
-  await supabase.auth.signOut();
-  window.location.reload();
-};
+import { useUserInfo } from "@/hooks/useUserInfo";
+import { handleLogout } from "@/utils/logout";
 
 export default function DashboardPage() {
-  const [userInfo, setUserInfo] = useState<{
-    full_name: string;
-    email: string;
-    role: string;
-    id: string;
-  } | null>(null);
+  const userInfo = useUserInfo();
 
-  useEffect(() => {
-    const fetchUserInfo = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const userId = session?.user?.id;
-
-      if (!userId) return;
-
-      const { data: user } = await supabase
-        .from("users")
-        .select("full_name, email, role_id")
-        .eq("id", userId)
-        .maybeSingle();
-
-      const { data: roleRow } = await supabase
-        .from("roles")
-        .select("name")
-        .eq("id", user?.role_id)
-        .maybeSingle();
-
-      setUserInfo({
-        full_name: user?.full_name ?? "Unknown",
-        email: user?.email ?? "Unknown",
-        role: roleRow?.name ?? "Unknown",
-        id: userId,
-      });
-    };
-
-    fetchUserInfo();
-  }, []);
+  if (!userInfo) return null;
 
   return (
     <div className="w-full bg-muted text-foreground">
