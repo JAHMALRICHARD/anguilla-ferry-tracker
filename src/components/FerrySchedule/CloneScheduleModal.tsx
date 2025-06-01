@@ -73,6 +73,11 @@ export function CloneScheduleModal({
       if (error) {
         console.error("❌ Error fetching base week schedules:", error.message);
       } else {
+        console.log("📦 Base Week Schedule Dates:");
+        (data || []).forEach((item) => {
+          console.log("  •", item.schedule_date);
+        });
+
         setBaseWeekSchedules(data || []);
       }
     };
@@ -88,21 +93,26 @@ export function CloneScheduleModal({
       return null;
     }
 
+    console.log("🔍 Base Range From:", dateRange.from);
+    console.log("🔍 Base Range To:", dateRange.to);
+
+    // ✅ Make sure each base day is aligned to start-of-day
     const baseDays = eachDayOfInterval({
       start: startOfDay(dateRange.from),
-      end: endOfDay(dateRange.to), // ✅ this includes June 8
+      end: startOfDay(dateRange.to),
     });
 
+    // ✅ Map base week schedules by date
     const baseDateMap = new Map<string, FerryItem[]>();
     baseDays.forEach((d) => {
       const dateStr = format(d, "yyyy-MM-dd");
       const matches = baseWeekSchedules.filter(
         (s) => s.schedule_date === dateStr
       );
-
       baseDateMap.set(dateStr, matches);
     });
 
+    // ✅ Check for any missing data in selected base range
     const missingDays = baseDays.filter(
       (d) => (baseDateMap.get(format(d, "yyyy-MM-dd"))?.length ?? 0) === 0
     );
@@ -117,28 +127,40 @@ export function CloneScheduleModal({
     }
 
     const generated: FerryItemPreview[] = [];
+    const allExistingDates = new Set(
+      baseWeekSchedules.map((s) => s.schedule_date)
+    );
 
-    for (let i = 0; ; i++) {
+    // ✅ For each week until final date, generate new trips
+    for (let weekOffset = 1; ; weekOffset++) {
       let allPastFinal = true;
 
-      for (const baseDate of baseDays) {
-        const clonedDate = addDays(baseDate, i * 7);
+      for (let i = 0; i < baseDays.length; i++) {
+        const baseDate = baseDays[i];
+        const clonedDate = addDays(baseDate, 7 * weekOffset);
+
         if (clonedDate > finalDate) continue;
 
         allPastFinal = false;
 
-        const baseDateStr = format(baseDate, "yyyy-MM-dd");
         const clonedDateStr = format(clonedDate, "yyyy-MM-dd");
+        const baseDateStr = format(baseDate, "yyyy-MM-dd");
 
-        const schedulesForDay = baseDateMap.get(baseDateStr) || [];
+        console.log(`🧬 Cloning ${baseDateStr} → ${clonedDateStr}`);
 
-        for (const s of schedulesForDay) {
+        if (allExistingDates.has(clonedDateStr)) continue;
+
+        const baseSchedules = baseDateMap.get(baseDateStr) || [];
+
+        for (const s of baseSchedules) {
           generated.push({
             ...s,
             id: crypto.randomUUID(),
             schedule_date: clonedDateStr,
           });
         }
+
+        allExistingDates.add(clonedDateStr);
       }
 
       if (allPastFinal) break;
