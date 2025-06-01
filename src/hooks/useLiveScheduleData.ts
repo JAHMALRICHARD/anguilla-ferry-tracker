@@ -39,7 +39,6 @@ export function useLiveScheduleData(selectedDate: Date) {
     setLocalNow(buildDateWithCurrentPRTime(selectedDate));
   }, [selectedDate]);
 
-  // ✅ FETCH FUNCTION EXTRACTED
   const fetchFerryData = async () => {
     const { data, error } = await supabase
       .from("ferry_schedules")
@@ -55,16 +54,15 @@ export function useLiveScheduleData(selectedDate: Date) {
     setAllFerries(data || []);
   };
 
-  // ✅ INITIAL FETCH + AUTO-REFRESH
   useEffect(() => {
-    fetchFerryData(); // first load
+    fetchFerryData();
 
     const interval = setInterval(() => {
       setLocalNow(buildDateWithCurrentPRTime(selectedDate));
-      fetchFerryData(); // refresh every 60 sec
-    }, 10000);
+      fetchFerryData();
+    }, 10000); // 10s polling
 
-    return () => clearInterval(interval); // clean up
+    return () => clearInterval(interval);
   }, [selectedDate]);
 
   useEffect(() => {
@@ -78,12 +76,43 @@ export function useLiveScheduleData(selectedDate: Date) {
       return new Date(year, month - 1, day, hour, minute, second || 0);
     };
 
-    const upcoming = allFerries.filter(
-      (ferry) => getFerryDateTime(ferry) >= localNow
-    );
-    const past = allFerries.filter(
-      (ferry) => getFerryDateTime(ferry) < localNow
-    );
+    const getArrivalTimeWithBuffer = (ferry: FerryItem): Date => {
+      const [depHour, depMin] = ferry.departure_time.split(":").map(Number);
+      const [durHour, durMin] = ferry.duration.split(":").map(Number);
+      const [year, month, day] = ferry.schedule_date.split("-").map(Number);
+
+      const arrival = new Date(
+        year,
+        month - 1,
+        day,
+        depHour + durHour,
+        depMin + durMin
+      );
+      arrival.setMinutes(arrival.getMinutes() + 10); // buffer after arrival
+      return arrival;
+    };
+
+    const timeUntilDeparture = (ferry: FerryItem): number => {
+      const departure = getFerryDateTime(ferry);
+      return (departure.getTime() - localNow.getTime()) / 1000 / 60;
+    };
+
+    const upcoming = allFerries.filter((ferry) => {
+      const departure = getFerryDateTime(ferry);
+      const arrivalBuffer = getArrivalTimeWithBuffer(ferry);
+
+      return (
+        // Show if currently in progress (boarding, sailing, arriving)
+        (localNow >= departure && localNow <= arrivalBuffer) ||
+        // Or show if it's within 60 mins of next departure
+        timeUntilDeparture(ferry) <= 60
+      );
+    });
+
+    const past = allFerries.filter((ferry) => {
+      const arrivalBuffer = getArrivalTimeWithBuffer(ferry);
+      return localNow > arrivalBuffer;
+    });
 
     setUpcomingFerries(upcoming);
     setPastFerries(past);

@@ -24,7 +24,6 @@ export function getFerriesForRoute(
   ];
 
   if (routeTo === "To Anguilla - via Marigot") {
-    // Generate virtual return trips (Marigot → Blowing Point)
     const outboundFerries = ferries.filter((ferry) => {
       const from = normalize(ferry.departure_port);
       const to = normalize(ferry.arrival_port);
@@ -39,17 +38,28 @@ export function getFerriesForRoute(
     }
 
     const returnFerries = marigotReturnTimes.map((returnTime, index) => {
-      const original = outboundFerries[index % outboundFerries.length];
+      const existing = ferries.find((f) => {
+        return (
+          normalize(f.departure_port) === "marigot, st. martin" &&
+          normalize(f.arrival_port) === "blowing point, anguilla" &&
+          f.departure_time === returnTime
+        );
+      });
+
+      if (existing) return existing;
+
+      const fallback = outboundFerries[index % outboundFerries.length];
+
       return {
-        ...original,
-        id: original.id + 10000 + index,
-        departure_port: original.arrival_port, // Marigot
-        arrival_port: original.departure_port, // Blowing Point
+        ...fallback,
+        id: Number(fallback.id) + 10000 + index,
+        departure_port: fallback.arrival_port, // Marigot
+        arrival_port: fallback.departure_port, // Blowing Point
         departure_time: returnTime,
         direction: "to-anguilla",
-        status: "scheduled",
-        vessel_name: original.vessel_name,
-        operator: original.operator,
+        status: fallback.status, // 🛠 Use the real-time status
+        vessel_name: fallback.vessel_name,
+        operator: fallback.operator,
       };
     });
 
@@ -57,7 +67,6 @@ export function getFerriesForRoute(
   }
 
   if (routeTo === "To St. Martin") {
-    // Show only actual ferries from Blowing Point → Marigot
     return ferries.filter((ferry) => {
       const from = normalize(ferry.departure_port);
       const to = normalize(ferry.arrival_port);
@@ -65,6 +74,5 @@ export function getFerriesForRoute(
     });
   }
 
-  // Default fallback
   return [];
 }

@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
+import { getFerryStatus } from "@/utils/getFerryStatus";
 
 interface ScheduledFerriesTableProps {
   ferries: FerryItem[];
@@ -36,6 +37,10 @@ export function ScheduledFerriesTable({
       case "boarding":
       case "docked":
       case "sailing":
+      case "now arriving":
+      case "arrived":
+      case "on the way":
+      case "docked in axa":
         return "secondary";
       default:
         return "outline";
@@ -68,7 +73,7 @@ export function ScheduledFerriesTable({
             </TableHeader>
             <TableBody>
               <AnimatePresence mode="sync">
-                {ferries.map((ferry) => {
+                {ferries.map((ferry, index) => {
                   const [hourStr, minuteStr] = ferry.departure_time.split(":");
                   const depHour = Number(hourStr);
                   const depMinute = Number(minuteStr);
@@ -88,14 +93,34 @@ export function ScheduledFerriesTable({
                       .padStart(2, "0")}`
                   );
 
-                  const status = ferry.status;
-                  const showPulse = ["boarding", "sailing"].includes(
-                    status.toLowerCase()
-                  );
+                  const direction =
+                    ferry.direction === "from-anguilla"
+                      ? "to-st-martin"
+                      : "to-anguilla";
+
+                  const { status, progressPercent } = getFerryStatus({
+                    departureTime: ferry.departure_time,
+                    direction,
+                    localNow: new Date(),
+                  });
+
+                  const showPulse = [
+                    "boarding",
+                    "sailing",
+                    "on the way",
+                    "now arriving",
+                  ].includes(status.toLowerCase());
+
+                  const safeKey =
+                    typeof ferry.id === "number" && !Number.isNaN(ferry.id)
+                      ? `scheduled-${ferry.id}`
+                      : typeof ferry.id === "string"
+                      ? ferry.id
+                      : `${ferry.operator}-${ferry.departure_time}-${index}`;
 
                   return (
                     <motion.tr
-                      key={ferry.id}
+                      key={safeKey}
                       layout
                       initial={{ opacity: 0, y: -5 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -114,18 +139,41 @@ export function ScheduledFerriesTable({
                       <TableCell>{ferry.arrival_port.split(",")[0]}</TableCell>
                       <TableCell>{eta}</TableCell>
                       <TableCell>
-                        <Badge
-                          variant={getBadgeVariant(status)}
-                          className="inline-flex items-center gap-2 uppercase"
-                        >
-                          {showPulse && (
-                            <span className="relative flex h-2 w-2">
-                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-current opacity-75"></span>
-                              <span className="relative inline-flex rounded-full h-2 w-2 bg-current"></span>
-                            </span>
+                        <div className="flex flex-col gap-1">
+                          <Badge
+                            variant={getBadgeVariant(status)}
+                            className="inline-flex items-center gap-2 uppercase w-fit"
+                          >
+                            {showPulse && (
+                              <span className="relative flex h-2 w-2">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-current opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-current"></span>
+                              </span>
+                            )}
+                            {status}
+                          </Badge>
+
+                          {!["DOCKED", "DOCKED IN AXA", "ARRIVED"].includes(
+                            status.toUpperCase()
+                          ) && (
+                            <div className="w-full bg-muted rounded h-1 overflow-hidden">
+                              <div
+                                className={`h-full transition-all duration-300 ${
+                                  status === "BOARDING"
+                                    ? "bg-yellow-400"
+                                    : status === "SAILING"
+                                    ? "bg-blue-500"
+                                    : status === "NOW ARRIVING"
+                                    ? "bg-green-500"
+                                    : status === "ON THE WAY"
+                                    ? "bg-indigo-500"
+                                    : "bg-primary"
+                                }`}
+                                style={{ width: `${progressPercent}%` }}
+                              />
+                            </div>
                           )}
-                          {status}
-                        </Badge>
+                        </div>
                       </TableCell>
                     </motion.tr>
                   );
