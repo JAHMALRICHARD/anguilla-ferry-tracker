@@ -81,7 +81,7 @@ export default function HomePage() {
 
         {/* Countdown Clock */}
         <TimeAndCountdowns
-          ferries={fullRouteFerries}
+          ferries={getFerriesForRoute(route.to, allFerries)}
           selectedDate={selectedDate}
         />
 

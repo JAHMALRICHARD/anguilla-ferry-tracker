@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/utils/supabase";
 import type { FerryItem } from "@/types/FerryItem";
+import { format, addDays } from "date-fns";
 
 function buildDateWithCurrentPRTime(selectedDate: Date): Date {
   const now = new Date();
@@ -40,10 +41,14 @@ export function useLiveScheduleData(selectedDate: Date) {
   }, [selectedDate]);
 
   const fetchFerryData = async () => {
+    const todayStr = format(new Date(), "yyyy-MM-dd");
+    const tomorrowStr = format(addDays(new Date(), 1), "yyyy-MM-dd");
+
     const { data, error } = await supabase
       .from("ferry_schedules")
       .select("*")
-      .eq("schedule_date", selectedDate.toISOString().split("T")[0])
+      .in("schedule_date", [todayStr, tomorrowStr])
+      .order("schedule_date", { ascending: true })
       .order("departure_time", { ascending: true });
 
     if (error) {

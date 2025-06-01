@@ -213,10 +213,6 @@ export default function TimeAndCountdowns({
               </Badge>
               {nextFerryTomorrow && (
                 <p className="mt-2 text-sm text-muted-foreground">
-                  <Badge variant="secondary" className="mb-1">
-                    TOMORROW
-                  </Badge>
-                  <br />
                   {formatTime12Hour(
                     nextFerryTomorrow.depDate.toTimeString().substring(0, 5)
                   )}
