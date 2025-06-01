@@ -90,32 +90,34 @@ export function PreviewModal({
               {format(addDays(parseISO(weekStart), 6), "MMMM d")}
             </h4>
 
-            {Array.from(dayMap.entries()).map(([date, trips]) => {
-              const outbound = trips.filter(isOutbound);
-              const inbound = trips.filter(isReturn);
+            {Array.from(dayMap.entries())
+              .sort(([a], [b]) => a.localeCompare(b))
+              .map(([date, trips]) => {
+                const outbound = trips.filter(isOutbound);
+                const inbound = trips.filter(isReturn);
 
-              return (
-                <div key={date} className="mb-6">
-                  <h5 className="font-medium mb-2">
-                    {format(parseISO(date), "EEEE, MMMM d")}
-                  </h5>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <h6 className="text-sm font-semibold mb-1 text-blue-600">
-                        Outbound Trips
-                      </h6>
-                      <ScheduleTable trips={outbound} />
-                    </div>
-                    <div>
-                      <h6 className="text-sm font-semibold mb-1 text-green-600">
-                        Return Trips
-                      </h6>
-                      <ScheduleTable trips={inbound} />
+                return (
+                  <div key={date} className="mb-6">
+                    <h5 className="font-medium mb-2">
+                      {format(parseISO(date), "EEEE, MMMM d")}
+                    </h5>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <h6 className="text-sm font-semibold mb-1 text-blue-600">
+                          Outbound Trips
+                        </h6>
+                        <ScheduleTable trips={outbound} />
+                      </div>
+                      <div>
+                        <h6 className="text-sm font-semibold mb-1 text-green-600">
+                          Return Trips
+                        </h6>
+                        <ScheduleTable trips={inbound} />
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
           </div>
         ))}
 
