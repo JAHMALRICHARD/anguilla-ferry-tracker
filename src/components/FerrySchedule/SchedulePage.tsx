@@ -10,12 +10,11 @@ import { FerryItem } from "@/types/FerryItem";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useDropdownOptions } from "@/hooks/useDropdownOptions";
-import { ScheduleHeader } from "@/components/FerrySchedule/ScheduleHeader";
 import { OutboundTableCard } from "@/components/FerrySchedule/OutboundTableCard";
 import { ReturnTableCard } from "@/components/FerrySchedule/ReturnTableCard";
 import { ScheduleDateToolbar } from "@/components/FerrySchedule/ScheduleDateToolbar";
-import { UserCard } from "@/components/FerrySchedule/UserCard";
 import { CloneScheduleModal } from "@/components/FerrySchedule/CloneScheduleModal";
+import { ReusableDashboardHeader } from "../ResuableDashboardHeader";
 
 type FerryWithExtras = Omit<FerryItem, "id"> & {
   id: number | string;
@@ -265,16 +264,23 @@ export default function SchedulePage() {
       !f.departure_port
   );
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    window.location.reload();
+  };
+
   return (
     <div className="w-full bg-muted text-foreground">
       <div className="w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        <ScheduleHeader />
-
         {userInfo && (
-          <UserCard
+          <ReusableDashboardHeader
+            title="Ferry Schedule Manager"
+            subtitle="Manage daily operations, edits, and live updates"
             full_name={userInfo.full_name}
             email={userInfo.email}
-            role={userInfo.role.toUpperCase()}
+            role={userInfo.role}
+            showProfile
+            onLogout={handleLogout}
           />
         )}
 

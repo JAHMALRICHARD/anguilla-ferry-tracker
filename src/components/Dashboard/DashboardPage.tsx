@@ -1,17 +1,73 @@
 "use client";
 
-import { DashboardHeader } from "@/components/Dashboard/DashboardHeader";
 import { MetricsCards } from "@/components/Dashboard/MetricsCards";
 import { SimpleChartsGrid } from "@/components/Dashboard/SimpleChartsGrid";
 import { RecentDataTable } from "@/components/Dashboard/RecentDataTable";
 import { EmailLogsCard } from "@/components/Dashboard/EmailLogsCard";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { ReusableDashboardHeader } from "../ResuableDashboardHeader";
+import { supabase } from "@/utils/supabase";
+import { useEffect, useState } from "react";
+
+const handleLogout = async () => {
+  await supabase.auth.signOut();
+  window.location.reload();
+};
 
 export default function DashboardPage() {
+  const [userInfo, setUserInfo] = useState<{
+    full_name: string;
+    email: string;
+    role: string;
+    id: string;
+  } | null>(null);
+
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const userId = session?.user?.id;
+
+      if (!userId) return;
+
+      const { data: user } = await supabase
+        .from("users")
+        .select("full_name, email, role_id")
+        .eq("id", userId)
+        .maybeSingle();
+
+      const { data: roleRow } = await supabase
+        .from("roles")
+        .select("name")
+        .eq("id", user?.role_id)
+        .maybeSingle();
+
+      setUserInfo({
+        full_name: user?.full_name ?? "Unknown",
+        email: user?.email ?? "Unknown",
+        role: roleRow?.name ?? "Unknown",
+        id: userId,
+      });
+    };
+
+    fetchUserInfo();
+  }, []);
+
   return (
     <div className="w-full bg-muted text-foreground">
       <div className="w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        <DashboardHeader />
+        {userInfo && (
+          <ReusableDashboardHeader
+            title="Ferry Tracker Dashboard"
+            subtitle="Manage daily operations"
+            full_name={userInfo.full_name}
+            email={userInfo.email}
+            role={userInfo.role}
+            showProfile
+            onLogout={handleLogout}
+          />
+        )}
         <MetricsCards />
         <SimpleChartsGrid />
 
