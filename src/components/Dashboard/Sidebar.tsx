@@ -19,13 +19,12 @@ import {
   Users,
   FileText,
   Activity,
-  Zap,
 } from "lucide-react";
 
 const navigationItems = [
   {
     title: "Dashboard",
-    url: "/",
+    url: "/dashboard",
     icon: BarChart3,
   },
   {
@@ -34,12 +33,12 @@ const navigationItems = [
     icon: Database,
   },
   {
-    title: "Email Logs",
+    title: "Emails",
     url: "/emails",
     icon: Mail,
   },
   {
-    title: "Reports",
+    title: "Reservations",
     url: "/reports",
     icon: FileText,
   },
@@ -50,11 +49,6 @@ const managementItems = [
     title: "Users",
     url: "/users",
     icon: Users,
-  },
-  {
-    title: "Integrations",
-    url: "/integrations",
-    icon: Zap,
   },
   {
     title: "Settings",

@@ -1,8 +1,7 @@
-// app/schedule/layout.tsx
 import { Sidebar } from "@/components/Dashboard/Sidebar";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 
-export default function ScheduleLayout({
+export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;

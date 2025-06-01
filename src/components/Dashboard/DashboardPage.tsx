@@ -10,7 +10,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 export default function DashboardPage() {
   return (
     <div className="w-full bg-muted text-foreground">
-      <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+      <div className="w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
         <DashboardHeader />
         <MetricsCards />
         <SimpleChartsGrid />
