@@ -378,7 +378,6 @@ export default function SchedulePage() {
       <CloneScheduleModal
         isCloning={isCloning}
         onClose={() => setIsCloning(false)}
-        schedules={schedules}
         isCloningLoading={isCloningLoading}
         setIsCloningLoading={setIsCloningLoading}
       />
