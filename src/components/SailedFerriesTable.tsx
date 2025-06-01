@@ -70,10 +70,10 @@ export function SailedFerriesTable({ ferries }: SailedFerriesTableProps) {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>Departure</TableHead>
                 <TableHead className="w-[160px]">Ferry</TableHead>
                 <TableHead>Origin</TableHead>
                 <TableHead>Destination</TableHead>
-                <TableHead>Departure</TableHead>
                 <TableHead>ETA</TableHead>
                 <TableHead>Status</TableHead>
               </TableRow>
@@ -103,6 +103,7 @@ export function SailedFerriesTable({ ferries }: SailedFerriesTableProps) {
                       transition={{ duration: 0.3 }}
                       className="hover:bg-muted/50 transition even:bg-muted/10"
                     >
+                      <TableCell>{departure}</TableCell>
                       <TableCell className="font-medium">
                         {ferry.operator || "—"}
                       </TableCell>
@@ -112,7 +113,6 @@ export function SailedFerriesTable({ ferries }: SailedFerriesTableProps) {
                       <TableCell>
                         {ferry.arrival_port?.split(",")[0] || "—"}
                       </TableCell>
-                      <TableCell>{departure}</TableCell>
                       <TableCell>{eta}</TableCell>
                       <TableCell>
                         <Badge

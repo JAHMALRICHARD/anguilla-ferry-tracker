@@ -49,7 +49,7 @@ export function ScheduledFerriesTable({
           Scheduled Ferries
         </h2>
         <p className="text-sm text-muted-foreground">
-          Upcoming ferry trips with estimated arrival times to St Martin.
+          Upcoming ferry trips with estimated arrival times
         </p>
       </div>
 
