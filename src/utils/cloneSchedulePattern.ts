@@ -1,33 +1,41 @@
 // utils/cloneSchedulePattern.ts
-import { format, addDays } from "date-fns";
 import { FerryItem } from "@/types/FerryItem";
 import { supabase } from "@/utils/supabase";
 
+// 👇 Define an insert-safe version of FerryItem
+type FerryItemInsert = Omit<FerryItem, "id">;
+
 export async function cloneSchedulePattern({
   baseSchedules,
-  numberOfWeeks,
-  daysPerWeek = 7,
 }: {
   baseSchedules: FerryItem[];
-  startDate: string; // e.g., "2025-06-01"
-  numberOfWeeks: number;
-  daysPerWeek?: number;
 }) {
-  const clones: FerryItem[] = [];
-
-  for (let week = 1; week <= numberOfWeeks; week++) {
-    const offsetDays = daysPerWeek * week;
-
-    for (const s of baseSchedules) {
-      const newDate = addDays(new Date(s.schedule_date), offsetDays);
-      clones.push({
-        ...s,
-        id: crypto.randomUUID(),
-        schedule_date: format(newDate, "yyyy-MM-dd"),
-      });
-    }
+  if (!baseSchedules || baseSchedules.length === 0) {
+    return { success: false, error: "No schedules to insert" };
   }
 
-  const { error } = await supabase.from("ferry_schedules").upsert(clones);
-  return { success: !error, error };
+  // Strip out 'id' field for Supabase auto-generation
+  const cleaned: FerryItemInsert[] = baseSchedules.map(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    ({ id, ...rest }) => rest
+  );
+
+  // Debug logs
+  console.log("📤 Inserting cloned schedules:", cleaned);
+
+  const grouped = cleaned.reduce((acc, item) => {
+    const date = item.schedule_date;
+    if (!acc[date]) acc[date] = [];
+    acc[date].push(item);
+    return acc;
+  }, {} as Record<string, FerryItemInsert[]>);
+
+  console.log("🗓️ Cloned schedule breakdown by day:");
+  Object.entries(grouped).forEach(([date, trips]) => {
+    console.log(`- ${date}: ${trips.length} trips`);
+  });
+
+  // Insert into Supabase
+  const { error } = await supabase.from("ferry_schedules").insert(cleaned);
+  return { success: !error, error: error?.message };
 }

@@ -229,9 +229,7 @@ export function CloneScheduleModal({
                 setIsCloningLoading(true);
 
                 const { success, error } = await cloneSchedulePattern({
-                  baseSchedules: result,
-                  startDate: format(dateRange.from!, "yyyy-MM-dd"),
-                  numberOfWeeks: 0,
+                  baseSchedules: result, // result already has generated dates
                 });
 
                 setIsCloningLoading(false);
