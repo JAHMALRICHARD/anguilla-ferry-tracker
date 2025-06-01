@@ -2,7 +2,7 @@
 
 import { X, Pencil } from "lucide-react";
 import { FerryItem } from "../FerryProps";
-import { parseISO, format, startOfWeek } from "date-fns";
+import { parseISO, format, startOfWeek, addDays } from "date-fns";
 
 interface PreviewModalProps {
   isPreviewing: boolean;
@@ -16,16 +16,19 @@ function groupByWeekAndDate(schedules: FerryItem[]) {
 
   schedules.forEach((item) => {
     const dateObj = parseISO(item.schedule_date);
+
     const weekStart = format(
-      startOfWeek(dateObj, { weekStartsOn: 0 }),
+      startOfWeek(dateObj, { weekStartsOn: 1 }), // Start week on Monday
       "yyyy-MM-dd"
     );
     const dateKey = format(dateObj, "yyyy-MM-dd");
 
+    // 🧪 Debug log (optional)
+    // console.log(`📦 ${dateKey} grouped under week: ${weekStart}`);
+
     if (!weekMap.has(weekStart)) weekMap.set(weekStart, new Map());
     const dayMap = weekMap.get(weekStart)!;
     if (!dayMap.has(dateKey)) dayMap.set(dateKey, []);
-
     dayMap.get(dateKey)!.push(item);
   });
 
@@ -83,7 +86,8 @@ export function PreviewModal({
         {grouped.map(([weekStart, dayMap]) => (
           <div key={weekStart} className="mb-8">
             <h4 className="text-lg font-semibold mb-4">
-              Week of {format(parseISO(weekStart), "MMMM d")}
+              Week of {format(parseISO(weekStart), "MMMM d")} –{" "}
+              {format(addDays(parseISO(weekStart), 6), "MMMM d")}
             </h4>
 
             {Array.from(dayMap.entries()).map(([date, trips]) => {
