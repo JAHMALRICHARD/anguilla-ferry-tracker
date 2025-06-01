@@ -100,6 +100,7 @@ export default function HomePage() {
           localNow={localNow}
           onDetails={handleDetails}
           route={route}
+          selectedDate={selectedDate}
         />
 
         {/* Footer Sections */}
