@@ -149,9 +149,7 @@ export default function TimeAndCountdowns({
         );
       case "prepare-for-boarding":
         return (
-          <p className="text-xl font-bold text-orange-600">
-            PREPARE FOR BOARDING
-          </p>
+          <p className="text-xl font-bold text-green-600">BOARDING SOON</p>
         );
       case "now-boarding":
         return (
