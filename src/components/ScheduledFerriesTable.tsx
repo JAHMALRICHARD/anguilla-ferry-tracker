@@ -3,7 +3,6 @@
 import React from "react";
 import { FerryItem } from "./FerryProps";
 import { formatTime12Hour } from "@/helpers/formatTime12Hour";
-
 import {
   Table,
   TableBody,
@@ -19,11 +18,13 @@ import { getFerryStatus } from "@/utils/getFerryStatus";
 interface ScheduledFerriesTableProps {
   ferries: FerryItem[];
   onDetails: (ferry: FerryItem) => void;
+  searchQuery: string;
 }
 
 export function ScheduledFerriesTable({
   ferries,
   onDetails,
+  searchQuery,
 }: ScheduledFerriesTableProps) {
   const getBadgeVariant = (
     status: string
@@ -47,6 +48,16 @@ export function ScheduledFerriesTable({
     }
   };
 
+  const filteredFerries = ferries.filter((ferry) => {
+    const q = searchQuery.toLowerCase();
+    return (
+      ferry.operator?.toLowerCase().includes(q) ||
+      ferry.departure_port?.toLowerCase().includes(q) ||
+      ferry.arrival_port?.toLowerCase().includes(q) ||
+      ferry.vessel_name?.toLowerCase().includes(q)
+    );
+  });
+
   return (
     <div className="rounded-2xl border border-border shadow-sm bg-background">
       <div className="p-4 border-b border-border">
@@ -59,7 +70,7 @@ export function ScheduledFerriesTable({
       </div>
 
       <div className="overflow-x-auto">
-        {ferries.length > 0 ? (
+        {filteredFerries.length > 0 ? (
           <Table>
             <TableHeader>
               <TableRow>
@@ -73,7 +84,7 @@ export function ScheduledFerriesTable({
             </TableHeader>
             <TableBody>
               <AnimatePresence mode="sync">
-                {ferries.map((ferry, index) => {
+                {filteredFerries.map((ferry, index) => {
                   const [hourStr, minuteStr] = ferry.departure_time.split(":");
                   const depHour = Number(hourStr);
                   const depMinute = Number(minuteStr);
@@ -186,7 +197,7 @@ export function ScheduledFerriesTable({
           </Table>
         ) : (
           <div className="text-muted-foreground p-6 text-center">
-            No scheduled ferries available.
+            No scheduled ferries match your search.
           </div>
         )}
       </div>

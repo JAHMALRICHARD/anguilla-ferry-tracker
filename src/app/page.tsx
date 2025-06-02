@@ -22,6 +22,7 @@ export default function HomePage() {
     from: "To Anguilla - via Marigot",
     to: "To St. Martin",
   });
+  const [searchQuery, setSearchQuery] = useState("");
 
   const {
     allFerries = [],
@@ -31,7 +32,6 @@ export default function HomePage() {
     setSelectedFerry,
   } = useLiveScheduleData(selectedDate);
 
-  // Only filter by route at the page level — date/time logic is handled in the hook
   const upcomingFerries = useMemo(
     () => getFerriesForRoute(route.to, allUpcoming, "upcoming"),
     [route.to, allUpcoming]
@@ -88,6 +88,8 @@ export default function HomePage() {
           onDateChange={setSelectedDate}
           route={route}
           onRouteChange={setRoute}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
         />
 
         {/* Ferry Schedule Tables */}
@@ -96,8 +98,8 @@ export default function HomePage() {
           pastFerries={pastFerries}
           localNow={localNow}
           onDetails={handleDetails}
-          route={route}
           selectedDate={selectedDate}
+          searchQuery={searchQuery}
         />
 
         {/* Footer Sections */}

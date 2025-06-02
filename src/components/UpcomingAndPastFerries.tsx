@@ -9,9 +9,9 @@ import { Card, CardContent } from "@/components/ui/card";
 interface UpcomingAndPastFerriesProps {
   upcomingFerries: FerryItem[];
   pastFerries: FerryItem[];
-  route: { from: string; to: string };
   localNow: Date;
   selectedDate: Date;
+  searchQuery: string;
   onDetails: (ferry: FerryItem) => void;
 }
 
@@ -19,6 +19,7 @@ export default function UpcomingAndPastFerries({
   upcomingFerries,
   pastFerries,
   localNow,
+  searchQuery,
   onDetails,
 }: UpcomingAndPastFerriesProps) {
   const hasUpcoming = upcomingFerries.length > 0;
@@ -32,6 +33,7 @@ export default function UpcomingAndPastFerries({
           {hasUpcoming ? (
             <ScheduledFerriesTable
               ferries={upcomingFerries}
+              searchQuery={searchQuery}
               onDetails={onDetails}
             />
           ) : (
@@ -46,7 +48,11 @@ export default function UpcomingAndPastFerries({
       <Card>
         <CardContent className="overflow-x-auto">
           {hasPast ? (
-            <SailedFerriesTable ferries={pastFerries} localNow={localNow} />
+            <SailedFerriesTable
+              ferries={pastFerries}
+              searchQuery={searchQuery}
+              localNow={localNow}
+            />
           ) : (
             <div className="p-6 text-center text-muted-foreground">
               No past ferries for this date.

@@ -17,11 +17,13 @@ import { motion, AnimatePresence } from "framer-motion";
 interface SailedFerriesTableProps {
   ferries: FerryItem[];
   localNow: Date;
+  searchQuery: string;
 }
 
 export function SailedFerriesTable({
   ferries,
   localNow,
+  searchQuery,
 }: SailedFerriesTableProps) {
   const [now, setNow] = useState(localNow);
 
@@ -51,25 +53,24 @@ export function SailedFerriesTable({
       const todayStr = now.toISOString().split("T")[0];
       const isToday = ferry.schedule_date === todayStr;
 
-      let status: "SAILING" | "ARRIVED" | "SAILED" = "SAILED";
+      let liveStatus: "SAILING" | "ARRIVED" | "SAILED" = "SAILED";
 
       if (
         isToday &&
         nowTime >= depDate.getTime() &&
         nowTime < etaDate.getTime()
       ) {
-        status = "SAILING";
+        liveStatus = "SAILING";
       } else if (
         isToday &&
         nowTime >= etaDate.getTime() &&
         nowTime < etaDate.getTime() + 5 * 60 * 1000
       ) {
-        status = "ARRIVED";
+        liveStatus = "ARRIVED";
       }
 
-      // Calculate percent of progress for sailing
       let progressPercent = 100;
-      if (status === "SAILING") {
+      if (liveStatus === "SAILING") {
         const durationMs = etaDate.getTime() - depDate.getTime();
         const elapsedMs = nowTime - depDate.getTime();
         progressPercent = Math.min(
@@ -78,9 +79,24 @@ export function SailedFerriesTable({
         );
       }
 
-      return { ...ferry, etaDate, depDate, status, progressPercent };
+      return {
+        ...ferry,
+        etaDate,
+        depDate,
+        liveStatus,
+        progressPercent,
+      };
     })
     .sort((a, b) => b.etaDate.getTime() - a.etaDate.getTime());
+
+  const filteredFerries = ferriesWithETA.filter((ferry) => {
+    const query = searchQuery.toLowerCase();
+    return (
+      ferry.operator?.toLowerCase().includes(query) ||
+      ferry.departure_port?.toLowerCase().includes(query) ||
+      ferry.arrival_port?.toLowerCase().includes(query)
+    );
+  });
 
   const getStatusVariant = (
     status: string
@@ -102,7 +118,7 @@ export function SailedFerriesTable({
       </div>
 
       <div className="overflow-x-auto">
-        {ferriesWithETA.length > 0 ? (
+        {filteredFerries.length > 0 ? (
           <Table>
             <TableHeader>
               <TableRow>
@@ -116,7 +132,7 @@ export function SailedFerriesTable({
             </TableHeader>
             <TableBody>
               <AnimatePresence mode="sync">
-                {ferriesWithETA.map((ferry) => {
+                {filteredFerries.map((ferry) => {
                   const departure = ferry.departure_time
                     ? formatTime12Hour(ferry.departure_time)
                     : "—";
@@ -159,26 +175,26 @@ export function SailedFerriesTable({
                         <div className="flex flex-col gap-1">
                           <Badge
                             variant={
-                              ferry.status === "SAILING"
+                              ferry.liveStatus === "SAILING"
                                 ? "outline"
-                                : getStatusVariant(ferry.status)
+                                : getStatusVariant(ferry.liveStatus)
                             }
                             className={`inline-flex items-center gap-2 uppercase w-fit ${
-                              ferry.status === "SAILING"
+                              ferry.liveStatus === "SAILING"
                                 ? "text-blue-600 border-blue-600"
                                 : ""
                             }`}
                           >
-                            {ferry.status === "SAILING" && (
+                            {ferry.liveStatus === "SAILING" && (
                               <span className="relative flex h-2 w-2">
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-current opacity-75"></span>
                                 <span className="relative inline-flex rounded-full h-2 w-2 bg-current"></span>
                               </span>
                             )}
-                            {ferry.status}
+                            {ferry.liveStatus}
                           </Badge>
 
-                          {ferry.status === "SAILING" && (
+                          {ferry.liveStatus === "SAILING" && (
                             <div className="w-full bg-muted rounded h-1 overflow-hidden">
                               <div
                                 className="h-full bg-blue-500 transition-all duration-300"

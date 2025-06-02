@@ -20,6 +20,8 @@ interface RouteDateAndSearchBarProps {
   onDateChange: (date: Date) => void;
   route: { from: string; to: string };
   onRouteChange: (route: { from: string; to: string }) => void;
+  searchQuery: string;
+  onSearchChange: (query: string) => void;
 }
 
 export default function RouteDateAndSearchBar({
@@ -27,13 +29,15 @@ export default function RouteDateAndSearchBar({
   onDateChange,
   route,
   onRouteChange,
+  searchQuery,
+  onSearchChange,
 }: RouteDateAndSearchBarProps) {
   const today = new Date();
   const tomorrow = addDays(today, 1);
 
   return (
     <div className="bg-background text-foreground border rounded-xl p-4 flex flex-wrap gap-3 items-center justify-between w-full max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 shadow-sm">
-      {/* Route Selector (Preserves original logic) */}
+      {/* Route Selector with Flags */}
       <div className="flex gap-2 items-center">
         <Button
           variant={route.to === "To St. Martin" ? "default" : "outline"}
@@ -108,7 +112,13 @@ export default function RouteDateAndSearchBar({
       {/* Search Field */}
       <div className="relative flex-1 min-w-[160px]">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
-        <Input type="text" placeholder="Search Ferries..." className="pl-10" />
+        <Input
+          type="text"
+          placeholder="Search Ferries..."
+          className="pl-10"
+          value={searchQuery}
+          onChange={(e) => onSearchChange(e.target.value)}
+        />
       </div>
 
       {/* Status Filter (Static UI) */}
