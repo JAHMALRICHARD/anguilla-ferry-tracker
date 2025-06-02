@@ -33,12 +33,12 @@ export default function HomePage() {
 
   // Only filter by route at the page level — date/time logic is handled in the hook
   const upcomingFerries = useMemo(
-    () => getFerriesForRoute(route.to, allUpcoming),
+    () => getFerriesForRoute(route.to, allUpcoming, "upcoming"),
     [route.to, allUpcoming]
   );
 
   const pastFerries = useMemo(
-    () => getFerriesForRoute(route.to, allPast),
+    () => getFerriesForRoute(route.to, allPast, "past"),
     [route.to, allPast]
   );
 

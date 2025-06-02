@@ -3,7 +3,8 @@ import { FerryItem } from "@/components/FerryProps";
 
 export function getFerriesForRoute(
   routeTo: string,
-  ferries: FerryItem[]
+  ferries: FerryItem[],
+  mode: "upcoming" | "past" = "upcoming"
 ): FerryItem[] {
   console.log("🛳️ Route selected:", routeTo);
   console.log("🔍 Total ferries received:", ferries.length);
@@ -25,37 +26,37 @@ export function getFerriesForRoute(
 
   if (!ferries.length) return [];
 
-  // Infer selected date from ferry data
   const selectedDate = ferries[0].schedule_date;
 
   if (routeTo === "To Anguilla - via Marigot") {
-    // Find outbound ferries (Anguilla to St. Martin) for that day
-    const outboundFerries = ferries.filter((ferry) => {
-      const from = normalize(ferry.departure_port);
-      const to = normalize(ferry.arrival_port);
-      return (
-        ferry.schedule_date === selectedDate &&
-        from === "blowing point, anguilla" &&
-        to === "marigot, st. martin"
+    if (mode === "past") {
+      // Only return actual sailed trips (no synthetic return generation)
+      return ferries.filter(
+        (f) =>
+          normalize(f.departure_port) === "marigot, st. martin" &&
+          normalize(f.arrival_port) === "blowing point, anguilla" &&
+          f.schedule_date === selectedDate
       );
-    });
-
-    if (outboundFerries.length === 0) {
-      console.warn(
-        `⚠️ No outbound ferries found on ${selectedDate} — cannot generate return trips.`
-      );
-      return [];
     }
 
+    // For upcoming, generate return pattern
+    const outboundFerries = ferries.filter(
+      (ferry) =>
+        ferry.schedule_date === selectedDate &&
+        normalize(ferry.departure_port) === "blowing point, anguilla" &&
+        normalize(ferry.arrival_port) === "marigot, st. martin"
+    );
+
+    if (outboundFerries.length === 0) return [];
+
     const returnFerries = marigotReturnTimes.map((returnTime, index) => {
-      const existing = ferries.find((f) => {
-        return (
+      const existing = ferries.find(
+        (f) =>
           f.schedule_date === selectedDate &&
           normalize(f.departure_port) === "marigot, st. martin" &&
           normalize(f.arrival_port) === "blowing point, anguilla" &&
           f.departure_time === returnTime
-        );
-      });
+      );
 
       if (existing) return existing;
 
@@ -75,20 +76,16 @@ export function getFerriesForRoute(
       };
     });
 
-    console.log(`🔁 Generated ${returnFerries.length} return ferries`);
     return returnFerries;
   }
 
   if (routeTo === "To St. Martin") {
-    return ferries.filter((ferry) => {
-      const from = normalize(ferry.departure_port);
-      const to = normalize(ferry.arrival_port);
-      return (
+    return ferries.filter(
+      (ferry) =>
         ferry.schedule_date === selectedDate &&
-        from === "blowing point, anguilla" &&
-        to === "marigot, st. martin"
-      );
-    });
+        normalize(ferry.departure_port) === "blowing point, anguilla" &&
+        normalize(ferry.arrival_port) === "marigot, st. martin"
+    );
   }
 
   return [];

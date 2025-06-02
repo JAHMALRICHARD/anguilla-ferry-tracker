@@ -4,7 +4,7 @@ import React from "react";
 import Image from "next/image";
 import { ArrowRight, UsersRound } from "lucide-react";
 
-interface FerryProgressProps {
+export interface FerryProgressProps {
   operatorName: string;
   progressPercent: number;
   eta: string;
@@ -23,12 +23,10 @@ export function FerryProgress({
   operatorName,
   progressPercent,
   eta,
-  status: originalStatus,
+  status,
   direction,
 }: FerryProgressProps) {
-  const status = originalStatus;
-
-  const ferryColorMap: Record<string, string> = {
+  const ferryColorMap: Record<FerryProgressProps["status"], string> = {
     DOCKED: "#9CA3AF",
     "DOCKED IN AXA": "#6B7280",
     BOARDING: "#FACC15",
@@ -38,7 +36,7 @@ export function FerryProgress({
     "ON THE WAY": "#6B7280",
   };
 
-  const statusClassMap: Record<string, string> = {
+  const statusClassMap: Record<FerryProgressProps["status"], string> = {
     DOCKED: "bg-gray-500/10 text-gray-400",
     "DOCKED IN AXA": "bg-gray-500/10 text-gray-400",
     BOARDING: "bg-yellow-500/10 text-yellow-500",
@@ -49,14 +47,13 @@ export function FerryProgress({
   };
 
   const displayProgress = status === "ARRIVED" ? 100 : progressPercent;
-  const ferryColor = ferryColorMap[status] || "#9CA3AF";
+  const ferryColor = ferryColorMap[status];
   const isFlipped = direction === "to-anguilla";
 
-  const shouldShowIcon = !(
-    status === "ON THE WAY" ||
-    status === "DOCKED IN AXA" ||
-    (status === "DOCKED" && direction === "to-anguilla")
-  );
+  const shouldShowIcon =
+    status !== "ON THE WAY" &&
+    status !== "DOCKED IN AXA" &&
+    !(status === "DOCKED" && direction === "to-anguilla");
 
   const ferryIconStyle: React.CSSProperties = {
     left:
@@ -83,20 +80,20 @@ export function FerryProgress({
         </span>
       </div>
 
-      {/* Direction Row - AXA always left, SXM always right */}
+      {/* Direction Labels */}
       <div className="flex justify-between items-center text-lg font-bold mb-2">
         <span className="text-2xl tracking-wide">AXA</span>
         <div className="flex items-center justify-center w-10">
           <ArrowRight
             className={`w-6 h-6 text-muted-foreground transition-transform ${
-              direction === "to-anguilla" ? "rotate-180" : ""
+              isFlipped ? "rotate-180" : ""
             }`}
           />
         </div>
         <span className="text-2xl tracking-wide">SXM</span>
       </div>
 
-      {/* Ferry Trail + Icon */}
+      {/* Ferry Icon Progress Trail */}
       <div className="relative h-5">
         {shouldShowIcon && (
           <div className="absolute z-10" style={ferryIconStyle}>
@@ -124,20 +121,19 @@ export function FerryProgress({
         )}
       </div>
 
-      {/* Progress Bar with Tooltip */}
+      {/* Progress Bar */}
       <div
         className="relative w-full h-2 bg-gray-700 rounded-full overflow-hidden"
         title={`${displayProgress}% complete`}
       >
         <div
           className={`absolute top-0 h-full rounded-full transition-all duration-700 ease-out ${
-            direction === "to-anguilla" ? "right-0" : "left-0"
+            isFlipped ? "right-0" : "left-0"
           }`}
           style={{
             width: `${displayProgress}%`,
             backgroundColor: ferryColor,
-            transformOrigin:
-              direction === "to-anguilla" ? "right center" : "left center",
+            transformOrigin: isFlipped ? "right center" : "left center",
           }}
         />
       </div>

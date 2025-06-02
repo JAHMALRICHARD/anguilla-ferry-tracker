@@ -1,11 +1,12 @@
 "use client";
 
 import { CurrentWeatherWidget } from "./CurrentWeatherWidget";
-import { FerryProgress } from "./FerryProgress";
+import { FerryProgress, type FerryProgressProps } from "./FerryProgress";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useLiveScheduleData } from "@/hooks/useLiveScheduleData";
 import { formatTime12Hour } from "@/helpers/formatTime12Hour";
+import { getFerryStatus } from "@/utils/getFerryStatus";
 
 interface FeatureImageAndWeatherProps {
   selectedDate: Date;
@@ -16,74 +17,64 @@ export default function FeatureImageAndWeather({
   selectedDate,
   route,
 }: FeatureImageAndWeatherProps) {
-  const { upcomingFerries, localNow } = useLiveScheduleData(selectedDate);
+  const { upcomingFerries, pastFerries, localNow } =
+    useLiveScheduleData(selectedDate);
 
   const direction =
     route.to === "To Anguilla - via Marigot" ? "to-anguilla" : "to-st-martin";
-
-  const nextFerry = upcomingFerries.find((ferry) =>
-    direction === "to-anguilla"
-      ? ferry.direction === "to-anguilla"
-      : ferry.direction === "from-anguilla"
-  );
-
   const isToAnguilla = direction === "to-anguilla";
 
   const backgroundImage = isToAnguilla
     ? "/hero/resized-sxm-to-axa-hero-featured-image.jpg"
     : "/hero/resized-axa-to-sxm-hero-featured-image.jpg";
 
-  const getProgressPercent = (departureTime: string): number => {
-    const [h, m] = departureTime.split(":").map(Number);
-    const depDate = new Date(selectedDate);
-    depDate.setHours(h, m, 0);
+  const allFerries = [...upcomingFerries, ...pastFerries].filter((ferry) =>
+    direction === "to-anguilla"
+      ? ferry.direction === "to-anguilla"
+      : ferry.direction === "from-anguilla"
+  );
 
-    const diffInMinutes = (depDate.getTime() - localNow.getTime()) / 1000 / 60;
-    const totalLead = 60;
+  // Prioritize active sailing/boarding/arriving ferry
+  let activeFerry = allFerries.find((ferry) => {
+    const { status } = getFerryStatus({
+      departureTime: ferry.departure_time,
+      direction,
+      localNow,
+    });
+    return ["BOARDING", "SAILING", "NOW ARRIVING"].includes(status);
+  });
 
-    return Math.max(0, Math.min(100, 100 - (diffInMinutes / totalLead) * 100));
-  };
+  // If no active one, fallback to the soonest DOCKED one
+  if (!activeFerry) {
+    activeFerry = allFerries.find((ferry) => {
+      const { status } = getFerryStatus({
+        departureTime: ferry.departure_time,
+        direction,
+        localNow,
+      });
+      return status === "DOCKED";
+    });
+  }
 
-  let ferrySailingStatus:
-    | "DOCKED"
-    | "BOARDING"
-    | "SAILING"
-    | "NOW ARRIVING"
-    | "ARRIVED" = "DOCKED";
+  let ferrySailingStatus: FerryProgressProps["status"] = "DOCKED";
+  let progressPercent = 0;
 
-  if (nextFerry) {
-    switch (nextFerry.status.toLowerCase()) {
-      case "on-time":
-      case "scheduled":
-        ferrySailingStatus = "DOCKED";
-        break;
-      case "boarding":
-      case "delayed":
-        ferrySailingStatus = "BOARDING";
-        break;
-      case "sailing":
-      case "departed":
-        ferrySailingStatus = "SAILING";
-        break;
-      case "arriving":
-        ferrySailingStatus = "NOW ARRIVING";
-        break;
-      case "arrived":
-        ferrySailingStatus = "ARRIVED";
-        break;
-      default:
-        ferrySailingStatus = "DOCKED";
-    }
+  if (activeFerry) {
+    const result = getFerryStatus({
+      departureTime: activeFerry.departure_time,
+      direction,
+      localNow,
+    });
+    ferrySailingStatus = result.status as FerryProgressProps["status"];
+    progressPercent = result.progressPercent;
   }
 
   const getFormattedETA = (departure: string, duration: string): string => {
     const [depHour, depMin] = departure.split(":").map(Number);
     const [durHour, durMin] = duration.split(":").map(Number);
-
     const eta = new Date(selectedDate);
     eta.setHours(depHour + durHour);
     eta.setMinutes(depMin + durMin);
-
     return formatTime12Hour(
       `${eta.getHours().toString().padStart(2, "0")}:${eta
         .getMinutes()
@@ -94,9 +85,9 @@ export default function FeatureImageAndWeather({
 
   // Grace Period Logic
   let showFerryProgress = false;
-  if (nextFerry) {
-    const [depHour, depMin] = nextFerry.departure_time.split(":").map(Number);
-    const [durHour, durMin] = nextFerry.duration.split(":").map(Number);
+  if (activeFerry) {
+    const [depHour, depMin] = activeFerry.departure_time.split(":").map(Number);
+    const [durHour, durMin] = activeFerry.duration.split(":").map(Number);
 
     const departureDate = new Date(selectedDate);
     departureDate.setHours(depHour, depMin, 0);
@@ -156,20 +147,16 @@ export default function FeatureImageAndWeather({
             </CardContent>
           </Card>
 
-          {/* Ferry Progress (with grace) */}
-          {nextFerry && showFerryProgress && (
+          {/* Ferry Progress (if any) */}
+          {activeFerry && showFerryProgress && (
             <Card>
               <CardContent className="p-4 flex justify-center">
                 <FerryProgress
-                  operatorName={nextFerry.operator}
-                  progressPercent={
-                    ferrySailingStatus === "DOCKED"
-                      ? 0
-                      : getProgressPercent(nextFerry.departure_time)
-                  }
+                  operatorName={activeFerry.operator}
+                  progressPercent={progressPercent}
                   eta={getFormattedETA(
-                    nextFerry.departure_time,
-                    nextFerry.duration
+                    activeFerry.departure_time,
+                    activeFerry.duration
                   )}
                   status={ferrySailingStatus}
                   direction={direction}
