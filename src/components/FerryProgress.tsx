@@ -47,6 +47,9 @@ export function FerryProgress({
   };
 
   const displayProgress = status === "ARRIVED" ? 100 : progressPercent;
+  const adjustedProgress =
+    status === "BOARDING" && displayProgress < 5 ? 5 : displayProgress;
+
   const ferryColor = ferryColorMap[status];
   const isFlipped = direction === "to-anguilla";
 
@@ -58,10 +61,10 @@ export function FerryProgress({
   const ferryIconStyle: React.CSSProperties = {
     left:
       direction === "to-st-martin"
-        ? `calc(${displayProgress}% + 10px)`
-        : `calc(${100 - displayProgress}% - 10px)`,
+        ? `calc(${adjustedProgress}% + 5px)`
+        : `calc(${100 - adjustedProgress}% - 5px)`,
     transform: "translateX(-50%)",
-    top: -5,
+    top: 0,
   };
 
   return (
@@ -98,7 +101,6 @@ export function FerryProgress({
         {shouldShowIcon && (
           <div className="absolute z-10" style={ferryIconStyle}>
             <div className="relative">
-              <span className="absolute w-6 h-6 rounded-full bg-current opacity-30 animate-ping left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" />
               {status === "BOARDING" || status === "ARRIVED" ? (
                 <UsersRound
                   size={18}
@@ -124,14 +126,14 @@ export function FerryProgress({
       {/* Progress Bar */}
       <div
         className="relative w-full h-2 bg-gray-700 rounded-full overflow-hidden"
-        title={`${displayProgress}% complete`}
+        title={`${adjustedProgress}% complete`}
       >
         <div
           className={`absolute top-0 h-full rounded-full transition-all duration-700 ease-out ${
             isFlipped ? "right-0" : "left-0"
           }`}
           style={{
-            width: `${displayProgress}%`,
+            width: `${adjustedProgress}%`,
             backgroundColor: ferryColor,
             transformOrigin: isFlipped ? "right center" : "left center",
           }}
