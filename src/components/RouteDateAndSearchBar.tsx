@@ -13,6 +13,7 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
+import Image from "next/image";
 
 interface RouteDateAndSearchBarProps {
   selectedDate: Date;
@@ -33,20 +34,40 @@ export default function RouteDateAndSearchBar({
   return (
     <div className="bg-background text-foreground border rounded-xl p-4 flex flex-wrap gap-3 items-center justify-between w-full max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 shadow-sm">
       {/* Route Selector (Preserves original logic) */}
-      <Select
-        value={route.to}
-        onValueChange={(value) => onRouteChange({ ...route, to: value })}
-      >
-        <SelectTrigger className="w-[220px]">
-          <SelectValue placeholder="Select Route" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="To St. Martin">To St. Martin</SelectItem>
-          <SelectItem value="To Anguilla - via Marigot">
-            To Anguilla - via Marigot
-          </SelectItem>
-        </SelectContent>
-      </Select>
+      <div className="flex gap-2 items-center">
+        <Button
+          variant={route.to === "To St. Martin" ? "default" : "outline"}
+          onClick={() => onRouteChange({ ...route, to: "To St. Martin" })}
+          className="flex items-center gap-2 px-4 py-2"
+        >
+          <Image
+            src="/flags/sx.png"
+            alt="SXM Flag"
+            width={24}
+            height={16}
+            className="rounded-sm"
+          />
+          <span className="hidden sm:inline">To St. Martin</span>
+        </Button>
+        <Button
+          variant={
+            route.to === "To Anguilla - via Marigot" ? "default" : "outline"
+          }
+          onClick={() =>
+            onRouteChange({ ...route, to: "To Anguilla - via Marigot" })
+          }
+          className="flex items-center gap-2 px-4 py-2"
+        >
+          <Image
+            src="/flags/ai.png"
+            alt="Anguilla Flag"
+            width={24}
+            height={16}
+            className="rounded-sm"
+          />
+          <span className="hidden sm:inline">To Anguilla</span>
+        </Button>
+      </div>
 
       {/* Date Picker */}
       <div className="flex items-center gap-4 flex-wrap">
