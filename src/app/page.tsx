@@ -31,14 +31,20 @@ export default function HomePage() {
 
   const fullRouteFerries = getFerriesForRoute(route.to, allFerries);
 
-  const upcomingFerries = fullRouteFerries.filter((ferry) => {
+  const selectedDateStr = selectedDate.toISOString().split("T")[0];
+
+  const ferriesForSelectedDate = fullRouteFerries.filter(
+    (ferry) => ferry.schedule_date === selectedDateStr
+  );
+
+  const upcomingFerries = ferriesForSelectedDate.filter((ferry) => {
     const [hour, minute] = ferry.departure_time.split(":").map(Number);
     const depTime = new Date(localNow);
     depTime.setHours(hour, minute, 0, 0);
     return depTime >= localNow;
   });
 
-  const pastFerries = fullRouteFerries.filter((ferry) => {
+  const pastFerries = ferriesForSelectedDate.filter((ferry) => {
     const [hour, minute] = ferry.departure_time.split(":").map(Number);
     const depTime = new Date(localNow);
     depTime.setHours(hour, minute, 0, 0);

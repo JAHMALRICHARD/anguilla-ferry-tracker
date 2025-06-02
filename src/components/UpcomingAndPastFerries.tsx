@@ -19,20 +19,10 @@ export default function UpcomingAndPastFerries({
   upcomingFerries,
   pastFerries,
   localNow,
-  selectedDate,
   onDetails,
 }: UpcomingAndPastFerriesProps) {
-  const selectedDateString = selectedDate.toISOString().split("T")[0];
-
-  const filteredUpcoming = upcomingFerries.filter(
-    (ferry) => ferry.schedule_date === selectedDateString
-  );
-  const filteredPast = pastFerries.filter(
-    (ferry) => ferry.schedule_date === selectedDateString
-  );
-
-  const hasUpcoming = filteredUpcoming.length > 0;
-  const hasPast = filteredPast.length > 0;
+  const hasUpcoming = upcomingFerries.length > 0;
+  const hasPast = pastFerries.length > 0;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-10">
@@ -41,7 +31,7 @@ export default function UpcomingAndPastFerries({
         <CardContent className="overflow-x-auto">
           {hasUpcoming ? (
             <ScheduledFerriesTable
-              ferries={filteredUpcoming}
+              ferries={upcomingFerries}
               onDetails={onDetails}
             />
           ) : (
@@ -56,7 +46,7 @@ export default function UpcomingAndPastFerries({
       <Card>
         <CardContent className="overflow-x-auto">
           {hasPast ? (
-            <SailedFerriesTable ferries={filteredPast} localNow={localNow} />
+            <SailedFerriesTable ferries={pastFerries} localNow={localNow} />
           ) : (
             <div className="p-6 text-center text-muted-foreground">
               No past ferries for this date.
