@@ -12,37 +12,46 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { motion, AnimatePresence } from "framer-motion";
+import { Skeleton } from "./ui/skeleton";
+import { getPRTime } from "@/hooks/useLiveScheduleData"; // ✅ import from correct file
 
 interface SailedFerriesTableProps {
   ferries: FerryItem[];
   localNow: Date;
   searchQuery: string;
   selectedDate: Date;
+  isLoading?: boolean;
+}
+
+function TableSkeletonRow() {
+  return (
+    <tr className="animate-pulse">
+      {[...Array(6)].map((_, i) => (
+        <td key={i} className="p-4">
+          <Skeleton className="h-4 w-full max-w-[120px]" />
+        </td>
+      ))}
+    </tr>
+  );
 }
 
 export function SailedFerriesTable({
   ferries,
   searchQuery,
   selectedDate,
+  isLoading = false,
 }: SailedFerriesTableProps) {
-  const isToday =
-    selectedDate.toDateString() ===
-    new Date().toLocaleDateString("en-US", {
-      timeZone: "America/Puerto_Rico",
-    });
+  const isToday = selectedDate.toDateString() === getPRTime().toDateString(); // ✅ PR time comparison
 
-  const [now, setNow] = useState(() =>
+  const [now, setNow] = useState<Date>(() =>
     isToday
-      ? new Date()
+      ? getPRTime()
       : new Date(`${selectedDate.toISOString().split("T")[0]}T12:00:00`)
   );
 
   useEffect(() => {
     if (!isToday) return;
-    const interval = setInterval(() => {
-      setNow(new Date());
-    }, 60000);
+    const interval = setInterval(() => setNow(getPRTime()), 60000);
     return () => clearInterval(interval);
   }, [isToday]);
 
@@ -51,22 +60,21 @@ export function SailedFerriesTable({
       const [depHour, depMin] = ferry.departure_time
         ?.split(":")
         .map(Number) || [0, 0];
-      const [durHour, durMin] = ferry.duration?.split(":").map(Number) || [
-        0, 0,
-      ];
+      const [durHour, durMin] = (ferry.duration || "00:30")
+        .split(":")
+        .map(Number);
 
-      const depDate = new Date(ferry.schedule_date + "T00:00:00");
+      const depDate = new Date(`${ferry.schedule_date}T00:00:00`);
       depDate.setHours(depHour, depMin, 0, 0);
 
       const etaDate = new Date(
         depDate.getTime() + (durHour * 60 + durMin) * 60000
       );
 
-      let liveStatus: "SAILING" | "ARRIVED" | "SAILED" = "SAILED";
+      let liveStatus: "SAILED" | "SAILING" | "ARRIVED" = "SAILED";
 
       if (isToday) {
         const nowTime = now.getTime();
-
         if (nowTime >= depDate.getTime() && nowTime < etaDate.getTime()) {
           liveStatus = "SAILING";
         } else if (
@@ -79,8 +87,8 @@ export function SailedFerriesTable({
 
       let progressPercent = 100;
       if (liveStatus === "SAILING") {
-        const durationMs = etaDate.getTime() - depDate.getTime();
         const elapsedMs = now.getTime() - depDate.getTime();
+        const durationMs = etaDate.getTime() - depDate.getTime();
         progressPercent = Math.min(
           100,
           Math.max(0, (elapsedMs / durationMs) * 100)
@@ -126,103 +134,97 @@ export function SailedFerriesTable({
       </div>
 
       <div className="overflow-x-auto">
-        {filteredFerries.length > 0 ? (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Departure</TableHead>
-                <TableHead className="w-[160px]">Ferry</TableHead>
-                <TableHead>Origin</TableHead>
-                <TableHead>Destination</TableHead>
-                <TableHead>ETA</TableHead>
-                <TableHead>Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              <AnimatePresence mode="sync">
-                {filteredFerries.map((ferry) => {
-                  const departure = ferry.departure_time
-                    ? formatTime12Hour(ferry.departure_time)
-                    : "—";
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Departure</TableHead>
+              <TableHead className="w-[160px]">Ferry</TableHead>
+              <TableHead>Origin</TableHead>
+              <TableHead>Destination</TableHead>
+              <TableHead>ETA</TableHead>
+              <TableHead>Status</TableHead>
+            </TableRow>
+          </TableHeader>
 
-                  const eta = formatTime12Hour(
-                    ferry.etaDate.toTimeString().substring(0, 5)
-                  );
+          <TableBody>
+            {isLoading ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <TableSkeletonRow key={i} />
+              ))
+            ) : filteredFerries.length > 0 ? (
+              filteredFerries.map((ferry) => {
+                const departure = formatTime12Hour(ferry.departure_time);
+                const eta = formatTime12Hour(
+                  ferry.etaDate.toTimeString().substring(0, 5)
+                );
+                const rowKey =
+                  ferry.id ||
+                  `${ferry.operator}-${ferry.departure_time}-${ferry.schedule_date}`;
 
-                  const rowKey =
-                    typeof ferry.id === "number" && !Number.isNaN(ferry.id)
-                      ? `ferry-${ferry.id}`
-                      : typeof ferry.id === "string"
-                      ? ferry.id
-                      : `${ferry.operator || "unknown"}-${
-                          ferry.departure_time || "no-time"
-                        }-${ferry.direction || "no-dir"}`;
-
-                  return (
-                    <motion.tr
-                      key={rowKey}
-                      layout
-                      initial={{ opacity: 0, y: -5 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 5 }}
-                      transition={{ duration: 0.3 }}
-                      className="hover:bg-muted/50 transition even:bg-muted/10"
-                    >
-                      <TableCell>{departure}</TableCell>
-                      <TableCell className="font-medium">
-                        {ferry.operator || "—"}
-                      </TableCell>
-                      <TableCell>
-                        {ferry.departure_port?.split(",")[0] || "—"}
-                      </TableCell>
-                      <TableCell>
-                        {ferry.arrival_port?.split(",")[0] || "—"}
-                      </TableCell>
-                      <TableCell>{eta}</TableCell>
-                      <TableCell>
-                        <div className="flex flex-col gap-1">
-                          <Badge
-                            variant={
-                              ferry.liveStatus === "SAILING"
-                                ? "outline"
-                                : getStatusVariant(ferry.liveStatus)
-                            }
-                            className={`inline-flex items-center gap-2 uppercase w-fit ${
-                              ferry.liveStatus === "SAILING"
-                                ? "text-blue-600 border-blue-600"
-                                : ""
-                            }`}
-                          >
-                            {ferry.liveStatus === "SAILING" && (
-                              <span className="relative flex h-2 w-2">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-current opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-2 w-2 bg-current"></span>
-                              </span>
-                            )}
-                            {ferry.liveStatus}
-                          </Badge>
-
+                return (
+                  <TableRow
+                    key={rowKey}
+                    className="hover:bg-muted/50 transition even:bg-muted/10"
+                  >
+                    <TableCell>{departure}</TableCell>
+                    <TableCell className="font-medium">
+                      {ferry.operator || "—"}
+                    </TableCell>
+                    <TableCell>
+                      {ferry.departure_port?.split(",")[0] || "—"}
+                    </TableCell>
+                    <TableCell>
+                      {ferry.arrival_port?.split(",")[0] || "—"}
+                    </TableCell>
+                    <TableCell>{eta}</TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        <Badge
+                          variant={
+                            ferry.liveStatus === "SAILING"
+                              ? "outline"
+                              : getStatusVariant(ferry.liveStatus)
+                          }
+                          className={`inline-flex items-center gap-2 uppercase w-fit ${
+                            ferry.liveStatus === "SAILING"
+                              ? "text-blue-600 border-blue-600"
+                              : ""
+                          }`}
+                        >
                           {ferry.liveStatus === "SAILING" && (
-                            <div className="w-full bg-muted rounded h-1 overflow-hidden">
-                              <div
-                                className="h-full bg-blue-500 transition-all duration-300"
-                                style={{ width: `${ferry.progressPercent}%` }}
-                              />
-                            </div>
+                            <span className="relative flex h-2 w-2">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-current opacity-75"></span>
+                              <span className="relative inline-flex rounded-full h-2 w-2 bg-current"></span>
+                            </span>
                           )}
-                        </div>
-                      </TableCell>
-                    </motion.tr>
-                  );
-                })}
-              </AnimatePresence>
-            </TableBody>
-          </Table>
-        ) : (
-          <div className="text-muted-foreground text-sm p-6 text-center">
-            No ferries have sailed for this day.
-          </div>
-        )}
+                          {ferry.liveStatus}
+                        </Badge>
+
+                        {ferry.liveStatus === "SAILING" && (
+                          <div className="w-full bg-muted rounded h-1 overflow-hidden">
+                            <div
+                              className="h-full bg-blue-500 transition-all duration-300"
+                              style={{ width: `${ferry.progressPercent}%` }}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
+            ) : (
+              <TableRow>
+                <TableCell
+                  colSpan={6}
+                  className="text-center text-muted-foreground p-6"
+                >
+                  No ferries have sailed for this day.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
       </div>
     </div>
   );

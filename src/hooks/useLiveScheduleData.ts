@@ -16,6 +16,7 @@ export function useLiveScheduleData(selectedDate: Date) {
   const [upcomingFerries, setUpcomingFerries] = useState<FerryItem[]>([]);
   const [pastFerries, setPastFerries] = useState<FerryItem[]>([]);
   const [selectedFerry, setSelectedFerry] = useState<FerryItem | null>(null);
+  const [loading, setLoading] = useState(true); // ✅ Track loading state
 
   const todayPR = getPRTime(new Date());
   const selectedDateStr = format(selectedDate, "yyyy-MM-dd");
@@ -27,6 +28,8 @@ export function useLiveScheduleData(selectedDate: Date) {
 
   useEffect(() => {
     const fetchFerryData = async () => {
+      setLoading(true); // ✅ Set loading before fetch
+
       const { data, error } = await supabase
         .from("ferry_schedules")
         .select("*")
@@ -35,10 +38,12 @@ export function useLiveScheduleData(selectedDate: Date) {
 
       if (error) {
         console.error("❌ Supabase fetch error:", error);
-        return;
+        setAllFerries([]);
+      } else {
+        setAllFerries(data || []);
       }
 
-      setAllFerries(data || []);
+      setLoading(false); // ✅ Set loading false after fetch
     };
 
     fetchFerryData();
@@ -77,5 +82,6 @@ export function useLiveScheduleData(selectedDate: Date) {
     selectedFerry,
     setSelectedFerry,
     localNow,
+    loading, // ✅ Return loading to use in your components
   };
 }

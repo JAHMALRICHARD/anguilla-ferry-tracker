@@ -5,24 +5,27 @@ import { ScheduledFerriesTable } from "../components/ScheduledFerriesTable";
 import { SailedFerriesTable } from "../components/SailedFerriesTable";
 import { FerryItem } from "../components/FerryProps";
 import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton"; // ✅ make sure this exists
 
 interface UpcomingAndPastFerriesProps {
   upcomingFerries: FerryItem[];
   pastFerries: FerryItem[];
   route: { from: string; to: string };
   localNow: Date;
-  selectedDate: Date; // ✅ Add this line
+  selectedDate: Date;
   searchQuery: string;
   onDetails: (ferry: FerryItem) => void;
+  loading: boolean;
 }
 
 export default function UpcomingAndPastFerries({
   upcomingFerries,
   pastFerries,
   localNow,
-  selectedDate, // ✅ Add this here
+  selectedDate,
   searchQuery,
   onDetails,
+  loading, // ✅ now used
 }: UpcomingAndPastFerriesProps) {
   const hasUpcoming = upcomingFerries.length > 0;
   const hasPast = pastFerries.length > 0;
@@ -32,7 +35,9 @@ export default function UpcomingAndPastFerries({
       {/* Scheduled Ferries */}
       <Card>
         <CardContent className="overflow-x-auto">
-          {hasUpcoming ? (
+          {loading ? (
+            <Skeleton className="w-full h-40 rounded-md" />
+          ) : hasUpcoming ? (
             <ScheduledFerriesTable
               ferries={upcomingFerries}
               searchQuery={searchQuery}
@@ -49,7 +54,9 @@ export default function UpcomingAndPastFerries({
       {/* Sailed Ferries */}
       <Card>
         <CardContent className="overflow-x-auto">
-          {hasPast ? (
+          {loading ? (
+            <Skeleton className="w-full h-40 rounded-md" />
+          ) : hasPast ? (
             <SailedFerriesTable
               ferries={pastFerries}
               localNow={localNow}

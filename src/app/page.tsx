@@ -30,6 +30,7 @@ export default function HomePage() {
     pastFerries: allPast,
     localNow,
     setSelectedFerry,
+    loading, // ✅ Destructure loading from hook
   } = useLiveScheduleData(selectedDate);
 
   const upcomingFerries = useMemo(
@@ -100,7 +101,8 @@ export default function HomePage() {
           onDetails={handleDetails}
           selectedDate={selectedDate}
           searchQuery={searchQuery}
-          route={route} // ✅ Add this line
+          route={route}
+          loading={loading} // ✅ Pass loading to show skeletons
         />
 
         {/* Footer Sections */}
