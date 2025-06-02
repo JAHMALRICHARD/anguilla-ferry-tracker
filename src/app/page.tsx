@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Header } from "@/components/Header";
 import { TravelAlertBanner } from "@/components/TravelAlertBanner";
 import { InfoCards } from "@/components/InfoCards";
@@ -20,36 +20,27 @@ export default function HomePage() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [route, setRoute] = useState({
     from: "To Anguilla - via Marigot",
-    to: "To St. Martin", // Default direction
+    to: "To St. Martin",
   });
 
   const {
     allFerries = [],
+    upcomingFerries: allUpcoming,
+    pastFerries: allPast,
     localNow,
     setSelectedFerry,
   } = useLiveScheduleData(selectedDate);
 
-  const fullRouteFerries = getFerriesForRoute(route.to, allFerries);
-
-  const selectedDateStr = selectedDate.toISOString().split("T")[0];
-
-  const ferriesForSelectedDate = fullRouteFerries.filter(
-    (ferry) => ferry.schedule_date === selectedDateStr
+  // Only filter by route at the page level — date/time logic is handled in the hook
+  const upcomingFerries = useMemo(
+    () => getFerriesForRoute(route.to, allUpcoming),
+    [route.to, allUpcoming]
   );
 
-  const upcomingFerries = ferriesForSelectedDate.filter((ferry) => {
-    const [hour, minute] = ferry.departure_time.split(":").map(Number);
-    const depTime = new Date(localNow);
-    depTime.setHours(hour, minute, 0, 0);
-    return depTime >= localNow;
-  });
-
-  const pastFerries = ferriesForSelectedDate.filter((ferry) => {
-    const [hour, minute] = ferry.departure_time.split(":").map(Number);
-    const depTime = new Date(localNow);
-    depTime.setHours(hour, minute, 0, 0);
-    return depTime < localNow;
-  });
+  const pastFerries = useMemo(
+    () => getFerriesForRoute(route.to, allPast),
+    [route.to, allPast]
+  );
 
   const handleDetails = (ferry: FerryItem) => {
     setSelectedFerry(ferry);
