@@ -15,6 +15,7 @@ import UpcomingAndPastFerries from "@/components/UpcomingAndPastFerries";
 import { getFerriesForRoute } from "@/utils/getFerriesForRoute";
 import { useLiveScheduleData } from "@/hooks/useLiveScheduleData";
 import type { FerryItem } from "@/types/FerryItem";
+import Footer from "@/components/Footer";
 
 export default function HomePage() {
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -102,13 +103,14 @@ export default function HomePage() {
           selectedDate={selectedDate}
           searchQuery={searchQuery}
           route={route}
-          loading={loading} // ✅ Pass loading to show skeletons
+          loading={loading}
         />
 
         {/* Footer Sections */}
         <InfoCards />
         <OperatorsSection />
         <TestimonialsSection />
+        <Footer />
       </div>
     </div>
   );

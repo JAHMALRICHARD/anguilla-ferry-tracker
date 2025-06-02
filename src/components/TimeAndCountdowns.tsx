@@ -258,9 +258,11 @@ export default function TimeAndCountdowns({
               <Badge variant="secondary" className="text-lg px-3 py-1">
                 TOMORROW
               </Badge>
-              <p className="mt-2 text-sm text-muted-foreground">
-                {nextFerryTomorrow ? nextFerryTomorrow.operator : "CLOSED"}
-              </p>
+              {nextFerryTomorrow && (
+                <p className="mt-2 text-sm text-muted-foreground">
+                  {nextFerryTomorrow.operator}
+                </p>
+              )}
             </>
           )}
         </CardContent>
