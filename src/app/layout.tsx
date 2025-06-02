@@ -6,7 +6,7 @@ import { Toaster } from "sonner"; // ✅ import sonner
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "Anguilla Ferry Tracker",
+  title: "Anguilla Ferry Times",
   description:
     "Live schedules, travel info, and booking for ferries to/from Anguilla.",
 };
