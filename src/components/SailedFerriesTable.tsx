@@ -23,7 +23,6 @@ interface SailedFerriesTableProps {
 
 export function SailedFerriesTable({
   ferries,
-  localNow,
   searchQuery,
   selectedDate,
 }: SailedFerriesTableProps) {
