@@ -5,6 +5,7 @@ import { FerryItem } from "@/types/FerryItem";
 import { formatTime12Hour } from "@/helpers/formatTime12Hour";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { getPRTime } from "@/hooks/useLiveScheduleData"; // or wherever it's defined
 
 interface TimeAndCountdownsProps {
   ferries: FerryItem[];
@@ -15,7 +16,6 @@ export default function TimeAndCountdowns({
   ferries,
   selectedDate,
 }: TimeAndCountdownsProps) {
-  const [localTime, setLocalTime] = useState<Date | null>(null);
   const [countdown, setCountdown] = useState<string>("--:--:--");
   const [countdownPhase, setCountdownPhase] = useState<
     | "countdown"
@@ -26,12 +26,7 @@ export default function TimeAndCountdowns({
     | "reset"
   >("countdown");
 
-  useEffect(() => {
-    const updateTime = () => setLocalTime(new Date());
-    updateTime();
-    const interval = setInterval(updateTime, 1000);
-    return () => clearInterval(interval);
-  }, []);
+  const localTime = getPRTime();
 
   const ferryList = ferries
     .map((ferry) => {

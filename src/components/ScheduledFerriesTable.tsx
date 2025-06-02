@@ -153,9 +153,12 @@ export function ScheduledFerriesTable({
                             {status}
                           </Badge>
 
-                          {!["DOCKED", "DOCKED IN AXA", "ARRIVED"].includes(
-                            status.toUpperCase()
-                          ) && (
+                          {![
+                            "SCHEDULED",
+                            "DOCKED",
+                            "DOCKED IN AXA",
+                            "ARRIVED",
+                          ].includes(status.toUpperCase()) && (
                             <div className="w-full bg-muted rounded h-1 overflow-hidden">
                               <div
                                 className={`h-full transition-all duration-300 ${

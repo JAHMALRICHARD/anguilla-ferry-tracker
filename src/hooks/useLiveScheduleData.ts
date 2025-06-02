@@ -5,7 +5,7 @@ import { supabase } from "@/utils/supabase";
 import type { FerryItem } from "@/types/FerryItem";
 import { format, startOfDay, endOfDay } from "date-fns";
 
-function getPRTime(date = new Date()) {
+export function getPRTime(date = new Date()) {
   return new Date(
     date.toLocaleString("en-US", { timeZone: "America/Puerto_Rico" })
   );

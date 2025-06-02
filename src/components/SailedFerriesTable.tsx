@@ -13,15 +13,17 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
-import { getFerryStatus } from "@/utils/getFerryStatus";
 
 interface SailedFerriesTableProps {
   ferries: FerryItem[];
   localNow: Date;
 }
 
-export function SailedFerriesTable({ ferries }: SailedFerriesTableProps) {
-  const [now, setNow] = useState(new Date());
+export function SailedFerriesTable({
+  ferries,
+  localNow,
+}: SailedFerriesTableProps) {
+  const [now, setNow] = useState(localNow);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -39,13 +41,44 @@ export function SailedFerriesTable({ ferries }: SailedFerriesTableProps) {
         0, 0,
       ];
 
-      const depDate = new Date(now);
+      const depDate = new Date(ferry.schedule_date + "T00:00:00");
       depDate.setHours(depHour, depMin, 0, 0);
 
       const etaDate = new Date(
         depDate.getTime() + (durHour * 60 + durMin) * 60000
       );
-      return { ...ferry, etaDate, depDate };
+      const nowTime = now.getTime();
+      const todayStr = now.toISOString().split("T")[0];
+      const isToday = ferry.schedule_date === todayStr;
+
+      let status: "SAILING" | "ARRIVED" | "SAILED" = "SAILED";
+
+      if (
+        isToday &&
+        nowTime >= depDate.getTime() &&
+        nowTime < etaDate.getTime()
+      ) {
+        status = "SAILING";
+      } else if (
+        isToday &&
+        nowTime >= etaDate.getTime() &&
+        nowTime < etaDate.getTime() + 5 * 60 * 1000
+      ) {
+        status = "ARRIVED";
+      }
+
+      // Calculate percent of progress for sailing
+      let progressPercent = 100;
+      if (status === "SAILING") {
+        const durationMs = etaDate.getTime() - depDate.getTime();
+        const elapsedMs = nowTime - depDate.getTime();
+        progressPercent = Math.min(
+          100,
+          Math.max(0, (elapsedMs / durationMs) * 100)
+        );
+      }
+
+      return { ...ferry, etaDate, depDate, status, progressPercent };
     })
     .sort((a, b) => b.etaDate.getTime() - a.etaDate.getTime());
 
@@ -92,23 +125,6 @@ export function SailedFerriesTable({ ferries }: SailedFerriesTableProps) {
                     ferry.etaDate.toTimeString().substring(0, 5)
                   );
 
-                  const direction =
-                    ferry.direction === "from-anguilla"
-                      ? "to-st-martin"
-                      : "to-anguilla";
-
-                  const { status, progressPercent } = getFerryStatus({
-                    departureTime: ferry.departure_time,
-                    direction,
-                    localNow: now,
-                  });
-
-                  const showPulse = [
-                    "boarding",
-                    "sailing",
-                    "now arriving",
-                    "on the way",
-                  ].includes(status.toLowerCase());
                   const rowKey =
                     typeof ferry.id === "number" && !Number.isNaN(ferry.id)
                       ? `ferry-${ferry.id}`
@@ -142,38 +158,31 @@ export function SailedFerriesTable({ ferries }: SailedFerriesTableProps) {
                       <TableCell>
                         <div className="flex flex-col gap-1">
                           <Badge
-                            variant={getStatusVariant(status)}
-                            className="inline-flex items-center gap-2 uppercase w-fit"
+                            variant={
+                              ferry.status === "SAILING"
+                                ? "outline"
+                                : getStatusVariant(ferry.status)
+                            }
+                            className={`inline-flex items-center gap-2 uppercase w-fit ${
+                              ferry.status === "SAILING"
+                                ? "text-blue-600 border-blue-600"
+                                : ""
+                            }`}
                           >
-                            {showPulse && (
+                            {ferry.status === "SAILING" && (
                               <span className="relative flex h-2 w-2">
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-current opacity-75"></span>
                                 <span className="relative inline-flex rounded-full h-2 w-2 bg-current"></span>
                               </span>
                             )}
-                            {status}
+                            {ferry.status}
                           </Badge>
 
-                          {![
-                            "DOCKED",
-                            "DOCKED IN AXA",
-                            "ARRIVED",
-                            "SAILED",
-                          ].includes(status.toUpperCase()) && (
+                          {ferry.status === "SAILING" && (
                             <div className="w-full bg-muted rounded h-1 overflow-hidden">
                               <div
-                                className={`h-full transition-all duration-300 ${
-                                  status === "BOARDING"
-                                    ? "bg-yellow-400"
-                                    : status === "SAILING"
-                                    ? "bg-blue-500"
-                                    : status === "NOW ARRIVING"
-                                    ? "bg-green-500"
-                                    : status === "ON THE WAY"
-                                    ? "bg-indigo-500"
-                                    : "bg-primary"
-                                }`}
-                                style={{ width: `${progressPercent}%` }}
+                                className="h-full bg-blue-500 transition-all duration-300"
+                                style={{ width: `${ferry.progressPercent}%` }}
                               />
                             </div>
                           )}

@@ -9,6 +9,7 @@ export interface FerryProgressProps {
   progressPercent: number;
   eta: string;
   status:
+    | "SCHEDULED"
     | "DOCKED"
     | "BOARDING"
     | "SAILING"
@@ -26,7 +27,11 @@ export function FerryProgress({
   status,
   direction,
 }: FerryProgressProps) {
+  const displayStatus =
+    status === "SCHEDULED" && direction !== "to-anguilla" ? "DOCKED" : status;
+
   const ferryColorMap: Record<FerryProgressProps["status"], string> = {
+    SCHEDULED: "#9CA3AF",
     DOCKED: "#9CA3AF",
     "DOCKED IN AXA": "#6B7280",
     BOARDING: "#FACC15",
@@ -37,6 +42,7 @@ export function FerryProgress({
   };
 
   const statusClassMap: Record<FerryProgressProps["status"], string> = {
+    SCHEDULED: "bg-gray-500/10 text-gray-400",
     DOCKED: "bg-gray-500/10 text-gray-400",
     "DOCKED IN AXA": "bg-gray-500/10 text-gray-400",
     BOARDING: "bg-yellow-500/10 text-yellow-500",
@@ -46,17 +52,17 @@ export function FerryProgress({
     "ON THE WAY": "bg-muted text-muted-foreground italic animate-pulse-status",
   };
 
-  const displayProgress = status === "ARRIVED" ? 100 : progressPercent;
+  const displayProgress = displayStatus === "ARRIVED" ? 100 : progressPercent;
   const adjustedProgress =
-    status === "BOARDING" && displayProgress < 5 ? 5 : displayProgress;
+    displayStatus === "BOARDING" && displayProgress < 5 ? 5 : displayProgress;
 
-  const ferryColor = ferryColorMap[status];
+  const ferryColor = ferryColorMap[displayStatus];
   const isFlipped = direction === "to-anguilla";
 
   const shouldShowIcon =
-    status !== "ON THE WAY" &&
-    status !== "DOCKED IN AXA" &&
-    !(status === "DOCKED" && direction === "to-anguilla");
+    displayStatus !== "ON THE WAY" &&
+    displayStatus !== "DOCKED IN AXA" &&
+    !(displayStatus === "DOCKED" && direction === "to-anguilla");
 
   const ferryIconStyle: React.CSSProperties = {
     left:
@@ -72,14 +78,14 @@ export function FerryProgress({
       {/* Status Badge */}
       <div className="flex justify-center mb-1">
         <span
-          className={`text-xs px-2 py-0.5 rounded-full font-medium tracking-wide ${statusClassMap[status]}`}
+          className={`text-xs px-2 py-0.5 rounded-full font-medium tracking-wide ${statusClassMap[displayStatus]}`}
           title={
-            status === "ON THE WAY"
+            displayStatus === "ON THE WAY"
               ? "The ferry is heading to AXA before its return trip."
               : undefined
           }
         >
-          {status}
+          {displayStatus}
         </span>
       </div>
 
@@ -101,7 +107,7 @@ export function FerryProgress({
         {shouldShowIcon && (
           <div className="absolute z-10" style={ferryIconStyle}>
             <div className="relative">
-              {status === "BOARDING" || status === "ARRIVED" ? (
+              {displayStatus === "BOARDING" || displayStatus === "ARRIVED" ? (
                 <UsersRound
                   size={18}
                   className="drop-shadow animate-pulse-status"

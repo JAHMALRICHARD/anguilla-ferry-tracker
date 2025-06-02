@@ -13,15 +13,15 @@ export function getFerriesForRoute(
     str?.toLowerCase().trim() || "";
 
   const marigotReturnTimes = [
-    "08:30",
-    "09:30",
-    "10:30",
-    "12:00",
-    "13:30",
-    "15:00",
-    "16:30",
-    "17:15",
-    "18:00",
+    "08:30:00",
+    "09:30:00",
+    "10:30:00",
+    "12:00:00",
+    "13:30:00",
+    "15:00:00",
+    "16:30:00",
+    "17:15:00",
+    "18:00:00",
   ];
 
   if (!ferries.length) return [];
@@ -29,14 +29,14 @@ export function getFerriesForRoute(
   const selectedDate = ferries[0].schedule_date;
 
   if (routeTo === "To Anguilla - via Marigot") {
-    if (mode === "past") {
-      return ferries.filter(
-        (f) =>
-          normalize(f.departure_port) === "marigot, st. martin" &&
-          normalize(f.arrival_port) === "blowing point, anguilla" &&
-          f.schedule_date === selectedDate
-      );
-    }
+    const realReturns = ferries.filter(
+      (f) =>
+        normalize(f.departure_port) === "marigot, st. martin" &&
+        normalize(f.arrival_port) === "blowing point, anguilla" &&
+        f.schedule_date === selectedDate
+    );
+
+    if (mode === "past") return realReturns;
 
     const outboundFerries = ferries.filter(
       (ferry) =>
@@ -45,33 +45,22 @@ export function getFerriesForRoute(
         normalize(ferry.arrival_port) === "marigot, st. martin"
     );
 
-    if (outboundFerries.length === 0) return [];
-
-    const now = new Date(); // Compare with localNow
     const prNow = new Date(
-      now.toLocaleString("en-US", { timeZone: "America/Puerto_Rico" })
+      new Date().toLocaleString("en-US", { timeZone: "America/Puerto_Rico" })
     );
 
-    const returnFerries = marigotReturnTimes
+    const filledReturns: FerryItem[] = marigotReturnTimes
       .map((returnTime, index) => {
         const [hour, minute] = returnTime.split(":").map(Number);
-        const ferryDateTime = new Date(`${selectedDate}T${returnTime}:00`);
+        const ferryDateTime = new Date(`${selectedDate}T${returnTime}`);
         ferryDateTime.setHours(hour, minute, 0, 0);
 
-        if (ferryDateTime <= prNow) {
-          return null; // Skip if already in the past
-        }
+        if (ferryDateTime <= prNow) return null;
 
-        const existing = ferries.find(
-          (f) =>
-            f.schedule_date === selectedDate &&
-            normalize(f.departure_port) === "marigot, st. martin" &&
-            normalize(f.arrival_port) === "blowing point, anguilla" &&
-            f.departure_time === returnTime
-        );
+        const real = realReturns.find((f) => f.departure_time === returnTime);
+        if (real) return real;
 
-        if (existing) return existing;
-
+        if (outboundFerries.length === 0) return null;
         const fallback = outboundFerries[index % outboundFerries.length];
 
         return {
@@ -84,12 +73,14 @@ export function getFerriesForRoute(
           direction: "to-anguilla",
           vessel_name: fallback.vessel_name,
           operator: fallback.operator,
-          status: fallback.status,
+          status: "SCHEDULED",
         };
       })
       .filter((ferry): ferry is FerryItem => ferry !== null);
 
-    return returnFerries;
+    return filledReturns.sort((a, b) =>
+      a.departure_time.localeCompare(b.departure_time)
+    );
   }
 
   if (routeTo === "To St. Martin") {

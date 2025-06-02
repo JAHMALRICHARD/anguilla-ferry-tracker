@@ -39,7 +39,7 @@ export function getFerryStatus({
 
   // Shared ferry journey logic
   if (now < departure) {
-    return { status: "DOCKED", progressPercent: 0 };
+    return { status: "SCHEDULED", progressPercent: 0 };
   }
 
   if (minutesSinceDeparture < 5) {
@@ -64,5 +64,5 @@ export function getFerryStatus({
     return { status: "ARRIVED", progressPercent: 100 };
   }
 
-  return { status: "DOCKED", progressPercent: 100 };
+  return { status: "SCHEDULED", progressPercent: 0 };
 }
