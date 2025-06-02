@@ -18,21 +18,34 @@ interface SailedFerriesTableProps {
   ferries: FerryItem[];
   localNow: Date;
   searchQuery: string;
+  selectedDate: Date;
 }
 
 export function SailedFerriesTable({
   ferries,
   localNow,
   searchQuery,
+  selectedDate,
 }: SailedFerriesTableProps) {
-  const [now, setNow] = useState(localNow);
+  const isToday =
+    selectedDate.toDateString() ===
+    new Date().toLocaleDateString("en-US", {
+      timeZone: "America/Puerto_Rico",
+    });
+
+  const [now, setNow] = useState(() =>
+    isToday
+      ? new Date()
+      : new Date(`${selectedDate.toISOString().split("T")[0]}T12:00:00`)
+  );
 
   useEffect(() => {
+    if (!isToday) return;
     const interval = setInterval(() => {
       setNow(new Date());
     }, 60000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isToday]);
 
   const ferriesWithETA = ferries
     .map((ferry) => {
@@ -49,30 +62,26 @@ export function SailedFerriesTable({
       const etaDate = new Date(
         depDate.getTime() + (durHour * 60 + durMin) * 60000
       );
-      const nowTime = now.getTime();
-      const todayStr = now.toISOString().split("T")[0];
-      const isToday = ferry.schedule_date === todayStr;
 
       let liveStatus: "SAILING" | "ARRIVED" | "SAILED" = "SAILED";
 
-      if (
-        isToday &&
-        nowTime >= depDate.getTime() &&
-        nowTime < etaDate.getTime()
-      ) {
-        liveStatus = "SAILING";
-      } else if (
-        isToday &&
-        nowTime >= etaDate.getTime() &&
-        nowTime < etaDate.getTime() + 5 * 60 * 1000
-      ) {
-        liveStatus = "ARRIVED";
+      if (isToday) {
+        const nowTime = now.getTime();
+
+        if (nowTime >= depDate.getTime() && nowTime < etaDate.getTime()) {
+          liveStatus = "SAILING";
+        } else if (
+          nowTime >= etaDate.getTime() &&
+          nowTime < etaDate.getTime() + 5 * 60 * 1000
+        ) {
+          liveStatus = "ARRIVED";
+        }
       }
 
       let progressPercent = 100;
       if (liveStatus === "SAILING") {
         const durationMs = etaDate.getTime() - depDate.getTime();
-        const elapsedMs = nowTime - depDate.getTime();
+        const elapsedMs = now.getTime() - depDate.getTime();
         progressPercent = Math.min(
           100,
           Math.max(0, (elapsedMs / durationMs) * 100)

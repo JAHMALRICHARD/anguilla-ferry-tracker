@@ -100,6 +100,7 @@ export default function HomePage() {
           onDetails={handleDetails}
           selectedDate={selectedDate}
           searchQuery={searchQuery}
+          route={route} // ✅ Add this line
         />
 
         {/* Footer Sections */}

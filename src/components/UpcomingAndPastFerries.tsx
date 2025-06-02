@@ -9,8 +9,9 @@ import { Card, CardContent } from "@/components/ui/card";
 interface UpcomingAndPastFerriesProps {
   upcomingFerries: FerryItem[];
   pastFerries: FerryItem[];
+  route: { from: string; to: string };
   localNow: Date;
-  selectedDate: Date;
+  selectedDate: Date; // ✅ Add this line
   searchQuery: string;
   onDetails: (ferry: FerryItem) => void;
 }
@@ -19,6 +20,7 @@ export default function UpcomingAndPastFerries({
   upcomingFerries,
   pastFerries,
   localNow,
+  selectedDate, // ✅ Add this here
   searchQuery,
   onDetails,
 }: UpcomingAndPastFerriesProps) {
@@ -50,8 +52,9 @@ export default function UpcomingAndPastFerries({
           {hasPast ? (
             <SailedFerriesTable
               ferries={pastFerries}
-              searchQuery={searchQuery}
               localNow={localNow}
+              searchQuery={searchQuery}
+              selectedDate={selectedDate}
             />
           ) : (
             <div className="p-6 text-center text-muted-foreground">

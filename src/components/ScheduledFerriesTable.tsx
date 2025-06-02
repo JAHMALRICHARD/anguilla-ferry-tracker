@@ -110,6 +110,7 @@ export function ScheduledFerriesTable({
                       : "to-anguilla";
 
                   const { status, progressPercent } = getFerryStatus({
+                    scheduleDate: ferry.schedule_date, // ✅ Must be a string like "2025-06-02"
                     departureTime: ferry.departure_time,
                     direction,
                     localNow: new Date(),

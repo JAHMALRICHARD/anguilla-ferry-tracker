@@ -34,21 +34,21 @@ export default function FeatureImageAndWeather({
       : ferry.direction === "from-anguilla"
   );
 
-  // Prioritize active sailing/boarding/arriving ferry
   let activeFerry = allFerries.find((ferry) => {
     const { status } = getFerryStatus({
       departureTime: ferry.departure_time,
+      scheduleDate: ferry.schedule_date,
       direction,
       localNow,
     });
     return ["BOARDING", "SAILING", "NOW ARRIVING"].includes(status);
   });
 
-  // If no active one, fallback to the soonest DOCKED one
   if (!activeFerry) {
     activeFerry = allFerries.find((ferry) => {
       const { status } = getFerryStatus({
         departureTime: ferry.departure_time,
+        scheduleDate: ferry.schedule_date,
         direction,
         localNow,
       });
@@ -62,6 +62,7 @@ export default function FeatureImageAndWeather({
   if (activeFerry) {
     const result = getFerryStatus({
       departureTime: activeFerry.departure_time,
+      scheduleDate: activeFerry.schedule_date,
       direction,
       localNow,
     });
@@ -83,7 +84,6 @@ export default function FeatureImageAndWeather({
     );
   };
 
-  // Grace Period Logic
   let showFerryProgress = false;
   if (activeFerry) {
     const [depHour, depMin] = activeFerry.departure_time.split(":").map(Number);
@@ -147,7 +147,6 @@ export default function FeatureImageAndWeather({
             </CardContent>
           </Card>
 
-          {/* Ferry Progress (if any) */}
           {activeFerry && showFerryProgress && (
             <Card>
               <CardContent className="p-4 flex justify-center">

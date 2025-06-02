@@ -1,6 +1,7 @@
 import { differenceInMinutes } from "date-fns";
 
 interface GetFerryStatusOptions {
+  scheduleDate: string; // format: "yyyy-MM-dd"
   departureTime: string; // format: "HH:mm"
   direction: "to-st-martin" | "to-anguilla";
   localNow: Date;
@@ -8,6 +9,7 @@ interface GetFerryStatusOptions {
 }
 
 export function getFerryStatus({
+  scheduleDate,
   departureTime,
   direction,
   localNow,
@@ -17,13 +19,17 @@ export function getFerryStatus({
   progressPercent: number;
 } {
   const [depHour, depMin] = departureTime.split(":").map(Number);
-  const departure = new Date(localNow);
-  departure.setHours(depHour, depMin, 0, 0);
+  const [year, month, day] = scheduleDate.split("-").map(Number);
+  const departure = new Date(year, month - 1, day, depHour, depMin);
+  const eta = new Date(departure.getTime() + 30 * 60 * 1000);
+  const afterETA10 = new Date(eta.getTime() + 10 * 60 * 1000);
 
-  const eta = new Date(departure.getTime() + 30 * 60 * 1000); // 30 mins after departure
-  const afterETA10 = new Date(eta.getTime() + 10 * 60 * 1000); // 10 mins after ETA
+  const todayStr = localNow.toISOString().split("T")[0];
+  if (scheduleDate !== todayStr) {
+    return { status: "SCHEDULED", progressPercent: 0 };
+  }
+
   const now = localNow;
-
   const minutesSinceDeparture = differenceInMinutes(now, departure);
   const minutesToETA = differenceInMinutes(eta, now);
 
