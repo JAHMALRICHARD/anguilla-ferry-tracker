@@ -30,7 +30,6 @@ export function getFerriesForRoute(
 
   if (routeTo === "To Anguilla - via Marigot") {
     if (mode === "past") {
-      // Only return actual sailed trips (no synthetic return generation)
       return ferries.filter(
         (f) =>
           normalize(f.departure_port) === "marigot, st. martin" &&
@@ -39,7 +38,6 @@ export function getFerriesForRoute(
       );
     }
 
-    // For upcoming, generate return pattern
     const outboundFerries = ferries.filter(
       (ferry) =>
         ferry.schedule_date === selectedDate &&
@@ -49,32 +47,47 @@ export function getFerriesForRoute(
 
     if (outboundFerries.length === 0) return [];
 
-    const returnFerries = marigotReturnTimes.map((returnTime, index) => {
-      const existing = ferries.find(
-        (f) =>
-          f.schedule_date === selectedDate &&
-          normalize(f.departure_port) === "marigot, st. martin" &&
-          normalize(f.arrival_port) === "blowing point, anguilla" &&
-          f.departure_time === returnTime
-      );
+    const now = new Date(); // Compare with localNow
+    const prNow = new Date(
+      now.toLocaleString("en-US", { timeZone: "America/Puerto_Rico" })
+    );
 
-      if (existing) return existing;
+    const returnFerries = marigotReturnTimes
+      .map((returnTime, index) => {
+        const [hour, minute] = returnTime.split(":").map(Number);
+        const ferryDateTime = new Date(`${selectedDate}T${returnTime}:00`);
+        ferryDateTime.setHours(hour, minute, 0, 0);
 
-      const fallback = outboundFerries[index % outboundFerries.length];
+        if (ferryDateTime <= prNow) {
+          return null; // Skip if already in the past
+        }
 
-      return {
-        ...fallback,
-        id: Number(fallback.id) + 10000 + index,
-        departure_port: "Marigot, St. Martin",
-        arrival_port: "Blowing Point, Anguilla",
-        departure_time: returnTime,
-        schedule_date: selectedDate,
-        direction: "to-anguilla",
-        vessel_name: fallback.vessel_name,
-        operator: fallback.operator,
-        status: fallback.status,
-      };
-    });
+        const existing = ferries.find(
+          (f) =>
+            f.schedule_date === selectedDate &&
+            normalize(f.departure_port) === "marigot, st. martin" &&
+            normalize(f.arrival_port) === "blowing point, anguilla" &&
+            f.departure_time === returnTime
+        );
+
+        if (existing) return existing;
+
+        const fallback = outboundFerries[index % outboundFerries.length];
+
+        return {
+          ...fallback,
+          id: Number(fallback.id) + 10000 + index,
+          departure_port: "Marigot, St. Martin",
+          arrival_port: "Blowing Point, Anguilla",
+          departure_time: returnTime,
+          schedule_date: selectedDate,
+          direction: "to-anguilla",
+          vessel_name: fallback.vessel_name,
+          operator: fallback.operator,
+          status: fallback.status,
+        };
+      })
+      .filter((ferry): ferry is FerryItem => ferry !== null);
 
     return returnFerries;
   }
