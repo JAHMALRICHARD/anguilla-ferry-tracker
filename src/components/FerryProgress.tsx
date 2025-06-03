@@ -41,17 +41,6 @@ export function FerryProgress({
     "ON THE WAY": "#6B7280",
   };
 
-  const statusClassMap: Record<FerryProgressProps["status"], string> = {
-    SCHEDULED: "bg-gray-500/10 text-gray-400",
-    DOCKED: "bg-gray-500/10 text-gray-400",
-    "DOCKED IN AXA": "bg-gray-500/10 text-gray-400",
-    BOARDING: "bg-yellow-500/10 text-yellow-500",
-    SAILING: "bg-blue-500/10 text-blue-400",
-    "NOW ARRIVING": "bg-emerald-500/10 text-emerald-400",
-    ARRIVED: "bg-green-500/10 text-green-500",
-    "ON THE WAY": "bg-muted text-muted-foreground italic animate-pulse-status",
-  };
-
   const displayProgress = displayStatus === "ARRIVED" ? 100 : progressPercent;
   const adjustedProgress =
     displayStatus === "BOARDING" && displayProgress < 5 ? 5 : displayProgress;
@@ -77,29 +66,66 @@ export function FerryProgress({
     <div className="w-full max-w-sm bg-card text-card-foreground rounded-xl shadow-sm">
       {/* Status Badge */}
       <div className="flex justify-center mb-1">
-        <span
-          className={`text-xs px-2 py-0.5 rounded-full font-medium tracking-wide ${statusClassMap[displayStatus]}`}
+        <div
+          className={`inline-flex items-center gap-2 text-xs font-semibold px-2 py-0.5 rounded-full uppercase tracking-wide w-fit border ${
+            displayStatus === "SAILING"
+              ? "text-blue-500 border-blue-500"
+              : displayStatus === "BOARDING"
+              ? "text-yellow-500 border-yellow-500"
+              : displayStatus === "NOW ARRIVING"
+              ? "text-emerald-500 border-emerald-500"
+              : displayStatus === "ARRIVED"
+              ? "text-green-500 border-green-500"
+              : displayStatus === "DOCKED IN AXA"
+              ? "text-gray-400 border-gray-400"
+              : displayStatus === "ON THE WAY"
+              ? "text-muted-foreground border-muted-foreground italic animate-pulse-status"
+              : "text-gray-400 border-gray-400"
+          }`}
           title={
             displayStatus === "ON THE WAY"
               ? "The ferry is heading to AXA before its return trip."
               : undefined
           }
         >
+          {displayStatus === "SAILING" && (
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-current opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-current" />
+            </span>
+          )}
           {displayStatus}
-        </span>
+        </div>
       </div>
 
-      {/* Direction Labels */}
-      <div className="flex justify-between items-center text-lg font-bold mb-2">
-        <span className="text-2xl tracking-wide">AXA</span>
-        <div className="flex items-center justify-center w-10">
-          <ArrowRight
-            className={`w-6 h-6 text-muted-foreground transition-transform ${
-              isFlipped ? "rotate-180" : ""
-            }`}
-          />
+      {/* Route Badges + Port Names */}
+      <div className="flex justify-between items-end mb-2 px-1">
+        {/* AXA side */}
+        <div className="flex flex-col items-start">
+          <span className="text-sm font-bold px-3 py-1 rounded-full bg-muted text-muted-foreground tracking-wide shadow-sm">
+            AXA
+          </span>
+          <span className="text-xs text-muted-foreground mt-1">
+            {direction === "to-st-martin" ? "Blowing Point" : "Marigot"}
+          </span>
         </div>
-        <span className="text-2xl tracking-wide">SXM</span>
+
+        {/* Arrow */}
+        <ArrowRight
+          className={`w-5 h-5 text-muted-foreground transition-transform ${
+            isFlipped ? "rotate-180" : ""
+          }`}
+        />
+
+        {/* SXM side */}
+        <div className="flex flex-col items-end">
+          <span className="text-sm font-bold px-3 py-1 rounded-full bg-muted text-muted-foreground tracking-wide shadow-sm">
+            SXM
+          </span>
+          <span className="text-xs text-muted-foreground mt-1">
+            {direction === "to-st-martin" ? "Marigot" : "Blowing Point"}
+          </span>
+        </div>
       </div>
 
       {/* Ferry Icon Progress Trail */}
