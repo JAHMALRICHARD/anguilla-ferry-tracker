@@ -117,12 +117,22 @@ export default function FeatureImageAndWeather({
           }}
         >
           <div
-            className={`absolute inset-0 z-0 transition-colors duration-700 ${
-              isToAnguilla
-                ? "bg-gradient-to-b from-black/20 via-blue-900/40 to-blue-900/80"
-                : "bg-gradient-to-b from-black/20 via-purple-900/40 to-purple-900/80"
-            }`}
+            className="absolute inset-0 z-0 transition-colors duration-700"
+            style={{
+              background: `linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0) 0%,
+      rgba(0, 0, 0, 0.03) 50%,
+      ${
+        isToAnguilla
+          ? "color-mix(in oklch, var(--color-primary) 30%, transparent)"
+          : "color-mix(in oklch, var(--color-accent) 30%, transparent)"
+      } 80%,
+      color-mix(in oklch, var(--color-background) 60%, transparent) 100%
+    )`,
+            }}
           />
+
           <div className="relative z-10 py-16 md:py-24 px-6">
             <h1 className="text-4xl md:text-6xl font-bold mb-4 leading-tight">
               {isToAnguilla ? "Heading to Anguilla" : "Heading to St. Martin"}

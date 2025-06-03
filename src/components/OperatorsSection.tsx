@@ -104,7 +104,7 @@ export function OperatorsSection() {
                   className="gap-2 text-blue-700 border-blue-200 hover:bg-blue-50 dark:text-blue-400 dark:border-blue-500 dark:hover:bg-blue-900"
                 >
                   <Mail className="h-4 w-4" />
-                  <span>Details</span>
+                  <span>View Details</span>
                 </Button>
               </Link>
             </CardFooter>

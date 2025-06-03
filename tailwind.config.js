@@ -5,6 +5,8 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        "bg-start": "var(--color-primary)",
+        "bg-end": "var(--color-background)",
         background: "hsl(var(--background) / <alpha-value>)",
         foreground: "hsl(var(--foreground) / <alpha-value>)",
         muted: "hsl(var(--muted) / <alpha-value>)",

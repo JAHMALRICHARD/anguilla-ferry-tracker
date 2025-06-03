@@ -185,6 +185,12 @@ export default function TimeAndCountdowns({
           <p className="text-xs uppercase text-muted-foreground tracking-widest mb-1">
             Countdown to Next Ferry
           </p>
+          {nextFerry?.depDate.toDateString() !==
+            selectedDate.toDateString() && (
+            <Badge variant="secondary" className="text-sm px-2 py-1 mb-1">
+              TOMORROW
+            </Badge>
+          )}
           {getCountdownDisplay()}
         </CardContent>
       </Card>
