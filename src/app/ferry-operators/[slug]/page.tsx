@@ -1,18 +1,12 @@
 import { notFound } from "next/navigation";
-import { ferryCharters } from "@/data/FerryCharterData";
 import FerryOperatorClient from "@/components/FerryOperators/FerryOperatorClient";
 
-export async function generateStaticParams() {
-  return Object.keys(ferryCharters).map((slug) => ({ slug }));
+interface PageProps {
+  params: { slug: string };
 }
 
-export default function FerryOperatorPage({
-  params,
-}: {
-  params: { slug: string };
-}) {
-  const operator = ferryCharters[params.slug];
-  if (!operator) return notFound();
+export default function FerryOperatorPage({ params }: PageProps) {
+  if (!params.slug) return notFound();
 
-  return <FerryOperatorClient operator={operator} />;
+  return <FerryOperatorClient slug={params.slug} />;
 }
