@@ -29,7 +29,7 @@ export interface FerryCharterInfo {
 
 export const ferryCharters: Record<string, FerryCharterInfo> = {
   funtime: {
-    name: "FUNTIME Charters",
+    name: "Funtime Charters",
     description:
       "Fast, reliable, and luxurious ferry service connecting Anguilla and St. Maarten.",
     heroImage: "", // to be loaded dynamically from Supabase
@@ -68,7 +68,7 @@ export const ferryCharters: Record<string, FerryCharterInfo> = {
   },
 
   calypso: {
-    name: "Calypso",
+    name: "Calypso Charters",
     description:
       "Fast, reliable, and luxurious ferry service connecting Anguilla and St. Maarten.",
     heroImage: "",
