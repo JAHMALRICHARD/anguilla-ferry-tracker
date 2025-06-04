@@ -1,7 +1,10 @@
 "use client";
 
-import { CurrentWeatherWidget } from "./CurrentWeatherWidget";
-import { FerryProgress, type FerryProgressProps } from "./FerryProgress";
+import { CurrentWeatherWidget } from "@/components/Home/CurrentWeatherWidget";
+import {
+  FerryProgress,
+  type FerryProgressProps,
+} from "@/components/Home/FerryProgress";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useLiveScheduleData } from "@/hooks/useLiveScheduleData";

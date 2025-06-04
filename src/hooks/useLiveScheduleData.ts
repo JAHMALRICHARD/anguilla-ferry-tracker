@@ -16,19 +16,31 @@ export function useLiveScheduleData(selectedDate: Date) {
   const [upcomingFerries, setUpcomingFerries] = useState<FerryItem[]>([]);
   const [pastFerries, setPastFerries] = useState<FerryItem[]>([]);
   const [selectedFerry, setSelectedFerry] = useState<FerryItem | null>(null);
-  const [loading, setLoading] = useState(true); // ✅ Track loading state
+  const [loading, setLoading] = useState(true);
+  const [localNow, setLocalNow] = useState<Date>(() => getPRTime());
 
-  const todayPR = getPRTime(new Date());
+  const todayPR = getPRTime();
   const selectedDateStr = format(selectedDate, "yyyy-MM-dd");
   const todayStr = format(todayPR, "yyyy-MM-dd");
   const isToday = selectedDateStr === todayStr;
   const isPast = selectedDate < startOfDay(todayPR);
   const isFuture = selectedDate > endOfDay(todayPR);
-  const localNow = isToday ? getPRTime() : new Date(selectedDate);
 
+  // ⏱ Update localNow only if today
+  useEffect(() => {
+    if (!isToday) return;
+
+    const interval = setInterval(() => {
+      setLocalNow(getPRTime());
+    }, 15000); // update every 15 seconds
+
+    return () => clearInterval(interval);
+  }, [isToday]);
+
+  // 🚢 Fetch ferry data from Supabase
   useEffect(() => {
     const fetchFerryData = async () => {
-      setLoading(true); // ✅ Set loading before fetch
+      setLoading(true);
 
       const { data, error } = await supabase
         .from("ferry_schedules")
@@ -40,15 +52,18 @@ export function useLiveScheduleData(selectedDate: Date) {
         console.error("❌ Supabase fetch error:", error);
         setAllFerries([]);
       } else {
+        console.log("🛳️ Fetched ferry data for", selectedDateStr);
+        console.table(data);
         setAllFerries(data || []);
       }
 
-      setLoading(false); // ✅ Set loading false after fetch
+      setLoading(false);
     };
 
     fetchFerryData();
   }, [selectedDateStr]);
 
+  // ⏳ Categorize ferries into past and upcoming
   useEffect(() => {
     const upcoming: FerryItem[] = [];
     const past: FerryItem[] = [];
@@ -71,9 +86,12 @@ export function useLiveScheduleData(selectedDate: Date) {
       }
     });
 
+    console.log("🔍 Total ferries received:", allFerries.length);
+    console.log("🟢 Upcoming:", upcoming.length, "🔴 Past:", past.length);
+
     setUpcomingFerries(upcoming);
     setPastFerries(past);
-  }, [allFerries, selectedDateStr]);
+  }, [allFerries, selectedDateStr, localNow, isPast, isFuture]);
 
   return {
     allFerries,
@@ -82,6 +100,6 @@ export function useLiveScheduleData(selectedDate: Date) {
     selectedFerry,
     setSelectedFerry,
     localNow,
-    loading, // ✅ Return loading to use in your components
+    loading,
   };
 }

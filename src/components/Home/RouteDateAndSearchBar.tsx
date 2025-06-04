@@ -5,7 +5,7 @@ import React from "react";
 import { addDays } from "date-fns";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { CustomDatePicker } from "./CustomDatePicker";
+import { CustomDatePicker } from "../CustomDatePicker";
 import {
   Select,
   SelectTrigger,

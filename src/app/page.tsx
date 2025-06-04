@@ -1,24 +1,25 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
-import { Header } from "@/components/Header";
-import { TravelAlertBanner } from "@/components/TravelAlertBanner";
-import { InfoCards } from "@/components/InfoCards";
-import { OperatorsSection } from "@/components/OperatorsSection";
-import { TestimonialsSection } from "@/components/TestimonialsSection";
-import { SeaConditionBanner } from "@/components/SeaConditionBanner";
+import React, { useState, useMemo, useEffect } from "react";
+import { Header } from "@/components/Header/Header";
+import { TravelAlertBanner } from "@/components/Home/TravelAlertBanner";
+import { InfoCards } from "@/components/Home/InfoCards";
+import { OperatorsSection } from "@/components/Home/OperatorsSection";
+import { TestimonialsSection } from "@/components/Home/TestimonialsSection";
+import { SeaConditionBanner } from "@/components/Home/SeaConditionBanner";
 import useSWR from "swr";
-import FeatureImageAndWeather from "@/components/FeatureImageAndWeather";
-import TimeAndCountdowns from "@/components/TimeAndCountdowns";
-import RouteDateAndSearchBar from "@/components/RouteDateAndSearchBar";
-import UpcomingAndPastFerries from "@/components/UpcomingAndPastFerries";
+import FeatureImageAndWeather from "@/components/Home/FeatureImageAndWeather";
+import TimeAndCountdowns from "@/components/Home/TimeAndCountdowns";
+import RouteDateAndSearchBar from "@/components/Home/RouteDateAndSearchBar";
+import UpcomingAndPastFerries from "@/components/Home/UpcomingAndPastFerries";
 import { getFerriesForRoute } from "@/utils/getFerriesForRoute";
 import { useLiveScheduleData } from "@/hooks/useLiveScheduleData";
 import type { FerryItem } from "@/types/FerryItem";
-import Footer from "@/components/Footer";
+import Footer from "@/components/Footer/Footer";
 
 export default function HomePage() {
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [isDateChanging, setIsDateChanging] = useState(false);
   const [route, setRoute] = useState({
     from: "To Anguilla - via Marigot",
     to: "To St. Martin",
@@ -31,8 +32,18 @@ export default function HomePage() {
     pastFerries: allPast,
     localNow,
     setSelectedFerry,
-    loading, // ✅ Destructure loading from hook
+    loading, // from Supabase
   } = useLiveScheduleData(selectedDate);
+
+  // Clear date-changing skeleton once ferry data is loaded
+  useEffect(() => {
+    if (!loading) {
+      const timeout = setTimeout(() => {
+        setIsDateChanging(false);
+      }, 200); // small delay to smooth transition
+      return () => clearTimeout(timeout);
+    }
+  }, [loading]);
 
   const upcomingFerries = useMemo(
     () => getFerriesForRoute(route.to, allUpcoming, "upcoming"),
@@ -46,6 +57,11 @@ export default function HomePage() {
 
   const handleDetails = (ferry: FerryItem) => {
     setSelectedFerry(ferry);
+  };
+
+  const handleDateChange = (date: Date) => {
+    setIsDateChanging(true);
+    setSelectedDate(date);
   };
 
   const weatherLocation =
@@ -78,16 +94,17 @@ export default function HomePage() {
           type="info"
         />
 
-        {/* Countdown Clock */}
+        {/* Countdown Clock with Skeleton on Date Change */}
         <TimeAndCountdowns
           ferries={getFerriesForRoute(route.to, allFerries)}
           selectedDate={selectedDate}
+          isLoading={isDateChanging || loading}
         />
 
         {/* Date + Route Filter */}
         <RouteDateAndSearchBar
           selectedDate={selectedDate}
-          onDateChange={setSelectedDate}
+          onDateChange={handleDateChange}
           route={route}
           onRouteChange={setRoute}
           searchQuery={searchQuery}

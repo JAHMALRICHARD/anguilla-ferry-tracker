@@ -1,9 +1,9 @@
 "use client";
 
 import React from "react";
-import { ScheduledFerriesTable } from "../components/ScheduledFerriesTable";
-import { SailedFerriesTable } from "../components/SailedFerriesTable";
-import { FerryItem } from "../components/FerryProps";
+import { ScheduledFerriesTable } from "@/components/Home/ScheduledFerriesTable";
+import { SailedFerriesTable } from "@/components/Home/SailedFerriesTable";
+import { FerryItem } from "@/types/FerryProps";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton"; // ✅ make sure this exists
 

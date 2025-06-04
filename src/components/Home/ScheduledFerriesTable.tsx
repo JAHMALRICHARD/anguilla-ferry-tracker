@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { FerryItem } from "./FerryProps";
+import { FerryItem } from "../types/FerryProps";
 import { formatTime12Hour } from "@/helpers/formatTime12Hour";
 import {
   Table,

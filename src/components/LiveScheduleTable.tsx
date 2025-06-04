@@ -10,7 +10,7 @@ import { getSecondsUntilArrival } from "../helpers/getSecondsUntilArrival";
 import { supabase } from "@/utils/supabase";
 
 import { convertTo24Hour } from "../helpers/convertTo24Hour";
-import { FerryProgress } from "./FerryProgress";
+import { FerryProgress } from "./Home/FerryProgress";
 import { CustomDatePicker } from "./CustomDatePicker"; // adjust path if needed
 import { FerryDetailsCard } from "./FerryDetailsCard";
 import { addDays } from "date-fns";

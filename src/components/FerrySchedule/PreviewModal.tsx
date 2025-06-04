@@ -1,7 +1,7 @@
 "use client";
 
 import { X, Pencil } from "lucide-react";
-import { FerryItem } from "../FerryProps";
+import { FerryItem } from "../../types/FerryProps";
 import { parseISO, format, startOfWeek, addDays } from "date-fns";
 
 interface PreviewModalProps {

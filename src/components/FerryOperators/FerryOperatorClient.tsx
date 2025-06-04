@@ -28,7 +28,7 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import Image from "next/image";
-import { Header } from "@/components/Header";
+import { Header } from "@/components/Header/Header";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 function formatTimeTo12Hour(time: string) {

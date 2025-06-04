@@ -1,5 +1,5 @@
 // utils/getFerriesForRoute.ts
-import { FerryItem } from "@/components/FerryProps";
+import { FerryItem } from "@/types/FerryProps";
 
 export function getFerriesForRoute(
   routeTo: string,

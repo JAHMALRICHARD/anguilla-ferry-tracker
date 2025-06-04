@@ -14,7 +14,7 @@ import { OutboundTableCard } from "@/components/FerrySchedule/OutboundTableCard"
 import { ReturnTableCard } from "@/components/FerrySchedule/ReturnTableCard";
 import { ScheduleDateToolbar } from "@/components/FerrySchedule/ScheduleDateToolbar";
 import { CloneScheduleModal } from "@/components/FerrySchedule/CloneScheduleModal";
-import { ReusableDashboardHeader } from "../ResuableDashboardHeader";
+import { ReusableDashboardHeader } from "@/components/Header/ResuableDashboardHeader";
 import { useUserInfo } from "@/hooks/useUserInfo";
 import { handleLogout } from "@/utils/logout";
 

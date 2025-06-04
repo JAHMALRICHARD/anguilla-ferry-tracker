@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { FerryItem } from "./FerryProps";
+import { FerryItem } from "@/types/FerryProps";
 import { formatTime12Hour } from "@/helpers/formatTime12Hour";
 import {
   Table,
@@ -12,7 +12,7 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "./ui/skeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 import { getPRTime } from "@/hooks/useLiveScheduleData"; // ✅ import from correct file
 
 interface SailedFerriesTableProps {

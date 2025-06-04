@@ -1,5 +1,5 @@
 import React from "react";
-import { CurrentWeatherWidget } from "./CurrentWeatherWidget";
+import { CurrentWeatherWidget } from "./Home/CurrentWeatherWidget";
 
 export function HeroSection() {
   return (
