@@ -43,7 +43,7 @@ interface FerryCharter {
   id: string;
   name: string;
   description: string;
-  hero_image: string;
+  hero_image_url: string;
   fleet_description: string;
   services: string[];
   booking_url: string;
@@ -51,7 +51,7 @@ interface FerryCharter {
     phone?: string;
     email?: string;
   };
-  featured_image?: string;
+  featured_image_url?: string;
 }
 
 interface Schedule {
@@ -198,9 +198,9 @@ export default function FerryOperatorClient({ slug }: { slug: string }) {
     <TableRow key={ferry.id}>
       <TableCell>{formatTimeTo12Hour(ferry.departure_time)}</TableCell>
       <TableCell className="flex items-center gap-3">
-        {operator.featured_image && (
+        {operator.featured_image_url && (
           <Image
-            src={operator.featured_image}
+            src={operator.featured_image_url}
             alt="Logo"
             width={24}
             height={24}
@@ -235,7 +235,7 @@ export default function FerryOperatorClient({ slug }: { slug: string }) {
 
       <div className="relative h-[600px] w-full overflow-hidden bg-black">
         <Image
-          src={operator.hero_image || stockHero}
+          src={operator.hero_image_url || stockHero}
           alt={`${operator.name} Hero`}
           fill
           className="object-cover brightness-60"

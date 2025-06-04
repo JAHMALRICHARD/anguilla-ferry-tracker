@@ -186,6 +186,13 @@ body {
   animation: boatRock 1.2s ease-in-out infinite;
 }
 
+.parallax-hero {
+  background-attachment: fixed;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
 /* Theme Utility Variables */
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
