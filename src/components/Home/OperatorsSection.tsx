@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/utils/supabase";
+import { ScheduleModal } from "@/components/FerryOperators/ScheduleModal";
 
 interface FerryCharter {
   id: string;
@@ -27,21 +28,50 @@ interface FerryCharter {
   contact_email?: string;
 }
 
+interface Schedule {
+  id: string;
+  charter_id: string;
+  departure_port: string;
+  arrival_port: string;
+  departure_time: string;
+  duration: string;
+  status: string;
+}
+
 export function OperatorsSection() {
   const [operators, setOperators] = useState<FerryCharter[]>([]);
+  const [allSchedules, setAllSchedules] = useState<Schedule[]>([]);
+
+  const [selectedOperator, setSelectedOperator] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
 
   useEffect(() => {
     async function fetchOperators() {
       const { data, error } = await supabase.from("ferry_charters").select("*");
-
       if (error) {
-        console.error("Error fetching operators:", error);
+        console.error("❌ Error fetching operators:", error);
       } else {
         setOperators(data || []);
       }
     }
-
     fetchOperators();
+  }, []);
+
+  useEffect(() => {
+    async function fetchSchedules() {
+      const { data, error } = await supabase
+        .from("ferry_charter_schedules")
+        .select("*");
+      if (error) {
+        console.error("❌ Error fetching schedules:", error);
+      } else {
+        console.log("✅ Schedules fetched:", data.length);
+        setAllSchedules(data || []);
+      }
+    }
+    fetchSchedules();
   }, []);
 
   return (
@@ -96,18 +126,19 @@ export function OperatorsSection() {
             </CardContent>
 
             <CardFooter className="flex flex-col sm:flex-row sm:justify-between gap-3 border-t border-border pt-4 pb-4 bg-muted/50">
-              <Link
-                href={`/ferry-operators/${operator.slug}#schedule`}
-                passHref
+              <Button
+                size="lg"
+                onClick={() =>
+                  setSelectedOperator({
+                    id: operator.id,
+                    name: operator.name,
+                  })
+                }
+                className="w-full sm:w-auto gap-2 text-base px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:hover:bg-blue-600"
               >
-                <Button
-                  size="lg"
-                  className="w-full sm:w-auto gap-2 text-base px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:hover:bg-blue-600"
-                >
-                  <CalendarDays className="h-5 w-5" />
-                  <span>View Schedule</span>
-                </Button>
-              </Link>
+                <CalendarDays className="h-5 w-5" />
+                <span>View Schedule</span>
+              </Button>
 
               <Link href={`/ferry-operators/${operator.slug}`} passHref>
                 <Button
@@ -122,6 +153,17 @@ export function OperatorsSection() {
           </Card>
         ))}
       </div>
+
+      {selectedOperator && (
+        <ScheduleModal
+          open={!!selectedOperator}
+          onClose={() => setSelectedOperator(null)}
+          schedules={allSchedules.filter(
+            (s) => s.charter_id === selectedOperator.id
+          )}
+          operatorName={selectedOperator.name}
+        />
+      )}
     </div>
   );
 }

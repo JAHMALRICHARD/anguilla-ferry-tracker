@@ -355,7 +355,7 @@ export default function FerryOperatorPage({
                 size="default"
                 className="text-xl px-10 py-6 shadow-lg hover:shadow-2xl transition"
               >
-                Reserve Your Journey
+                View Website
               </Button>
             </a>
           </div>

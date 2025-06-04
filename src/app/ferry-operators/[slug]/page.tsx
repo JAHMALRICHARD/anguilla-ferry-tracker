@@ -13,7 +13,9 @@ interface PageProps {
 export default async function Page({ params }: PageProps) {
   if (!params?.slug) return notFound(); // ✅ Defensive check
 
-  const supabase = createServerComponentClient<Database>({ cookies });
+  const supabase = createServerComponentClient<Database>({
+    cookies: () => cookies(),
+  });
 
   const { data: operator, error } = await supabase
     .from("ferry_charters")

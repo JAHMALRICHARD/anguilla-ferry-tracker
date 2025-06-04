@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { RefreshCw, Settings, ChevronDown, LogOut } from "lucide-react";
-import ThemeToggle from "../components/ThemeToggle";
+import ThemeToggle from "@/components/ThemeToggle";
 import Image from "next/image";
 
 interface ReusableHeaderProps {
