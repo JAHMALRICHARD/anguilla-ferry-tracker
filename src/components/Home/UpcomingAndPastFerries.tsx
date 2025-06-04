@@ -21,6 +21,7 @@ interface UpcomingAndPastFerriesProps {
 export default function UpcomingAndPastFerries({
   upcomingFerries,
   pastFerries,
+  route,
   localNow,
   selectedDate,
   searchQuery,
@@ -64,6 +65,11 @@ export default function UpcomingAndPastFerries({
                 localNow={localNow}
                 searchQuery={searchQuery}
                 selectedDate={selectedDate}
+                direction={
+                  route.to === "To Anguilla - via Marigot"
+                    ? "to-anguilla"
+                    : "to-st-martin"
+                }
               />
             ) : (
               <div className="p-6 text-center text-muted-foreground">
