@@ -107,8 +107,8 @@ export default function HomePage() {
         />
 
         {/* Footer Sections */}
-        <InfoCards />
         <OperatorsSection />
+        <InfoCards />
         <TestimonialsSection />
         <Footer />
       </div>

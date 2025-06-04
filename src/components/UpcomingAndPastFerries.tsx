@@ -31,45 +31,48 @@ export default function UpcomingAndPastFerries({
   const hasPast = pastFerries.length > 0;
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-10">
-      {/* Scheduled Ferries */}
-      <Card>
-        <CardContent className="overflow-x-auto">
-          {loading ? (
-            <Skeleton className="w-full h-40 rounded-md" />
-          ) : hasUpcoming ? (
-            <ScheduledFerriesTable
-              ferries={upcomingFerries}
-              searchQuery={searchQuery}
-              onDetails={onDetails}
-            />
-          ) : (
-            <div className="p-6 text-center text-muted-foreground">
-              No scheduled ferries for this date.
-            </div>
-          )}
-        </CardContent>
-      </Card>
+    <div className="pt-12 mb-16">
+      <h2 className="text-2xl font-bold mb-8">Public Ferry Schedule</h2>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-10">
+        {/* Scheduled Ferries */}
+        <Card>
+          <CardContent className="overflow-x-auto">
+            {loading ? (
+              <Skeleton className="w-full h-40 rounded-md" />
+            ) : hasUpcoming ? (
+              <ScheduledFerriesTable
+                ferries={upcomingFerries}
+                searchQuery={searchQuery}
+                onDetails={onDetails}
+              />
+            ) : (
+              <div className="p-6 text-center text-muted-foreground">
+                No scheduled ferries for this date.
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
-      {/* Sailed Ferries */}
-      <Card>
-        <CardContent className="overflow-x-auto">
-          {loading ? (
-            <Skeleton className="w-full h-40 rounded-md" />
-          ) : hasPast ? (
-            <SailedFerriesTable
-              ferries={pastFerries}
-              localNow={localNow}
-              searchQuery={searchQuery}
-              selectedDate={selectedDate}
-            />
-          ) : (
-            <div className="p-6 text-center text-muted-foreground">
-              No past ferries for this date.
-            </div>
-          )}
-        </CardContent>
-      </Card>
+        {/* Sailed Ferries */}
+        <Card>
+          <CardContent className="overflow-x-auto">
+            {loading ? (
+              <Skeleton className="w-full h-40 rounded-md" />
+            ) : hasPast ? (
+              <SailedFerriesTable
+                ferries={pastFerries}
+                localNow={localNow}
+                searchQuery={searchQuery}
+                selectedDate={selectedDate}
+              />
+            ) : (
+              <div className="p-6 text-center text-muted-foreground">
+                No past ferries for this date.
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
