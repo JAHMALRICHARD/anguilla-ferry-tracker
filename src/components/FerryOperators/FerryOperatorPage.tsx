@@ -29,6 +29,8 @@ import Image from "next/image";
 import { Header } from "@/components/Header/Header";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import type { FerryCharter } from "@/types/supabase";
+import { motion } from "framer-motion";
+import { StarIcon } from "lucide-react";
 
 interface Schedule {
   id: string;
@@ -165,25 +167,125 @@ export default function FerryOperatorPage({
 
   return (
     <div className="bg-background text-foreground">
-      <Header />
+      <Header />;
+      <div className="max-w-[90rem] mx-auto px-4 mt-6">
+        <div className="relative h-[600px] w-full overflow-hidden bg-black rounded-3xl shadow-2xl">
+          <Image
+            src={operator.hero_image_url || stockHero}
+            alt={`${operator.name} Hero`}
+            fill
+            className="object-cover brightness-75"
+          />
 
-      <div className="relative h-[600px] w-full overflow-hidden bg-black">
-        <Image
-          src={operator.hero_image_url || stockHero}
-          alt={`${operator.name} Hero`}
-          fill
-          className="object-cover brightness-60"
-        />
-        <div className="absolute inset-0 flex flex-col justify-center items-center text-center px-6">
-          <h1 className="text-6xl font-semibold text-white tracking-tight drop-shadow-2xl">
-            {operator.name}
-          </h1>
-          <p className="text-xl mt-6 text-gray-200 max-w-3xl leading-relaxed drop-shadow-lg">
-            {operator.description}
-          </p>
+          {/* Fade to theme-matching gradient */}
+          <div
+            className="absolute inset-0 rounded-3xl z-0"
+            style={{
+              backgroundImage: `
+      linear-gradient(
+        to top,
+        var(--background) 0%,
+        var(--background) 1%,
+        transparent 100%
+      )
+    `,
+            }}
+          />
+
+          <div className="absolute inset-0 flex flex-col justify-center items-center text-center px-6 z-10">
+            <motion.h1
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              className="text-5xl sm:text-6xl font-semibold text-white tracking-tight drop-shadow-2xl"
+            >
+              {operator.name}
+            </motion.h1>
+
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1, delay: 0.2 }}
+              className="text-xl mt-6 text-gray-200 max-w-3xl leading-relaxed drop-shadow-lg"
+            >
+              {operator.description}
+            </motion.p>
+
+            {/* Star Rating */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
+              className="mt-4 flex items-center gap-1"
+            >
+              {[...Array(5)].map((_, i) => (
+                <StarIcon
+                  key={i}
+                  className="w-5 h-5 fill-yellow-400 stroke-yellow-400"
+                />
+              ))}
+              <span className="ml-2 text-white font-medium">
+                5.0 from 200+ reviews
+              </span>
+            </motion.div>
+
+            {/* Trust Badges */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.8 }}
+              className="mt-6 flex gap-4"
+            >
+              <div className="w-10 h-10 rounded-full bg-white/90 p-1 shadow-lg">
+                <Image
+                  src="/badges/secure.svg"
+                  alt="Secure"
+                  width={36}
+                  height={36}
+                />
+              </div>
+              <div className="w-10 h-10 rounded-full bg-white/90 p-1 shadow-lg">
+                <Image
+                  src="/badges/verified.svg"
+                  alt="Verified"
+                  width={36}
+                  height={36}
+                />
+              </div>
+              <div className="w-10 h-10 rounded-full bg-white/90 p-1 shadow-lg">
+                <Image
+                  src="/badges/award.svg"
+                  alt="Top Rated"
+                  width={36}
+                  height={36}
+                />
+              </div>
+            </motion.div>
+
+            {/* CTA Buttons */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1 }}
+              className="mt-8 flex flex-wrap justify-center gap-4"
+            >
+              <Button
+                size="lg"
+                className="bg-white text-black hover:bg-gray-100"
+              >
+                Reserve Now
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                className="text-white border-white hover:bg-white/10"
+              >
+                Learn More
+              </Button>
+            </motion.div>
+          </div>
         </div>
       </div>
-
       <div className="max-w-6xl mx-auto px-8 py-20 space-y-24">
         <Card className="bg-muted/10 shadow-xl rounded-2xl">
           <CardHeader>

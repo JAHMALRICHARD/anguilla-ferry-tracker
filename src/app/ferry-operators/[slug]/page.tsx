@@ -11,16 +11,21 @@ interface PageProps {
 }
 
 export default async function Page({ params }: PageProps) {
-  if (!params?.slug) return notFound(); // ✅ Defensive check
+  const slug = params?.slug?.trim();
+  if (!slug) return notFound();
+
+  // ✅ Safe use of cookies() before passing into Supabase
+  const cookieStore = cookies();
 
   const supabase = createServerComponentClient<Database>({
-    cookies: () => cookies(),
+    cookies: () => cookieStore,
   });
 
+  // ✅ Use destructured `slug` only after confirming it's valid
   const { data: operator, error } = await supabase
     .from("ferry_charters")
     .select("*")
-    .eq("slug", params.slug)
+    .eq("slug", slug)
     .single();
 
   if (!operator || error) return notFound();
