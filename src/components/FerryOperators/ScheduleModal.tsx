@@ -1,6 +1,4 @@
 "use client";
-
-import React from "react";
 import {
   Dialog,
   DialogContent,
@@ -11,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { CalendarIcon } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 interface Schedule {
   id: string;
@@ -19,6 +18,7 @@ interface Schedule {
   departure_time: string;
   duration: string;
   status: string;
+  season?: "Summer" | "Winter" | "All Year";
 }
 
 interface Props {
@@ -42,14 +42,6 @@ export function ScheduleModal({
   schedules,
   operatorName,
 }: Props) {
-  const toAnguilla = schedules.filter(
-    (f) => f.arrival_port === "Blowing Point, Anguilla"
-  );
-
-  const toStMaarten = schedules.filter(
-    (f) => f.arrival_port === "Airport, St. Maarten"
-  );
-
   const renderSchedule = (
     direction: string,
     color: string,
@@ -112,6 +104,33 @@ export function ScheduleModal({
     </div>
   );
 
+  const renderTab = (season: "Summer" | "Winter") => {
+    const filtered = schedules.filter((f) => f.season === season);
+    const toAnguilla = filtered.filter(
+      (f) => f.arrival_port === "Blowing Point, Anguilla"
+    );
+    const toStMaarten = filtered.filter(
+      (f) => f.arrival_port === "Airport, St. Maarten"
+    );
+
+    return (
+      <TabsContent value={season}>
+        {renderSchedule("St. Maarten", "text-blue-600", toStMaarten)}
+        {renderSchedule("Anguilla", "text-green-600", toAnguilla)}
+      </TabsContent>
+    );
+  };
+
+  const normalizedName = operatorName.toLowerCase().trim();
+  const isAllYearOperator = ["funtime charters", "calypso charters"].includes(
+    normalizedName
+  );
+
+  console.log("Operator:", operatorName);
+  console.log("isAllYearOperator:", isAllYearOperator);
+  console.log("Schedules:", schedules);
+  console.log("operatorName.toLowerCase():", operatorName.toLowerCase());
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="w-full max-w-[95vw] sm:max-w-[90vw] lg:max-w-[80vw] xl:max-w-[1400px] max-h-[90vh] overflow-y-auto px-8 py-8 rounded-2xl">
@@ -120,12 +139,63 @@ export function ScheduleModal({
             {operatorName} – Full Schedule
           </DialogTitle>
           <DialogDescription className="text-muted-foreground">
-            View all scheduled departures by destination.
+            View all scheduled departures by season and destination.
           </DialogDescription>
         </DialogHeader>
 
-        {renderSchedule("St. Maarten", "text-blue-600", toStMaarten)}
-        {renderSchedule("Anguilla", "text-green-600", toAnguilla)}
+        {isAllYearOperator ? (
+          <Tabs defaultValue="All" className="mt-6">
+            <TabsList className="mb-6 bg-muted rounded-xl p-1">
+              <TabsTrigger
+                value="All"
+                className="data-[state=active]:bg-primary data-[state=active]:text-white rounded-lg px-4 py-2 transition-all"
+              >
+                🗓️ All Season Schedule
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="All">
+              {renderSchedule(
+                "St. Maarten",
+                "text-blue-600",
+                schedules.filter(
+                  (f) =>
+                    f.arrival_port === "Airport, St. Maarten" &&
+                    f.season === "All Year"
+                )
+              )}
+              {renderSchedule(
+                "Anguilla",
+                "text-green-600",
+                schedules.filter(
+                  (f) =>
+                    f.arrival_port === "Blowing Point, Anguilla" &&
+                    f.season === "All Year"
+                )
+              )}
+            </TabsContent>
+          </Tabs>
+        ) : (
+          <Tabs defaultValue="Summer" className="mt-6">
+            <TabsList className="mb-6 bg-muted rounded-xl p-1">
+              <TabsTrigger
+                value="Summer"
+                className="data-[state=active]:bg-yellow-400 data-[state=active]:text-white rounded-lg px-4 py-2 transition-all"
+              >
+                ☀️ Summer Schedule
+              </TabsTrigger>
+              <TabsTrigger
+                value="Winter"
+                className="data-[state=active]:bg-blue-300 data-[state=active]:text-white rounded-lg px-4 py-2 transition-all"
+              >
+                ❄️ Winter Schedule
+              </TabsTrigger>
+            </TabsList>
+
+            {renderTab("Summer")}
+            {renderTab("Winter")}
+          </Tabs>
+        )}
 
         <div className="text-right mt-6">
           <DialogClose asChild>

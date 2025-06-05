@@ -27,7 +27,9 @@ export default async function Page({ params }: PageProps) {
 
   const { data: schedules } = await supabase
     .from("ferry_charter_schedules")
-    .select("*")
+    .select(
+      "id, departure_port, arrival_port, departure_time, duration, status, season"
+    )
     .eq("charter_id", operator.id)
     .order("departure_time", { ascending: true });
 
