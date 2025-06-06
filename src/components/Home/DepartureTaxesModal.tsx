@@ -1,12 +1,20 @@
 "use client";
 
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import {
-  ArrowRightLeftIcon,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogClose,
+} from "@/components/ui/dialog";
+import {
   InfoIcon,
   EuroIcon,
   BadgeDollarSignIcon,
+  CreditCardIcon,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface DepartureTaxesModalProps {
   open: boolean;
@@ -19,112 +27,120 @@ export const DepartureTaxesModal: React.FC<DepartureTaxesModalProps> = ({
 }) => {
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="w-full max-w-5xl sm:max-w-5xl md:max-w-5xl lg:max-w-5xl xl:max-w-5xl 2xl:max-w-5xl bg-background text-foreground font-sans px-10 py-12 border border-border rounded-2xl shadow-2xl">
-        {/* Accessibility title (screen readers only) */}
-        <DialogTitle className="sr-only">
-          <span className="flex items-center gap-2">
-            <InfoIcon className="h-6 w-6 text-primary" />
+      <DialogContent className="w-full max-w-[95vw] sm:max-w-[90vw] lg:max-w-[85vw] xl:max-w-[80vw] max-h-[90vh] overflow-y-auto px-8 py-8 rounded-2xl border border-border shadow-xl bg-background text-foreground">
+        <DialogHeader>
+          <DialogTitle className="text-4xl font-bold flex items-center gap-3">
+            <InfoIcon className="h-7 w-7 text-primary" />
             Departure Taxes
-          </span>
-        </DialogTitle>
+          </DialogTitle>
+          <DialogDescription className="text-base text-muted-foreground mt-1">
+            Breakdown of passenger departure taxes for Anguilla, St. Martin, and
+            St. Maarten.
+          </DialogDescription>
+        </DialogHeader>
 
-        {/* Visible Title */}
-        <h2 className="text-3xl font-bold mb-8 flex items-center gap-2">
-          <InfoIcon className="h-6 w-6 text-primary" />
-          Departure Taxes
-        </h2>
-
-        {/* Two Columns */}
-        <div className="flex flex-col md:flex-row gap-16 text-sm sm:text-base text-muted-foreground leading-relaxed">
-          {/* Left Column */}
-          <div className="flex-1 space-y-6 min-w-0">
-            <h3 className="text-xl font-semibold text-foreground mb-2 flex items-center gap-2 whitespace-nowrap">
-              <ArrowRightLeftIcon className="h-5 w-5 text-orange-400" />
-              Anguilla → Marigot
+        {/* Three-column layout */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-10 text-base text-muted-foreground leading-relaxed">
+          {/* 🇦🇮 Anguilla */}
+          <div className="space-y-6">
+            <h3 className="text-2xl font-semibold text-foreground flex items-center gap-2">
+              🇦🇮 Anguilla
             </h3>
 
-            <div className="bg-muted p-4 rounded-xl border border-border">
-              <p className="font-medium text-foreground mb-2">
-                Visitors staying more than 12 hours:
+            <div className="bg-muted p-5 rounded-xl border border-border space-y-4">
+              <p className="font-medium text-foreground">
+                Visitors staying 12+ hours:
               </p>
               <ul className="space-y-2 ml-2">
                 <li className="flex items-center gap-2">
-                  <BadgeDollarSignIcon className="h-4 w-4 text-yellow-300" />
-                  <span>
-                    Adults (12+):{" "}
-                    <span className="text-success font-semibold">$28 USD</span>
-                  </span>
+                  <BadgeDollarSignIcon className="h-5 w-5 text-yellow-300" />
+                  Adults (12+):{" "}
+                  <span className="text-success font-semibold">$28 USD</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <BadgeDollarSignIcon className="h-4 w-4 text-muted-foreground" />
-                  <span>
-                    Children (5–11):{" "}
-                    <span className="text-success font-semibold">$15 USD</span>
-                  </span>
+                  <BadgeDollarSignIcon className="h-5 w-5" />
+                  Children (5–11):{" "}
+                  <span className="text-success font-semibold">$15 USD</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <BadgeDollarSignIcon className="h-4 w-4 text-muted-foreground" />
-                  <span>
-                    Children (2–4):{" "}
-                    <span className="text-success font-semibold">$3 USD</span>
-                  </span>
+                  <BadgeDollarSignIcon className="h-5 w-5" />
+                  Children (2–4):{" "}
+                  <span className="text-success font-semibold">$3 USD</span>
                 </li>
               </ul>
             </div>
 
-            <div className="bg-muted p-4 rounded-xl border border-border">
-              <p className="font-medium text-foreground mb-2">
+            <div className="bg-muted p-5 rounded-xl border border-border space-y-4">
+              <p className="font-medium text-foreground">
                 Day Trippers & Residents:
               </p>
               <ul className="space-y-2 ml-2">
                 <li className="flex items-center gap-2">
-                  <BadgeDollarSignIcon className="h-4 w-4 text-green-300" />
-                  <span>
-                    Adults (12+):{" "}
-                    <span className="text-success font-semibold">$11 USD</span>
-                  </span>
+                  <BadgeDollarSignIcon className="h-5 w-5 text-green-300" />
+                  Adults (12+):{" "}
+                  <span className="text-success font-semibold">$11 USD</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <BadgeDollarSignIcon className="h-4 w-4 text-muted-foreground" />
-                  <span>
-                    Children (2–11):{" "}
-                    <span className="text-success font-semibold">$3 USD</span>
-                  </span>
+                  <BadgeDollarSignIcon className="h-5 w-5" />
+                  Children (2–11):{" "}
+                  <span className="text-success font-semibold">$3 USD</span>
                 </li>
               </ul>
             </div>
           </div>
 
-          {/* Divider */}
-          <div className="hidden md:block w-px bg-border mx-2" />
-
-          {/* Right Column */}
-          <div className="flex-1 space-y-6 min-w-0">
-            <h3 className="text-xl font-semibold text-foreground mb-2 flex items-center gap-2 whitespace-nowrap">
-              <ArrowRightLeftIcon className="h-5 w-5 text-teal-400" />
-              Marigot → Anguilla
+          {/* 🇫🇷 St. Martin */}
+          <div className="space-y-6">
+            <h3 className="text-2xl font-semibold text-foreground flex items-center gap-2">
+              🇫🇷 St. Martin
             </h3>
 
-            <div className="bg-muted p-4 rounded-xl border border-border space-y-3">
+            <div className="bg-muted p-5 rounded-xl border border-border space-y-4">
               <div className="flex items-center gap-2">
-                <EuroIcon className="h-4 w-4 text-green-300" />
+                <EuroIcon className="h-5 w-5 text-green-300" />
                 <span className="text-foreground font-medium">
                   Passenger Head Fee (Ages 4+):
                 </span>
                 <span className="text-success font-semibold ml-auto">€7</span>
               </div>
-              <p className="text-sm text-muted-foreground leading-snug">
-                This fee is payable{" "}
-                <span className="font-semibold text-foreground">
-                  only in euros or by card
-                </span>{" "}
-                at the Marigot terminal.{" "}
+              <p className="text-base text-muted-foreground leading-snug">
+                Payable only in{" "}
+                <span className="font-semibold text-foreground">euros</span> or
+                by card at Marigot terminal.{" "}
                 <span className="text-red-500 font-medium">
                   USD not accepted.
                 </span>
               </p>
             </div>
           </div>
+
+          {/* 🇳🇱 St. Maarten */}
+          <div className="space-y-6">
+            <h3 className="text-2xl font-semibold text-foreground flex items-center gap-2">
+              🇳🇱 St. Maarten
+            </h3>
+
+            <div className="bg-muted p-5 rounded-xl border border-border space-y-4">
+              <p className="font-medium text-foreground">Departure Tax Info:</p>
+              <p className="text-base">
+                Currently, no separate public ferry departure tax is charged at
+                the Dutch terminal. However, fees may apply if connecting via
+                air or private boat services.
+              </p>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground mt-2">
+                <CreditCardIcon className="h-5 w-5" />
+                Confirm payment policy with your ferry operator.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="text-right mt-8">
+          <DialogClose asChild>
+            <Button variant="secondary" className="text-base px-6 py-2">
+              Close
+            </Button>
+          </DialogClose>
         </div>
       </DialogContent>
     </Dialog>
