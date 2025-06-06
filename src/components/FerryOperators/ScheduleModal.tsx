@@ -105,13 +105,19 @@ export function ScheduleModal({
   );
 
   const renderTab = (season: "Summer" | "Winter") => {
-    const filtered = schedules.filter((f) => f.season === season);
-    const toAnguilla = filtered.filter(
-      (f) => f.arrival_port === "Blowing Point, Anguilla"
-    );
-    const toStMaarten = filtered.filter(
-      (f) => f.arrival_port === "Airport, St. Maarten"
-    );
+    //const filtered = schedules.filter((f) => f.season === season);
+    const toAnguilla = schedules
+      .filter(
+        (f) =>
+          f.season === "Summer" && f.arrival_port === "Blowing Point, Anguilla"
+      )
+      .sort((a, b) => a.departure_time.localeCompare(b.departure_time));
+    const toStMaarten = schedules
+      .filter(
+        (f) =>
+          f.season === "Summer" && f.arrival_port === "Airport, St. Maarten"
+      )
+      .sort((a, b) => a.departure_time.localeCompare(b.departure_time));
 
     return (
       <TabsContent value={season}>
