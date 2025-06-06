@@ -71,7 +71,7 @@ export function InfoCards() {
 
   return (
     <div className="pt-12 mb-16">
-      <h2 className="text-2xl font-bold mb-8">Before You Board</h2>
+      <h2 className="text-2xl font-bold mb-8 text-white">Before You Board</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {cards.map((card) => (
           <Card
@@ -85,20 +85,26 @@ export function InfoCards() {
                 handleCardClick(card.title);
               }
             }}
-            className="cursor-pointer hover:shadow-md focus-visible:ring-2 focus-visible:ring-blue-500 transition-colors"
+            className="bg-card border border-border text-foreground hover:border-primary transition-colors cursor-pointer rounded-xl"
           >
             <CardContent className="p-6">
               <card.icon className="h-8 w-8 text-blue-500 mb-4" />
-              <h3 className="text-lg font-medium mb-2">{card.title}</h3>
-              <p className="text-gray-500 text-sm mb-2">{card.description}</p>
-              <span className="text-blue-500 text-sm hover:underline">
+              <h3 className="text-xl font-semibold mb-2">{card.title}</h3>{" "}
+              {/* ⬅️ Larger Title */}
+              <p className="text-base text-muted-foreground mb-2">
+                {card.description}
+              </p>{" "}
+              {/* ⬅️ Larger Paragraph */}
+              <span className="text-base text-blue-400 hover:underline">
                 Learn more
-              </span>
+              </span>{" "}
+              {/* ⬅️ Larger CTA */}
             </CardContent>
           </Card>
         ))}
       </div>
 
+      {/* Modals */}
       {modals["Travel Documents"] && (
         <TravelDocumentsModal
           onClose={() => handleCloseModal("Travel Documents")}
